@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Al Imron Umroh Travel</title>
   
   <!-- Bootstrap 5 CSS & Icons -->
@@ -131,9 +131,9 @@
             </div>
             
             <div class="card shadow-sm border-0">
-              <div class="card-body p-0">
+              <div class="card-body p-2">
                 <div class="table-responsive">
-                  <table class="table table-hover align-middle mb-0">
+                  <table id="tabel-paket" class="table table-hover align-middle mb-0 w-100">
                     <thead class="table-light">
                       <tr>
                         <th class="ps-4">Nama Paket</th>
@@ -168,14 +168,14 @@
             </div>
 
             <div class="card shadow-sm border-0">
-              <div class="card-body p-0">
+              <div class="card-body p-2">
                 <div class="table-responsive">
-                  <table class="table table-hover align-middle mb-0">
+                  <table id="tabel-jemaah" class="table table-hover align-middle mb-0 w-100">
                     <thead class="table-light">
                       <tr>
-                        <th class="ps-4">No. Registrasi</th>
+                        <th class="ps-4 d-none d-md-table-cell">No. Registrasi</th>
                         <th>Nama Jemaah</th>
-                        <th>Paket</th>
+                        <th class="d-none d-md-table-cell">Paket</th>
                         <th>Status</th>
                         <th class="text-center">Aksi</th>
                       </tr>
@@ -188,6 +188,40 @@
               </div>
             </div>
           </div>
+          <!-- ============================================== -->
+            <!-- MODAL DETAIL JEMAAH -->
+            <!-- ============================================== -->
+            <div class="modal fade" id="modalDetailJemaah" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg">
+                    <div class="modal-header bg-info text-dark">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-person-lines-fill me-2"></i>Detail Lengkap Jemaah</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="this.blur()"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                    <table class="table table-sm table-borderless mb-0">
+                        <tr><td width="35%" class="text-muted small">No. Registrasi</td><td width="5%">:</td><td class="fw-bold text-primary small" id="detReg"></td></tr>
+                        <tr><td class="text-muted small">Nama Lengkap</td><td>:</td><td class="fw-bold small" id="detNama"></td></tr>
+                        <tr><td class="text-muted small">NIK</td><td>:</td><td class="small" id="detNik"></td></tr>
+                        <tr><td class="text-muted small">Paket Umroh</td><td>:</td><td class="small" id="detPaket"></td></tr>
+                        <tr><td class="text-muted small">Status</td><td>:</td><td class="small" id="detStatus"></td></tr>
+                    </table>
+                    <hr class="my-3">
+                    <div class="d-flex justify-content-center gap-3">
+                        <a href="#" id="detLinkKtp" target="_blank" class="btn btn-sm btn-outline-secondary"><i class="bi bi-card-image"></i> KTP</a>
+                        <a href="#" id="detLinkKk" target="_blank" class="btn btn-sm btn-outline-secondary"><i class="bi bi-file-earmark-image"></i> KK</a>
+                    </div>
+                    </div>
+                    <div class="modal-footer bg-light d-flex justify-content-between">
+                    <button type="button" class="btn btn-warning fw-bold text-dark px-4 shadow-sm" id="btnEditDariDetail">
+                        <i class="bi bi-pencil-square"></i> Edit
+                    </button>
+                    <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Tutup</button>
+                    </div>
+                </div>
+                </div>
+            </div>
+            <!-- === AKHIR MODAL DETAIL JEMAAH === -->
 
         </div>
         
@@ -240,7 +274,7 @@
             </div>
         </div>
         <div class="modal-footer bg-light">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="this.blur()">Batal</button>
           <button type="submit" class="btn btn-primary" id="btnSimpanPaket">Simpan Paket</button>
         </div>
         </form>
@@ -250,38 +284,94 @@
   <!-- === AKHIR MODAL MASTER PAKET === -->
 
   <!-- ============================================== -->
+  <!-- MODAL PENDAFTARAN JEMAAH -->
+  <!-- ============================================== -->
+  <div class="modal fade" id="modalJemaah" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg"> <!-- modal-lg agar form lebih lebar dan lega -->
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title fw-bold">Form Pendaftaran Jemaah Baru</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" onclick="this.blur()"></button>
+        </div>
+        <div class="modal-body">
+          <form id="formTambahJemaah" onsubmit="submitJemaah(event)">
+            
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label class="form-label fw-bold">Nama Lengkap Jemaah</label>
+                <input type="text" class="form-control" id="inputNama" placeholder="Sesuai KTP" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-bold">Nomor Induk Kependudukan (NIK)</label>
+                <input type="text" class="form-control" id="inputNik" placeholder="16 Digit NIK" required pattern="[0-9]{16}" title="NIK harus 16 digit angka">
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              <label class="form-label fw-bold">Pilih Paket Umroh</label>
+              <!-- Dropdown ini akan diisi otomatis oleh JavaScript (Firestore) -->
+              <select class="form-select" id="inputPaket" required>
+                <option value="">-- Memuat Paket... --</option>
+              </select>
+            </div>
+            
+            <hr class="my-4">
+            <h6 class="fw-bold mb-3 text-primary"><i class="bi bi-cloud-arrow-up"></i> Upload Dokumen (Format JPG/PNG)</h6>
+            
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label class="form-label">Foto KTP</label>
+                <input type="file" class="form-control" id="fileKtp" accept="image/*" required>
+                <div class="form-text">Pastikan tulisan terbaca jelas.</div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Foto Kartu Keluarga (KK)</label>
+                <input type="file" class="form-control" id="fileKk" accept="image/*" required>
+              </div>
+            </div>
+
+        </div>
+        <div class="modal-footer bg-light">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="this.blur()">Batal</button>
+          <button type="submit" class="btn btn-primary shadow-sm" id="btnSimpanJemaah">
+            <i class="bi bi-save"></i> Simpan Pendaftaran
+          </button>
+        </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <!-- === AKHIR MODAL PENDAFTARAN JEMAAH === -->
+
+ <!-- ============================================== -->
   <!-- PEMANGGILAN LIBRARY JAVASCRIPT & FIREBASE -->
   <!-- ============================================== -->
+  
+  <!-- 1. jQuery & Bootstrap -->
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   
-  <!-- Firebase SDK (Gunakan versi Compat agar strukturnya mirip web tradisional) -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-
-  <!-- Konfigurasi API -->
-  <script src="js/config/firebase.js"></script>
-  <script src="js/config/cloudinary.js"></script>
-
-  <!-- Logika Aplikasi -->
-  <script src="js/app.js"></script>
-  <script src="js/modules/paket.js"></script>
-
-  <!-- ============================================== -->
-  <!-- PEMANGGILAN LIBRARY JAVASCRIPT & FIREBASE -->
-  <!-- ============================================== -->
-  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script> <!-- Dibutuhkan untuk DataTables -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  
-  <!-- PLUGIN MODERN JS -->
+  <!-- 2. Plugin Modern (SweetAlert & DataTables) -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
 
-  <!-- Firebase -->
+  <!-- 3. Firebase SDK (PASTIKAN HANYA ADA SATU SET INI SAJA) -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-  <!-- ... dst (Konfigurasi & file JS kita) ... -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+  <!-- 4. Konfigurasi Utama Kita -->
+  <script src="js/config/firebase.js"></script>
+  <script src="js/config/cloudinary.js"></script>
+
+  <!-- 5. Logika Modul Aplikasi -->
+  <script src="js/app.js"></script>
+  <script src="js/modules/auth.js"></script>
+  <script src="js/modules/paket.js"></script>
+  <script src="js/modules/jemaah.js"></script>
+</body>
+</html>
   
 </body>
 </html>

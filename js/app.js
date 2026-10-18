@@ -60,36 +60,57 @@ function switchView(viewName) {
     if(activeView) {
         activeView.style.display = 'block';
     }
+
+    // ====================================================================
+    // 4. PEMICU (TRIGGER) UNTUK MEMUAT DATA OTOMATIS SAAT MENU DIKLIK
+    // Bagian ini yang sebelumnya hilang dari file Anda
+    // ====================================================================
+    if (viewName === 'paket') {
+        if (typeof loadDataPaket === 'function') loadDataPaket();
+    } else if (viewName === 'jemaah') {
+        if (typeof loadDataJemaah === 'function') loadDataJemaah();
+    }
 }
 
 /**
- * Fungsi Custom Alert (Pop-up modern pengganti alert biasa)
+ * Fungsi Custom Alert menggunakan SweetAlert2
+ * type bisa berisi: 'success', 'error', 'warning', 'info', 'question'
  */
 function showCustomAlert(message, type = 'info', title = 'Informasi') {
-    const alertModalEl = document.getElementById('customAlertModal');
-    if (!alertModalEl) {
-        alert(message); // Fallback jika modal belum ada di halaman
-        return;
-    }
+    Swal.fire({
+        title: title,
+        html: message.replace(/\n/g, '<br>'), // Mengizinkan enter/baris baru
+        icon: type,
+        confirmButtonColor: '#FDB714', // Warna oranye/kuning khas Enka Imron
+        confirmButtonText: 'OK, Mengerti',
+        customClass: {
+            confirmButton: 'btn btn-warning fw-bold text-dark px-4 shadow-sm'
+        },
+        buttonsStyling: false // Mematikan style bawaan agar menggunakan Bootstrap kita
+    });
+}
 
-    const alertModal = new bootstrap.Modal(alertModalEl);
-    
-    document.getElementById('customAlertTitle').innerText = title;
-    document.getElementById('customAlertMessage').innerHTML = message.replace(/\n/g, '<br>');
-    
-    const iconEl = document.getElementById('customAlertIcon');
-    let iconHtml = '';
-    
-    if (type === 'success') {
-      iconHtml = '<i class="bi bi-check-circle-fill text-success" style="font-size: 3.5rem;"></i>';
-    } else if (type === 'error' || type === 'danger') {
-      iconHtml = '<i class="bi bi-x-circle-fill text-danger" style="font-size: 3.5rem;"></i>';
-    } else if (type === 'warning') {
-      iconHtml = '<i class="bi bi-exclamation-triangle-fill text-warning" style="font-size: 3.5rem;"></i>';
-    } else {
-      iconHtml = '<i class="bi bi-info-circle-fill text-primary" style="font-size: 3.5rem;"></i>';
-    }
-    
-    iconEl.innerHTML = iconHtml;
-    alertModal.show();
+/**
+ * Fungsi Konfirmasi Modern (Ya/Tidak) menggunakan SweetAlert2
+ */
+function showCustomConfirm(message, callback, title = 'Konfirmasi') {
+    Swal.fire({
+        title: title,
+        html: message.replace(/\n/g, '<br>'),
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Ya, Lanjutkan!',
+        cancelButtonText: 'Batal',
+        customClass: {
+            confirmButton: 'btn btn-danger fw-bold px-4 me-2 shadow-sm',
+            cancelButton: 'btn btn-secondary px-4 shadow-sm'
+        },
+        buttonsStyling: false
+    }).then((result) => {
+        if (result.isConfirmed) {
+            callback(); // Eksekusi fungsi jika user menekan "Ya"
+        }
+    });
 }

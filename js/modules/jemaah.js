@@ -1,53 +1,126 @@
 // js/modules/jemaah.js
 
-// Fungsi memuat data Jemaah ke tabel
 function loadDataJemaah() {
     const tbody = document.getElementById('tabel-jemaah-body');
     if (!tbody) return;
     
+    if ($.fn.DataTable.isDataTable('#tabel-jemaah')) {
+        $('#tabel-jemaah').DataTable().destroy();
+    }
+
     tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-muted"><span class="spinner-border spinner-border-sm me-2"></span> Memuat data jemaah...</td></tr>`;
 
-    // Tarik data dari koleksi 'jemaah' diurutkan berdasarkan waktu pendaftaran terbaru
     db.collection("jemaah").orderBy("createdAt", "desc").get().then((querySnapshot) => {
         tbody.innerHTML = '';
         
-        if (querySnapshot.empty) {
-            tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-muted">Belum ada data jemaah.</td></tr>`;
-            return;
+        if (!querySnapshot.empty) {
+            querySnapshot.forEach((doc) => {
+                const jm = doc.data();
+                const noReg = doc.id;
+                
+                let badgeColor = 'bg-secondary';
+                if (jm.status === 'Menunggu Verifikasi') badgeColor = 'bg-warning text-dark';
+                else if (jm.status === 'Siap Berangkat') badgeColor = 'bg-success';
+                
+                // Siapkan data JSON untuk dikirim ke Modal Detail
+                const jmJSON = encodeURIComponent(JSON.stringify({id: noReg, ...jm}));
+                
+                const row = `
+                  <tr>
+                    <!-- Disembunyikan di HP (d-none d-md-table-cell) -->
+                    <td class="ps-4 fw-bold text-primary whitespace-nowrap d-none d-md-table-cell">${noReg}</td>
+                    
+                    <td class="fw-bold">${jm.nama || '-'}</td>
+                    
+                    <!-- Disembunyikan di HP -->
+                    <td class="d-none d-md-table-cell">${jm.paket || '-'}</td>
+                    
+                    <td><span class="badge ${badgeColor}">${jm.status || '-'}</span></td>
+                    
+                    <td class="text-center whitespace-nowrap">
+                      <!-- Tombol Detail (Kaca Pembesar) -->
+                      <button class="btn btn-sm btn-outline-primary me-1 shadow-sm" title="Detail Jemaah" onclick="lihatDetailJemaah('${jmJSON}')">
+                        <i class="bi bi-search"></i>
+                      </button>
+                      <button class="btn btn-sm btn-outline-danger shadow-sm" onclick="hapusJemaah('${noReg}')">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </td>
+                  </tr>
+                `;
+                tbody.insertAdjacentHTML('beforeend', row);
+            });
         }
 
-        querySnapshot.forEach((doc) => {
-            const jm = doc.data();
-            const noReg = doc.id; // Kita jadikan No. Registrasi sebagai ID Dokumen
-            
-            let badgeColor = 'bg-secondary';
-            if (jm.status === 'Menunggu Verifikasi') badgeColor = 'bg-warning text-dark';
-            else if (jm.status === 'Siap Berangkat') badgeColor = 'bg-success';
-            
-            const row = `
-              <tr>
-                <td class="ps-4 fw-bold text-primary">${noReg}</td>
-                <td class="fw-bold">${jm.nama}</td>
-                <td>${jm.paket}</td>
-                <td><span class="badge ${badgeColor}">${jm.status}</span></td>
-                <td class="text-center">
-                  <button class="btn btn-sm btn-danger" onclick="hapusJemaah('${noReg}')">
-                    <i class="bi bi-trash"></i>
-                  </button>
-                </td>
-              </tr>
-            `;
-            tbody.insertAdjacentHTML('beforeend', row);
+        $('#tabel-jemaah').DataTable({
+            language: { 
+                url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/id.json',
+                emptyTable: "Belum ada data jemaah yang mendaftar."
+            },
+            pageLength: 10,
+            destroy: true,
         });
+
     }).catch((error) => {
         tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-danger">Gagal memuat: ${error.message}</td></tr>`;
     });
 }
 
+// ==========================================
+// FUNGSI UNTUK MEMBUKA MODAL DETAIL
+// ==========================================
+function lihatDetailJemaah(encodedJSON) {
+    const jm = JSON.parse(decodeURIComponent(encodedJSON));
+    
+    document.getElementById('detReg').innerText = jm.id;
+    document.getElementById('detNama').innerText = jm.nama || '-';
+    document.getElementById('detNik').innerText = jm.nik || '-';
+    document.getElementById('detPaket').innerText = jm.paket || '-';
+    
+    let badgeColor = 'bg-secondary';
+    if (jm.status === 'Menunggu Verifikasi') badgeColor = 'bg-warning text-dark';
+    else if (jm.status === 'Siap Berangkat') badgeColor = 'bg-success';
+    document.getElementById('detStatus').innerHTML = `<span class="badge ${badgeColor}">${jm.status || '-'}</span>`;
+    
+    // Setel Link Dokumen
+    const btnKtp = document.getElementById('detLinkKtp');
+    const btnKk = document.getElementById('detLinkKk');
+    
+    if (jm.urlKtp) { 
+        btnKtp.href = jm.urlKtp; 
+        btnKtp.classList.remove('disabled'); 
+    } else { 
+        btnKtp.removeAttribute('href'); 
+        btnKtp.classList.add('disabled'); 
+    }
+    
+    if (jm.urlKk) { 
+        btnKk.href = jm.urlKk; 
+        btnKk.classList.remove('disabled'); 
+    } else { 
+        btnKk.removeAttribute('href'); 
+        btnKk.classList.add('disabled'); 
+    }
+    
+    // Setel aksi Tombol Edit
+    const btnEdit = document.getElementById('btnEditDariDetail');
+    btnEdit.onclick = function() {
+        // Tutup modal detail
+        bootstrap.Modal.getInstance(document.getElementById('modalDetailJemaah')).hide();
+        // Nanti kita akan buat fungsi bukaModalEditJemaah(jm) di tahap selanjutnya
+        showCustomAlert("Fungsi Edit akan segera kita buat di tahap selanjutnya!", "info");
+    };
+
+    const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('modalDetailJemaah'));
+    modal.show();
+}
+
+// ==========================================
+// FUNGSI PENDAFTARAN & HAPUS
+// ==========================================
 function bukaModalTambahJemaah() {
     document.getElementById('formTambahJemaah').reset();
     
-    // Tarik daftar paket aktif dari Firestore ke dropdown
     const selectPaket = document.getElementById('inputPaket');
     if (selectPaket) {
         selectPaket.innerHTML = '<option value="">-- Memuat Paket... --</option>';
@@ -64,7 +137,6 @@ function bukaModalTambahJemaah() {
     modal.show();
 }
 
-// Proses Eksekusi Simpan & Upload Pendaftaran Baru
 async function submitJemaah(event) {
     event.preventDefault();
     const btn = document.getElementById('btnSimpanJemaah');
@@ -72,34 +144,25 @@ async function submitJemaah(event) {
     btn.disabled = true;
 
     try {
-        // 1. Ambil file fisik dari input HTML (Contoh KTP dan KK, sesuaikan ID-nya dengan form Anda)
         const inputKtp = document.getElementById('fileKtp');
         const inputKk = document.getElementById('fileKk');
         
         let urlKtp = "";
         let urlKk = "";
 
-        // 2. Upload ke Cloudinary secara asinkron jika ada file yang dipilih
-        if (inputKtp && inputKtp.files.length > 0) {
-            urlKtp = await uploadKeCloudinary(inputKtp.files[0]);
-        }
-        if (inputKk && inputKk.files.length > 0) {
-            urlKk = await uploadKeCloudinary(inputKk.files[0]);
-        }
+        if (inputKtp && inputKtp.files.length > 0) urlKtp = await uploadKeCloudinary(inputKtp.files[0]);
+        if (inputKk && inputKk.files.length > 0) urlKk = await uploadKeCloudinary(inputKk.files[0]);
 
-        // 3. Generate Nomor Registrasi Unik (Format: REG-YYMM-XXXX)
         const date = new Date();
         const yy = date.getFullYear().toString().slice(-2);
         const mm = ("0" + (date.getMonth() + 1)).slice(-2);
         const random = Math.floor(1000 + Math.random() * 9000);
         const noReg = `REG-${yy}${mm}-${random}`;
 
-        // 4. Simpan semua data teks dan URL Cloudinary ke Firestore
         await db.collection("jemaah").doc(noReg).set({
             nama: document.getElementById('inputNama').value,
             nik: document.getElementById('inputNik').value,
             paket: document.getElementById('inputPaket').value,
-            // ... (Tambahkan field lain seperti hp, alamat, dll sesuai kebutuhan) ...
             urlKtp: urlKtp || "",
             urlKk: urlKk || "",
             status: "Menunggu Verifikasi",
@@ -107,7 +170,7 @@ async function submitJemaah(event) {
         });
 
         showCustomAlert(`Pendaftaran berhasil!\nNomor Registrasi: ${noReg}`, "success", "Berhasil");
-        loadDataJemaah(); // Refresh tabel
+        loadDataJemaah(); 
         
         const modal = bootstrap.Modal.getInstance(document.getElementById('modalJemaah'));
         if(modal) modal.hide();
@@ -121,10 +184,10 @@ async function submitJemaah(event) {
 }
 
 function hapusJemaah(noReg) {
-    if (confirm(`Yakin ingin menghapus data jemaah ${noReg}?`)) {
+    showCustomConfirm(`Yakin ingin menghapus data jemaah <b>${noReg}</b>?<br><small class="text-danger">Aksi ini tidak dapat dibatalkan.</small>`, () => {
         db.collection("jemaah").doc(noReg).delete().then(() => {
             showCustomAlert("Data jemaah berhasil dihapus.", "success");
             loadDataJemaah();
         }).catch(err => showCustomAlert(err.message, "error"));
-    }
+    }, "Hapus Data?");
 }

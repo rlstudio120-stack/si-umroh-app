@@ -1,29 +1,25 @@
 // js/modules/paket.js
 
-// Fungsi memuat data paket dari Firestore
 function loadDataPaket() {
     const tbody = document.getElementById('tabel-paket-body');
     if (!tbody) return;
     
+    // Hancurkan DataTables lama jika sedang aktif (wajib untuk SPA)
+    if ($.fn.DataTable.isDataTable('#tabel-paket')) {
+        $('#tabel-paket').DataTable().destroy();
+    }
+
     tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted"><span class="spinner-border spinner-border-sm me-2"></span> Memuat data paket...</td></tr>`;
 
-    // Mengambil data dari koleksi 'paket' secara realtime atau sekali tarik
     db.collection("paket").orderBy("nama", "asc").get().then((querySnapshot) => {
         tbody.innerHTML = '';
         
-        if (querySnapshot.empty) {
-            tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted">Belum ada paket.</td></tr>`;
-            return;
-        }
-
         querySnapshot.forEach((doc) => {
             const p = doc.data();
-            const id = doc.id; // Document ID dari Firestore
+            const id = doc.id;
             
             let hargaRp = new Intl.NumberFormat('id-ID').format(p.harga || 0);
             let badgeStatus = p.status === 'Aktif' ? 'bg-success' : 'bg-secondary';
-            
-            // Format JSON aman untuk tombol Edit
             const pktJSON = encodeURIComponent(JSON.stringify({id: id, ...p}));
             
             const row = `
@@ -38,13 +34,21 @@ function loadDataPaket() {
                     <i class="bi bi-pencil-square"></i> Edit
                   </button>
                   <button class="btn btn-sm btn-outline-danger" onclick="hapusDataPaket('${id}')">
-                    <i class="bi bi-trash"></i> Hapus
+                    <i class="bi bi-trash"></i>
                   </button>
                 </td>
               </tr>
             `;
             tbody.insertAdjacentHTML('beforeend', row);
         });
+
+        // Bangkitkan DataTables dengan Bahasa Indonesia
+        $('#tabel-paket').DataTable({
+            language: { url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/id.json' },
+            pageLength: 10,
+            destroy: true
+        });
+
     }).catch((error) => {
         tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-danger">Gagal memuat: ${error.message}</td></tr>`;
     });
