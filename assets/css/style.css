@@ -73,22 +73,79 @@ body {
 
 /* 5. Mobile Responsiveness (Optimalisasi Smartphone) */
 @media (max-width: 768px) {
-    /* Cegah body dan container meluber ke samping */
+    body { padding-top: 60px; }
     body, html { max-width: 100vw; overflow-x: hidden; }
-    
     .sidebar { display: none !important; } 
     .hero-section { padding: 30px 15px; border-radius: 0 0 16px 16px; }
-    .card-body { padding: 10px !important; }
+    .card-body { padding: 15px !important; }
     
-    /* Paksa DataTables agar lebarnya 100% dan tidak memaksa scroll */
+    /* ========================================================= */
+    /* PERBAIKAN HEADER & TOMBOL (Sesuai Gambar) */
+    /* ========================================================= */
+    /* Memisahkan Judul dan Tombol agar tidak berdesakan */
+    .d-flex.justify-content-between.align-items-center {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 15px;
+        margin-bottom: 20px !important;
+    }
+    /* Tombol Pendaftaran melebar penuh 100% agar mudah ditekan */
+    .d-flex.justify-content-between.align-items-center .btn-primary {
+        width: 100%;
+        padding: 10px;
+        font-size: 1rem;
+        border-radius: 8px;
+    }
+
+    /* ========================================================= */
+    /* PERBAIKAN DATATABLES (Pencarian & Paging) */
+    /* ========================================================= */
     table.dataTable { width: 100% !important; margin-top: 10px !important; }
-    .dataTables_wrapper .row { margin-bottom: 5px; }
-    .dataTables_filter input { width: 100% !important; margin-left: 0 !important; }
     
-    /* Perkecil ukuran font dan tombol di HP agar pas di layar */
-    .table td, .table th { font-size: 0.85rem; padding: 8px 4px !important; }
-    .btn-sm { padding: 0.2rem 0.4rem; font-size: 0.8rem; }
+    /* 1. Sembunyikan tulisan "Tampilkan X entri" di layar HP */
+    .dataTables_length { display: none !important; }
     
-    /* Izinkan teks membungkus (wrap) jika terlalu panjang */
+    /* 2. Sulap kotak pencarian menjadi gaya aplikasi mobile modern */
+    .dataTables_filter {
+        text-align: left !important;
+        width: 100%;
+        margin-bottom: 15px !important;
+    }
+    .dataTables_filter label {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        font-size: 0.85rem;
+        font-weight: bold;
+        color: #555;
+    }
+    .dataTables_filter input {
+        width: 100% !important;
+        margin-left: 0 !important;
+        margin-top: 5px;
+        padding: 8px 15px;
+        border-radius: 8px;
+        border: 1px solid #ced4da;
+    }
+
+    /* 3. Rapikan teks informasi dan tombol halaman di bawah tabel */
+    .dataTables_info {
+        text-align: center !important;
+        font-size: 0.8rem;
+        margin-bottom: 15px;
+        padding-top: 10px;
+    }
+    .dataTables_paginate {
+        display: flex !important;
+        justify-content: center !important;
+        margin-top: 0 !important;
+    }
+    .pagination { flex-wrap: wrap; justify-content: center; gap: 5px; }
+    
+    /* ========================================================= */
+    /* PERBAIKAN TABEL KONTEN */
+    /* ========================================================= */
+    .table td, .table th { font-size: 0.85rem; padding: 10px 5px !important; }
+    .btn-sm { padding: 0.3rem 0.5rem; font-size: 0.8rem; }
     .whitespace-nowrap { white-space: normal !important; }
 }

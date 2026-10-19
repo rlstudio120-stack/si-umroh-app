@@ -30,10 +30,10 @@ function loadDataPaket() {
                 <td>${p.kuota}</td>
                 <td><span class="badge ${badgeStatus}">${p.status}</span></td>
                 <td class="text-center">
-                  <button class="btn btn-sm btn-outline-warning text-dark me-1" onclick="editPaket('${pktJSON}')">
-                    <i class="bi bi-pencil-square"></i> Edit
+                  <button class="btn btn-sm btn-warning text-dark me-1" onclick="editPaket('${pktJSON}')">
+                    <i class="bi bi-pencil-square"></i> 
                   </button>
-                  <button class="btn btn-sm btn-outline-danger" onclick="hapusDataPaket('${id}')">
+                  <button class="btn btn-sm btn-danger" onclick="hapusDataPaket('${id}')">
                     <i class="bi bi-trash"></i>
                   </button>
                 </td>

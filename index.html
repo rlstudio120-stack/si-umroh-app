@@ -62,6 +62,53 @@
     
     <!-- TAMPILAN PANEL ADMIN (DASHBOARD UTAMA) -->
     <div id="view-main" class="app-view" style="display: none;">
+      <!-- ============================================== -->
+      <!-- MOBILE NAVBAR (Tampil HANYA di layar HP) -->
+      <!-- ============================================== -->
+      <nav class="navbar navbar-dark bg-primary d-md-none fixed-top shadow-sm">
+        <div class="container-fluid">
+          <span class="navbar-brand fw-bold mb-0 h5"><i class="bi bi-airplane-engines me-2"></i>SI Umroh</span>
+          <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileMenu" aria-controls="mobileMenu">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+        </div>
+      </nav>
+
+      <!-- OFFCANVAS MENU MOBILE -->
+      <div class="offcanvas offcanvas-start bg-dark text-white d-md-none" tabindex="-1" id="mobileMenu" style="width: 260px;">
+        <div class="offcanvas-header border-bottom border-secondary">
+          <h5 class="offcanvas-title fw-bold"><i class="bi bi-grid-fill me-2"></i>Menu Navigasi</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body p-0 d-flex flex-column">
+          <ul class="nav nav-pills flex-column mb-auto p-3">
+            <!-- Perhatikan: Kita tambahkan fungsi untuk menutup offcanvas otomatis saat menu diklik -->
+            <li class="nav-item mb-2">
+              <a href="#" class="nav-link text-white" onclick="switchView('dashboard'); bootstrap.Offcanvas.getInstance(document.getElementById('mobileMenu')).hide();">
+                <i class="bi bi-speedometer2 me-2"></i> Dashboard
+              </a>
+            </li>
+            <li class="nav-item mb-2">
+              <a href="#" class="nav-link text-white" onclick="switchView('paket'); bootstrap.Offcanvas.getInstance(document.getElementById('mobileMenu')).hide();">
+                <i class="bi bi-box-seam me-2"></i> Master Paket
+              </a>
+            </li>
+            <li class="nav-item mb-2">
+              <a href="#" class="nav-link text-white" onclick="switchView('jemaah'); bootstrap.Offcanvas.getInstance(document.getElementById('mobileMenu')).hide();">
+                <i class="bi bi-people me-2"></i> Data Jemaah
+              </a>
+            </li>
+          </ul>
+          <hr class="border-secondary mx-3 mb-3">
+          <div class="px-3 pb-4">
+            <!-- Ganti 'logout()' dengan fungsi logout yang Anda gunakan di auth.js -->
+            <button class="btn btn-danger w-100 fw-bold" onclick="logout()">
+              <i class="bi bi-box-arrow-right me-2"></i> Keluar
+            </button>
+          </div>
+        </div>
+      </div>
+      <!-- === AKHIR MOBILE NAVBAR === -->
       <div class="d-flex">
         
         <!-- SIDEBAR -->
@@ -189,39 +236,369 @@
             </div>
           </div>
           <!-- ============================================== -->
-            <!-- MODAL DETAIL JEMAAH -->
-            <!-- ============================================== -->
-            <div class="modal fade" id="modalDetailJemaah" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content border-0 shadow-lg">
-                    <div class="modal-header bg-info text-dark">
-                    <h5 class="modal-title fw-bold"><i class="bi bi-person-lines-fill me-2"></i>Detail Lengkap Jemaah</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="this.blur()"></button>
-                    </div>
-                    <div class="modal-body p-4">
-                    <table class="table table-sm table-borderless mb-0">
-                        <tr><td width="35%" class="text-muted small">No. Registrasi</td><td width="5%">:</td><td class="fw-bold text-primary small" id="detReg"></td></tr>
-                        <tr><td class="text-muted small">Nama Lengkap</td><td>:</td><td class="fw-bold small" id="detNama"></td></tr>
-                        <tr><td class="text-muted small">NIK</td><td>:</td><td class="small" id="detNik"></td></tr>
-                        <tr><td class="text-muted small">Paket Umroh</td><td>:</td><td class="small" id="detPaket"></td></tr>
-                        <tr><td class="text-muted small">Status</td><td>:</td><td class="small" id="detStatus"></td></tr>
-                    </table>
-                    <hr class="my-3">
-                    <div class="d-flex justify-content-center gap-3">
-                        <a href="#" id="detLinkKtp" target="_blank" class="btn btn-sm btn-outline-secondary"><i class="bi bi-card-image"></i> KTP</a>
-                        <a href="#" id="detLinkKk" target="_blank" class="btn btn-sm btn-outline-secondary"><i class="bi bi-file-earmark-image"></i> KK</a>
-                    </div>
-                    </div>
-                    <div class="modal-footer bg-light d-flex justify-content-between">
-                    <button type="button" class="btn btn-warning fw-bold text-dark px-4 shadow-sm" id="btnEditDariDetail">
-                        <i class="bi bi-pencil-square"></i> Edit
-                    </button>
-                    <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Tutup</button>
-                    </div>
+          <!-- MODAL DETAIL JEMAAH (DESAIN BARU) -->
+          <!-- ============================================== -->
+          <div class="modal fade" id="modalDetailJemaah" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-xl modal-dialog-centered">
+              <div class="modal-content border-0 shadow-lg bg-light">
+                <div class="modal-header bg-dark text-white">
+                  <h5 class="modal-title fw-bold"><i class="bi bi-person-vcard me-2"></i>Profil Detail Jemaah</h5>
+                  <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" onclick="this.blur()"></button>
                 </div>
+                <div class="modal-body p-4">
+                  
+                  <div class="row g-4">
+                    <!-- === KOLOM KIRI (FOTO & STATUS BERKAS) === -->
+                    <div class="col-lg-4">
+                      
+                      <!-- Card Profil Singkat -->
+                      <div class="card border-0 shadow-sm mb-3">
+                        <div class="card-body text-center">
+                          <img src="https://via.placeholder.com/150" id="detFoto" class="rounded mb-3" style="width: 150px; height: 200px; object-fit: cover; border: 2px solid #eee;" alt="Foto Jemaah">
+                          <button class="btn btn-primary btn-sm w-100 mb-3" onclick="document.getElementById('btnEditDariDetail').click()"><i class="bi bi-cloud-upload"></i> Ganti / Upload Pass Foto</button>
+                          
+                          <h5 class="fw-bold text-primary mb-1" id="detNamaSingkat">-</h5>
+                          <div class="bg-dark text-white rounded px-2 py-1 mb-3 d-inline-block fw-bold small" id="detNoReg">-</div>
+                          
+                          <div id="detStatusBadge" class="mb-4"></div>
+                          
+                          <div class="text-start border-top pt-3">
+                            <p class="mb-1 text-muted small">Paket Pilihan:</p>
+                            <h6 class="fw-bold mb-3" id="detPaketPilihan">-</h6>
+                            <p class="mb-1 text-muted small">Tanggal Mendaftar:</p>
+                            <h6 class="fw-bold mb-0" id="detTglDaftar">-</h6>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Card Status Fisik Berkas -->
+                      <div class="card border-0 shadow-sm">
+                        <div class="card-body">
+                          <h6 class="fw-bold mb-3">Status Fisik Berkas</h6>
+                          <table class="table table-sm table-borderless align-middle mb-0 small">
+                            <!-- Input File Tersembunyi untuk proses Upload Langsung -->
+                            <input type="file" id="updFileKtp" class="d-none" accept="image/*" onchange="prosesUpdateBerkas('Ktp')">
+                            <input type="file" id="updFileKk" class="d-none" accept="image/*" onchange="prosesUpdateBerkas('Kk')">
+                            <input type="file" id="updFileNikah" class="d-none" accept="image/*" onchange="prosesUpdateBerkas('Nikah')">
+                            <input type="file" id="updFilePaspor" class="d-none" accept="image/*" onchange="prosesUpdateBerkas('Paspor')">
+                            <input type="file" id="updFileLahir" class="d-none" accept="image/*" onchange="prosesUpdateBerkas('Lahir')">
+
+                            <tr>
+                              <td class="fw-bold">KTP</td>
+                              <td class="text-end" id="badgeKtp"></td>
+                              <td width="1%"><button class="btn btn-info btn-sm py-0" onclick="document.getElementById('updFileKtp').click()">Update</button></td>
+                            </tr>
+                            <tr>
+                              <td class="fw-bold">Kartu Keluarga</td>
+                              <td class="text-end" id="badgeKk"></td>
+                              <td width="1%"><button class="btn btn-info btn-sm py-0" onclick="document.getElementById('updFileKk').click()">Update</button></td>
+                            </tr>
+                            <tr>
+                              <td class="fw-bold">Akte / Buku Nikah</td>
+                              <td class="text-end" id="badgeNikah"></td>
+                              <td width="1%"><button class="btn btn-info btn-sm py-0" onclick="document.getElementById('updFileNikah').click()">Update</button></td>
+                            </tr>
+                            <tr>
+                              <td class="fw-bold">Paspor</td>
+                              <td class="text-end" id="badgePaspor"></td>
+                              <td width="1%"><button class="btn btn-info btn-sm py-0" onclick="document.getElementById('updFilePaspor').click()">Update</button></td>
+                            </tr>
+                            <tr>
+                              <td class="fw-bold">Akta Kelahiran</td>
+                              <td class="text-end" id="badgeLahir"></td>
+                              <td width="1%"><button class="btn btn-info btn-sm py-0" onclick="document.getElementById('updFileLahir').click()">Update</button></td>
+                            </tr>
+                          </table>
+                        </div>
+                      </div>
+
+                    </div>
+
+                    <!-- === KOLOM KANAN (INFORMASI DETAIL) === -->
+                    <div class="col-lg-8">
+                      
+                      <!-- Informasi Pribadi -->
+                      <div class="card border-0 shadow-sm mb-3">
+                        <div class="card-body p-4">
+                          <h6 class="text-primary fw-bold border-bottom pb-2 mb-3">Informasi Pribadi</h6>
+                          <div class="row mb-2">
+                            <div class="col-md-4 text-muted small">NIK KTP</div>
+                            <div class="col-md-8 fw-bold" id="detNikKtp">-</div>
+                          </div>
+                          <div class="row mb-2">
+                            <div class="col-md-4 text-muted small">Tempat, Tgl Lahir</div>
+                            <div class="col-md-8 fw-bold" id="detTempatTglLahir">-</div>
+                          </div>
+                          <div class="row mb-2">
+                            <div class="col-md-4 text-muted small">Jenis Kelamin</div>
+                            <div class="col-md-8 fw-bold" id="detJk">-</div>
+                          </div>
+                          <div class="row mb-2">
+                            <div class="col-md-4 text-muted small">Alamat Lengkap</div>
+                            <div class="col-md-8 fw-bold" id="detAlamat">-</div>
+                          </div>
+                          <div class="row mb-2">
+                            <div class="col-md-4 text-muted small">No. Handphone</div>
+                            <div class="col-md-8 fw-bold" id="detNoHp">-</div>
+                          </div>
+                          <div class="row mb-2">
+                            <div class="col-md-4 text-muted small">Email</div>
+                            <div class="col-md-8 fw-bold" id="detEmail">-</div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Keimigrasian & Mahram -->
+                      <div class="card border-0 shadow-sm mb-3">
+                        <div class="card-body p-4">
+                          <h6 class="text-primary fw-bold border-bottom pb-2 mb-3">Keimigrasian & Mahram</h6>
+                          <div class="row mb-2">
+                            <div class="col-md-4 text-muted small">Nomor Paspor</div>
+                            <div class="col-md-8 fw-bold" id="detNoPaspor">-</div>
+                          </div>
+                          <div class="row mb-2">
+                            <div class="col-md-4 text-muted small">Tempat Terbit</div>
+                            <div class="col-md-8 fw-bold" id="detTempatTerbit">-</div>
+                          </div>
+                          <div class="row mb-2">
+                            <div class="col-md-4 text-muted small">Masa Berlaku</div>
+                            <div class="col-md-8 fw-bold" id="detMasaBerlaku">-</div>
+                          </div>
+                          <div class="row mb-2">
+                            <div class="col-md-4 text-muted small">Pendamping (Mahram)</div>
+                            <div class="col-md-8 fw-bold" id="detMahram">-</div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Kontak Darurat -->
+                      <div class="card border-0 shadow-sm">
+                        <div class="card-body p-4">
+                          <h6 class="text-primary fw-bold border-bottom pb-2 mb-3">Kontak Darurat</h6>
+                          <div class="row mb-2">
+                            <div class="col-md-4 text-muted small">Nama Kontak</div>
+                            <div class="col-md-8 fw-bold" id="detDaruratNama">-</div>
+                          </div>
+                          <div class="row mb-2">
+                            <div class="col-md-4 text-muted small">Hubungan / No. HP</div>
+                            <div class="col-md-8 fw-bold" id="detDaruratHubHp">-</div>
+                          </div>
+                        </div>
+                      </div>
+
+                    </div>
+                  </div>
+
                 </div>
+                <div class="modal-footer bg-white border-top">
+                  <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Tutup</button>
+                  <button type="button" class="btn btn-primary fw-bold text-white px-3 shadow-sm me-2" id="btnCetakBukti">
+                    <i class="bi bi-printer"></i> Cetak Bukti
+                  </button>
+                  <button type="button" class="btn btn-warning fw-bold text-dark px-4 shadow-sm" id="btnEditDariDetail">
+                    <i class="bi bi-pencil-square"></i> Edit Data Jemaah
+                  </button>
+                </div>
+              </div>
             </div>
-            <!-- === AKHIR MODAL DETAIL JEMAAH === -->
+          </div>
+          <!-- === AKHIR MODAL DETAIL JEMAAH === -->
+             <!-- ============================================== -->
+              <!-- MODAL EDIT JEMAAH (DESAIN BARU 2 KOLOM) -->
+              <!-- ============================================== -->
+              <div class="modal fade" id="modalEditJemaah" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+                <div class="modal-dialog modal-xl">
+                  <div class="modal-content bg-light">
+                    <div class="modal-header bg-warning text-dark border-0">
+                      <h5 class="modal-title fw-bold"><i class="bi bi-pencil-square me-2"></i>Form Edit Data Jemaah</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="this.blur()"></button>
+                    </div>
+                    <div class="modal-body">
+                      <form id="formEditJemaah" onsubmit="submitEditJemaah(event)">
+                        <input type="hidden" id="editReg">
+                        
+                        <div class="row g-4">
+                          <!-- === KOLOM KIRI === -->
+                          <div class="col-lg-6">
+                            
+                            <!-- 1. Pilihan Paket -->
+                            <div class="card border-0 shadow-sm mb-3">
+                              <div class="card-body">
+                                <h6 class="text-primary fw-bold border-bottom pb-2">1. Pilihan Paket</h6>
+                                <select class="form-select" id="editPaket" required></select>
+                              </div>
+                            </div>
+
+                            <!-- 2. Data Diri Jemaah -->
+                            <div class="card border-0 shadow-sm">
+                              <div class="card-body">
+                                <h6 class="text-primary fw-bold border-bottom pb-2">2. Data Diri Jemaah</h6>
+                                <div class="mb-2">
+                                  <label class="form-label small fw-bold">Nama</label>
+                                  <input type="text" class="form-control form-control-sm" id="editNama" required>
+                                </div>
+                                <div class="mb-2">
+                                  <label class="form-label small fw-bold">NIK</label>
+                                  <input type="text" class="form-control form-control-sm" id="editNik" required pattern="[0-9]{16}">
+                                </div>
+                                <div class="row mb-2">
+                                  <div class="col-6">
+                                    <label class="form-label small fw-bold">Tempat Lahir</label>
+                                    <input type="text" class="form-control form-control-sm" id="editTmpLahir" required>
+                                  </div>
+                                  <div class="col-6">
+                                    <label class="form-label small fw-bold">Tgl Lahir</label>
+                                    <input type="date" class="form-control form-control-sm" id="editTglLahir" required>
+                                  </div>
+                                </div>
+                                <div class="mb-2">
+                                  <label class="form-label small fw-bold">Jenis Kelamin</label>
+                                  <select class="form-select form-select-sm" id="editJk" required>
+                                    <option value="Laki-laki">Laki-laki</option>
+                                    <option value="Perempuan">Perempuan</option>
+                                  </select>
+                                </div>
+                                <div class="mb-2">
+                                  <label class="form-label small fw-bold">Alamat Lengkap</label>
+                                  <textarea class="form-control form-control-sm" id="editAlamat" rows="2" required></textarea>
+                                </div>
+                                <div class="row mb-2">
+                                  <div class="col-6">
+                                    <label class="form-label small fw-bold">Kota</label>
+                                    <input type="text" class="form-control form-control-sm" id="editKota" required>
+                                  </div>
+                                  <div class="col-6">
+                                    <label class="form-label small fw-bold">Provinsi</label>
+                                    <input type="text" class="form-control form-control-sm" id="editProvinsi" required>
+                                  </div>
+                                </div>
+                                <div class="row">
+                                  <div class="col-6">
+                                    <label class="form-label small fw-bold">No. HP</label>
+                                    <input type="text" class="form-control form-control-sm" id="editWa" required>
+                                  </div>
+                                  <div class="col-6">
+                                    <label class="form-label small fw-bold">Email</label>
+                                    <input type="email" class="form-control form-control-sm" id="editEmail">
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                          </div>
+
+                          <!-- === KOLOM KANAN === -->
+                          <div class="col-lg-6">
+                            
+                            <!-- 3. Data Mahram -->
+                            <div class="card border-0 shadow-sm mb-3">
+                              <div class="card-body">
+                                <h6 class="text-primary fw-bold border-bottom pb-2">3. Data Mahram</h6>
+                                <div class="row">
+                                  <div class="col-6">
+                                    <label class="form-label small fw-bold">Nama Mahram</label>
+                                    <input type="text" class="form-control form-control-sm" id="editMahramNama">
+                                  </div>
+                                  <div class="col-6">
+                                    <label class="form-label small fw-bold">Hubungan</label>
+                                    <select class="form-select form-select-sm" id="editMahramHub">
+                                      <option value="">-- Pilih --</option>
+                                      <option value="Suami">Suami</option>
+                                      <option value="Istri">Istri</option>
+                                      <option value="Ayah">Ayah</option>
+                                      <option value="Ibu">Ibu</option>
+                                      <option value="Anak">Anak</option>
+                                      <option value="Saudara Kandung">Saudara Kandung</option>
+                                    </select>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            <!-- 4. Data Paspor -->
+                            <div class="card border-0 shadow-sm mb-3">
+                              <div class="card-body">
+                                <h6 class="text-primary fw-bold border-bottom pb-2">4. Data Paspor</h6>
+                                <div class="mb-2">
+                                  <label class="form-label small fw-bold">No. Paspor</label>
+                                  <input type="text" class="form-control form-control-sm" id="editPasporNo">
+                                </div>
+                                <div class="mb-2">
+                                  <label class="form-label small fw-bold">Tempat Terbit</label>
+                                  <input type="text" class="form-control form-control-sm" id="editPasporTempat">
+                                </div>
+                                <div class="row">
+                                  <div class="col-6">
+                                    <label class="form-label small fw-bold">Tgl. Terbit</label>
+                                    <input type="date" class="form-control form-control-sm" id="editPasporTgl">
+                                  </div>
+                                  <div class="col-6">
+                                    <label class="form-label small fw-bold">Tgl. Expired</label>
+                                    <input type="date" class="form-control form-control-sm" id="editPasporExp">
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            <!-- 5. Kontak Darurat -->
+                            <div class="card border-0 shadow-sm mb-3">
+                              <div class="card-body">
+                                <h6 class="text-primary fw-bold border-bottom pb-2">5. Kontak Darurat</h6>
+                                <div class="mb-2">
+                                  <label class="form-label small fw-bold">Nama Kontak</label>
+                                  <input type="text" class="form-control form-control-sm" id="editDaruratNama" required>
+                                </div>
+                                <div class="row">
+                                  <div class="col-6">
+                                    <label class="form-label small fw-bold">Hubungan</label>
+                                    <select class="form-select form-select-sm" id="editDaruratHub" required>
+                                      <option value="Suami">Suami</option>
+                                      <option value="Istri">Istri</option>
+                                      <option value="Anak">Anak</option>
+                                      <option value="Orang Tua">Orang Tua</option>
+                                      <option value="Saudara Kandung">Saudara Kandung</option>
+                                    </select>
+                                  </div>
+                                  <div class="col-6">
+                                    <label class="form-label small fw-bold">No. HP Darurat</label>
+                                    <input type="text" class="form-control form-control-sm" id="editDaruratHp" required>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            <!-- Group & Request -->
+                            <div class="row">
+                              <div class="col-6">
+                                <label class="form-label small fw-bold">Group Keluarga</label>
+                                <input type="text" class="form-control form-control-sm" id="editGrupKeluarga">
+                              </div>
+                              <div class="col-6">
+                                <label class="form-label small fw-bold">Request Khusus</label>
+                                <select class="form-select form-select-sm" id="editReqKhusus">
+                                  <option value="Tidak Ada">Tidak Ada</option>
+                                  <option value="Kursi Roda">Kursi Roda</option>
+                                  <option value="Kamar Khusus">Kamar Khusus</option>
+                                  <option value="Menu Makanan Khusus">Menu Makanan Khusus</option>
+                                </select>
+                              </div>
+                            </div>
+
+                          </div>
+                        </div>
+
+                    </div>
+                    <div class="modal-footer bg-white border-top">
+                      <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal" onclick="this.blur()">Batal</button>
+                      <button type="submit" class="btn btn-warning fw-bold text-dark px-4 shadow-sm" id="btnUpdateJemaah">
+                        <i class="bi bi-save"></i> Simpan Perubahan Data
+                      </button>
+                    </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+              <!-- === AKHIR MODAL EDIT JEMAAH === -->
 
         </div>
         
@@ -284,56 +661,227 @@
   <!-- === AKHIR MODAL MASTER PAKET === -->
 
   <!-- ============================================== -->
-  <!-- MODAL PENDAFTARAN JEMAAH -->
+  <!-- MODAL PENDAFTARAN JEMAAH (DESAIN BARU) -->
   <!-- ============================================== -->
   <div class="modal fade" id="modalJemaah" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
-    <div class="modal-dialog modal-lg"> <!-- modal-lg agar form lebih lebar dan lega -->
+    <div class="modal-dialog modal-xl"> <!-- Menggunakan modal-xl agar lebih lebar -->
       <div class="modal-content">
         <div class="modal-header bg-primary text-white">
-          <h5 class="modal-title fw-bold">Form Pendaftaran Jemaah Baru</h5>
+          <h5 class="modal-title fw-bold"><i class="bi bi-person-plus-fill me-2"></i>Form Pendaftaran Jemaah Baru</h5>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" onclick="this.blur()"></button>
         </div>
-        <div class="modal-body">
+        <div class="modal-body bg-light">
           <form id="formTambahJemaah" onsubmit="submitJemaah(event)">
             
-            <div class="row mb-3">
-              <div class="col-md-6">
-                <label class="form-label fw-bold">Nama Lengkap Jemaah</label>
-                <input type="text" class="form-control" id="inputNama" placeholder="Sesuai KTP" required>
+            <div class="row g-4">
+              <!-- ================= KOLOM KIRI ================= -->
+              <div class="col-lg-6">
+                
+                <!-- 1. Pilihan Paket -->
+                <div class="card border-0 shadow-sm mb-3">
+                  <div class="card-body">
+                    <h6 class="text-primary fw-bold border-bottom pb-2">1. Pilihan Paket</h6>
+                    <select class="form-select" id="inputPaket" required>
+                      <option value="">-- Memuat Paket... --</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- 2. Data Diri Jemaah -->
+                <div class="card border-0 shadow-sm mb-3">
+                  <div class="card-body">
+                    <h6 class="text-primary fw-bold border-bottom pb-2">2. Data Diri Jemaah</h6>
+                    <div class="mb-2">
+                      <label class="form-label small fw-bold">Nama Sesuai KTP</label>
+                      <input type="text" class="form-control form-control-sm" id="inputNama" required>
+                    </div>
+                    <div class="mb-2">
+                      <label class="form-label small fw-bold">NIK KTP</label>
+                      <input type="text" class="form-control form-control-sm" id="inputNik" required pattern="[0-9]{16}">
+                    </div>
+                    <div class="row mb-2">
+                      <div class="col-6">
+                        <label class="form-label small fw-bold">Tempat Lahir</label>
+                        <input type="text" class="form-control form-control-sm" id="inputTmpLahir" required>
+                      </div>
+                      <div class="col-6">
+                        <label class="form-label small fw-bold">Tanggal Lahir</label>
+                        <input type="date" class="form-control form-control-sm" id="inputTglLahir" required>
+                      </div>
+                    </div>
+                    <div class="mb-2">
+                      <label class="form-label small fw-bold">Jenis Kelamin</label>
+                      <select class="form-select form-select-sm" id="inputJk" required>
+                        <option value="">-- Pilih --</option>
+                        <option value="Laki-laki">Laki-laki</option>
+                        <option value="Perempuan">Perempuan</option>
+                      </select>
+                    </div>
+                    <div class="mb-2">
+                      <label class="form-label small fw-bold">Alamat Lengkap</label>
+                      <textarea class="form-control form-control-sm" id="inputAlamat" rows="2" required></textarea>
+                    </div>
+                    <div class="row mb-2">
+                      <div class="col-6">
+                        <label class="form-label small fw-bold">Kabupaten / Kota</label>
+                        <input type="text" class="form-control form-control-sm" id="inputKota" required>
+                      </div>
+                      <div class="col-6">
+                        <label class="form-label small fw-bold">Provinsi</label>
+                        <input type="text" class="form-control form-control-sm" id="inputProvinsi" required>
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="col-6">
+                        <label class="form-label small fw-bold">No. WhatsApp</label>
+                        <input type="text" class="form-control form-control-sm" id="inputWa" required>
+                      </div>
+                      <div class="col-6">
+                        <label class="form-label small fw-bold">Email (Opsional)</label>
+                        <input type="email" class="form-control form-control-sm" id="inputEmail">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 3. Kontak Darurat -->
+                <div class="card border-0 shadow-sm">
+                  <div class="card-body">
+                    <h6 class="text-primary fw-bold border-bottom pb-2">3. Kontak Darurat (Keluarga)</h6>
+                    <div class="mb-2">
+                      <label class="form-label small fw-bold">Nama Kontak</label>
+                      <input type="text" class="form-control form-control-sm" id="inputDaruratNama" required>
+                    </div>
+                    <div class="row">
+                      <div class="col-6">
+                        <label class="form-label small fw-bold">Hubungan</label>
+                        <select class="form-select form-select-sm" id="inputDaruratHub" required>
+                          <option value="">-- Pilih --</option>
+                          <option value="Suami">Suami</option>
+                          <option value="Istri">Istri</option>
+                          <option value="Anak">Anak</option>
+                          <option value="Orang Tua">Orang Tua</option>
+                          <option value="Saudara">Saudara</option>
+                        </select>
+                      </div>
+                      <div class="col-6">
+                        <label class="form-label small fw-bold">No. HP Darurat</label>
+                        <input type="text" class="form-control form-control-sm" id="inputDaruratHp" required>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
               </div>
-              <div class="col-md-6">
-                <label class="form-label fw-bold">Nomor Induk Kependudukan (NIK)</label>
-                <input type="text" class="form-control" id="inputNik" placeholder="16 Digit NIK" required pattern="[0-9]{16}" title="NIK harus 16 digit angka">
-              </div>
-            </div>
-            
-            <div class="mb-3">
-              <label class="form-label fw-bold">Pilih Paket Umroh</label>
-              <!-- Dropdown ini akan diisi otomatis oleh JavaScript (Firestore) -->
-              <select class="form-select" id="inputPaket" required>
-                <option value="">-- Memuat Paket... --</option>
-              </select>
-            </div>
-            
-            <hr class="my-4">
-            <h6 class="fw-bold mb-3 text-primary"><i class="bi bi-cloud-arrow-up"></i> Upload Dokumen (Format JPG/PNG)</h6>
-            
-            <div class="row mb-3">
-              <div class="col-md-6">
-                <label class="form-label">Foto KTP</label>
-                <input type="file" class="form-control" id="fileKtp" accept="image/*" required>
-                <div class="form-text">Pastikan tulisan terbaca jelas.</div>
-              </div>
-              <div class="col-md-6">
-                <label class="form-label">Foto Kartu Keluarga (KK)</label>
-                <input type="file" class="form-control" id="fileKk" accept="image/*" required>
+
+              <!-- ================= KOLOM KANAN ================= -->
+              <div class="col-lg-6">
+                
+                <!-- 4. Data Mahram -->
+                <div class="card border-0 shadow-sm mb-3">
+                  <div class="card-body">
+                    <h6 class="text-primary fw-bold border-bottom pb-2">4. Data Mahram (Opsional)</h6>
+                    <div class="row">
+                      <div class="col-6">
+                        <label class="form-label small fw-bold">Nama Mahram</label>
+                        <input type="text" class="form-control form-control-sm" id="inputMahramNama">
+                      </div>
+                      <div class="col-6">
+                        <label class="form-label small fw-bold">Hubungan</label>
+                        <select class="form-select form-select-sm" id="inputMahramHub">
+                          <option value="">-- Pilih --</option>
+                          <option value="Suami">Suami</option>
+                          <option value="Istri">Istri</option>
+                          <option value="Ayah">Ayah</option>
+                          <option value="Ibu">Ibu</option>
+                          <option value="Anak">Anak</option>
+                          <option value="Saudara Kandung">Saudara Kandung</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 5. Data Paspor -->
+                <div class="card border-0 shadow-sm mb-3">
+                  <div class="card-body">
+                    <h6 class="text-primary fw-bold border-bottom pb-2">5. Data Paspor (Kosongi jika belum ada)</h6>
+                    <div class="mb-2">
+                      <label class="form-label small fw-bold">Nomor Paspor</label>
+                      <input type="text" class="form-control form-control-sm" id="inputPasporNo">
+                    </div>
+                    <div class="mb-2">
+                      <label class="form-label small fw-bold">Tempat Terbit</label>
+                      <input type="text" class="form-control form-control-sm" id="inputPasporTempat">
+                    </div>
+                    <div class="row mb-2">
+                      <div class="col-6">
+                        <label class="form-label small fw-bold">Tgl. Terbit</label>
+                        <input type="date" class="form-control form-control-sm" id="inputPasporTgl">
+                      </div>
+                      <div class="col-6">
+                        <label class="form-label small fw-bold">Tgl. Expired</label>
+                        <input type="date" class="form-control form-control-sm" id="inputPasporExp">
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="col-6">
+                        <label class="form-label small fw-bold">Group Keluarga</label>
+                        <input type="text" class="form-control form-control-sm" id="inputGrupKeluarga" placeholder="Contoh: KEL-A">
+                      </div>
+                      <div class="col-6">
+                        <label class="form-label small fw-bold">Request Khusus</label>
+                        <select class="form-select form-select-sm" id="inputReqKhusus">
+                          <option value="Tidak Ada">Tidak Ada</option>
+                          <option value="Kursi Roda">Kursi Roda</option>
+                          <option value="Kamar Khusus">Kamar Khusus</option>
+                          <option value="Menu Makanan Khusus">Menu Makanan Khusus</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 6. Upload Berkas -->
+                <div class="card border-warning shadow-sm">
+                  <div class="card-body bg-light">
+                    <h6 class="text-dark fw-bold border-bottom pb-2"><i class="bi bi-cloud-upload me-2"></i>6. Upload Berkas Fisik</h6>
+                    
+                    <div class="mb-2">
+                      <label class="form-label small fw-bold">Scan KTP <span class="text-danger">*</span></label>
+                      <input type="file" class="form-control form-control-sm" id="fileKtp" accept="image/*" required>
+                    </div>
+                    <div class="mb-2">
+                      <label class="form-label small fw-bold">Kartu Keluarga (KK) <span class="text-danger">*</span></label>
+                      <input type="file" class="form-control form-control-sm" id="fileKk" accept="image/*" required>
+                    </div>
+                    <div class="mb-2">
+                      <label class="form-label small fw-bold">Akte / Buku Nikah <span class="text-danger">*</span></label>
+                      <input type="file" class="form-control form-control-sm" id="fileNikah" accept="image/*" required>
+                    </div>
+                    <div class="mb-2">
+                      <label class="form-label small fw-bold">Akta Kelahiran <span class="text-danger">*</span></label>
+                      <input type="file" class="form-control form-control-sm" id="fileLahir" accept="image/*" required>
+                    </div>
+                    <div class="mb-2">
+                      <label class="form-label small fw-bold">Pass Foto (Latar Putih) <span class="text-danger">*</span></label>
+                      <input type="file" class="form-control form-control-sm" id="fileFoto" accept="image/*" required>
+                    </div>
+                    <div>
+                      <label class="form-label small fw-bold">Scan Paspor (Jika Ada)</label>
+                      <input type="file" class="form-control form-control-sm" id="filePaspor" accept="image/*">
+                    </div>
+
+                  </div>
+                </div>
+
               </div>
             </div>
 
         </div>
-        <div class="modal-footer bg-light">
+        <div class="modal-footer bg-white">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="this.blur()">Batal</button>
-          <button type="submit" class="btn btn-primary shadow-sm" id="btnSimpanJemaah">
+          <button type="submit" class="btn btn-primary shadow-sm fw-bold" id="btnSimpanJemaah">
             <i class="bi bi-save"></i> Simpan Pendaftaran
           </button>
         </div>
