@@ -1,68 +1,87 @@
 // js/modules/jemaah.js
 
+// ==========================================
+// FUNGSI MEMUAT DATA JEMAAH KE TABEL
+// ==========================================
 function loadDataJemaah() {
-    const tbody = document.getElementById('tabel-jemaah-body');
-    if (!tbody) return;
-    
+    // 1. HANCURKAN DATATABLES LAMA SEBELUM MENGAMBIL DATA BARU
+    // Ini penting agar DataTables tidak kebingungan dengan perubahan baris HTML
     if ($.fn.DataTable.isDataTable('#tabel-jemaah')) {
-        $('#tabel-jemaah').DataTable().destroy();
+        $('#tabel-jemaah').DataTable().clear().destroy();
     }
 
-    tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-muted"><span class="spinner-border spinner-border-sm me-2"></span> Memuat data jemaah...</td></tr>`;
+    const tbody = document.querySelector('#tabel-jemaah tbody');
+    tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4"><div class="spinner-border text-primary spinner-border-sm me-2"></div>Memuat data...</td></tr>';
 
-    db.collection("jemaah").orderBy("createdAt", "desc").get().then((querySnapshot) => {
-        tbody.innerHTML = '';
+    // 2. AMBIL DATA DARI FIREBASE
+    db.collection("jemaah").get().then((snapshot) => {
+        let html = '';
         
-        if (!querySnapshot.empty) {
-            querySnapshot.forEach((doc) => {
+        if (!snapshot.empty) {
+            snapshot.forEach((doc) => {
                 const jm = doc.data();
-                const noReg = doc.id;
-                
+                jm.id = doc.id; // Sertakan ID dokumen
+
+                // Tentukan warna badge status
                 let badgeColor = 'bg-secondary';
                 if (jm.status === 'Menunggu Verifikasi') badgeColor = 'bg-warning text-dark';
                 else if (jm.status === 'Siap Berangkat') badgeColor = 'bg-success';
-                
-                // Siapkan data JSON untuk dikirim ke Modal Detail
-                const jmJSON = encodeURIComponent(JSON.stringify({id: noReg, ...jm}));
-                
-                const row = `
-                  <tr>
-                    <!-- Disembunyikan di HP (d-none d-md-table-cell) -->
-                    <td class="ps-4 fw-bold text-primary whitespace-nowrap d-none d-md-table-cell">${noReg}</td>
-                    
-                    <td class="fw-bold">${jm.nama || '-'}</td>
-                    
-                    <!-- Disembunyikan di HP -->
-                    <td class="d-none d-md-table-cell">${jm.paket || '-'}</td>
-                    
-                    <td><span class="badge ${badgeColor}">${jm.status || '-'}</span></td>
-                    
-                    <td class="text-center whitespace-nowrap">
-                      <!-- Tombol Detail (Kaca Pembesar) -->
-                      <button class="btn btn-sm btn-primary me-1 shadow-sm" title="Detail Jemaah" onclick="lihatDetailJemaah('${jmJSON}')">
-                        <i class="bi bi-search"></i>
-                      </button>
-                      <button class="btn btn-sm btn-danger shadow-sm" onclick="hapusJemaah('${noReg}')">
-                        <i class="bi bi-trash"></i>
-                      </button>
+
+                // Encode data untuk dilempar ke fungsi Modal Detail
+                const encodedData = encodeURIComponent(JSON.stringify(jm));
+
+                // 3. CETAK BARIS TABEL (Gunakan tombol warna penuh/solid)
+                html += `
+                <tr>
+                    <td class="align-middle fw-bold">${jm.id}</td>
+                    <td class="align-middle">${jm.nama || '-'}</td>
+                    <td class="align-middle">${jm.paket || '-'}</td>
+                    <td class="align-middle">
+                        <span class="badge ${badgeColor} px-2 py-1">${jm.status || '-'}</span>
                     </td>
-                  </tr>
+                    <td class="align-middle whitespace-nowrap">
+                        <button class="btn btn-primary btn-sm me-1 shadow-sm" onclick="lihatDetailJemaah('${encodedData}')" title="Lihat Detail">
+                            <i class="bi bi-search"></i>
+                        </button>
+                        <button class="btn btn-danger btn-sm shadow-sm" onclick="hapusJemaah('${jm.id}')" title="Hapus Jemaah">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                </tr>
                 `;
-                tbody.insertAdjacentHTML('beforeend', row);
             });
         }
 
+        // 4. MASUKKAN DATA HTML KE DALAM TBODY
+        tbody.innerHTML = html;
+
+        // 5. BANGKITKAN KEMBALI DATATABLES DENGAN TOMBOL EXCEL
+        // Dilakukan HANYA setelah baris HTML (<tr>) benar-benar terisi
         $('#tabel-jemaah').DataTable({
             language: { 
                 url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/id.json',
                 emptyTable: "Belum ada data jemaah yang mendaftar."
             },
             pageLength: 10,
-            destroy: true,
+            // 'dom' dengan huruf B (Buttons) besar
+            dom: '<"d-flex flex-wrap justify-content-between align-items-center mb-3"Bf>rt<"d-flex flex-wrap justify-content-between align-items-center mt-3"ip>',
+            buttons: [
+                {
+                    extend: 'excelHtml5',
+                    text: '<i class="bi bi-file-earmark-excel me-1"></i> Download Excel',
+                    className: 'btn btn-success btn-sm shadow-sm fw-bold',
+                    title: 'Laporan Data Jemaah Umroh - ' + new Date().toLocaleDateString('id-ID'),
+                    exportOptions: {
+                        // Hanya ekspor kolom index 0 sampai 3 (Kolom Aksi di index 4 tidak diikutkan)
+                        columns: [0, 1, 2, 3] 
+                    }
+                }
+            ]
         });
 
     }).catch((error) => {
-        tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-danger">Gagal memuat: ${error.message}</td></tr>`;
+        console.error("Gagal memuat data jemaah:", error);
+        tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger fw-bold py-4"><i class="bi bi-exclamation-triangle me-2"></i>Gagal memuat data: ${error.message}</td></tr>`;
     });
 }
 

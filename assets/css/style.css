@@ -148,4 +148,8 @@ body {
     .table td, .table th { font-size: 0.85rem; padding: 10px 5px !important; }
     .btn-sm { padding: 0.3rem 0.5rem; font-size: 0.8rem; }
     .whitespace-nowrap { white-space: normal !important; }
+
+    /* Mengatur tombol Excel agar rapi di HP */
+    .dt-buttons { width: 100%; margin-bottom: 10px; }
+    .dt-buttons .btn { width: 100%; }
 }

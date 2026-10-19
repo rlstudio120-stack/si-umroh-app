@@ -12,7 +12,7 @@
   <!-- PLUGIN MODERN: SweetAlert2 & DataTables CSS -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
   <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
-  
+  <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.bootstrap5.min.css">
   <!-- Custom CSS (Opsional, pastikan Anda membuat file ini nanti) -->
   <link rel="stylesheet" href="assets/css/style.css">
 </head>
@@ -135,40 +135,89 @@
         <!-- AREA KONTEN KANAN -->
         <div class="p-4 flex-grow-1" style="background-color: #f8f9fa;">
           
-          <!-- HALAMAN DASHBOARD -->
-          <div id="subview-dashboard" class="sub-view">
-            <div class="row align-items-center mb-4">
-              <div class="col">
-                <h3 class="fw-bold text-dark mb-0">Dashboard Administrasi</h3>
-                <p class="text-muted mb-0">Ringkasan data jemaah PT Enka Imron Mandiri</p>
-              </div>
-            </div>
-            <div class="row">
-              <div class="col-md-3 mb-3">
-                <div class="card bg-primary text-white h-100"><div class="card-body">
-                  <h6 class="card-title">Total Jemaah</h6><h3 id="stat-total-jemaah" class="fw-bold">0</h3>
-                </div></div>
-              </div>
-              <div class="col-md-3 mb-3">
-                <div class="card bg-warning text-dark h-100"><div class="card-body">
-                  <h6 class="card-title">Menunggu Verifikasi</h6><h3 id="stat-menunggu" class="fw-bold">0</h3>
-                </div></div>
-              </div>
-              <div class="col-md-3 mb-3">
-                <div class="card bg-success text-white h-100"><div class="card-body">
-                  <h6 class="card-title">Siap Berangkat</h6><h2 id="stat-siap" class="fw-bold">0</h2>
-                </div></div>
-              </div>
-              <div class="col-md-3 mb-3">
-                  <div class="card bg-dark text-white h-100"><div class="card-body">
-                    <h6 class="card-title">Jadwal Terdekat</h6><h4 id="stat-jadwal" class="fw-bold">-</h4>
-                  </div></div>
-              </div>
+          <!-- === HALAMAN DASHBOARD === -->
+        <div id="view-dashboard" class="view-section">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+              <h3 class="fw-bold text-dark mb-0">Dashboard Ringkasan</h3>
+              <p class="text-muted">Pantau statistik pendaftaran dan paket umroh aktif</p>
             </div>
           </div>
 
+          <div class="row g-4 mb-4">
+            <!-- Card 1: Total Jemaah -->
+            <div class="col-md-3">
+              <div class="card border-0 shadow-sm bg-primary text-white h-100">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <p class="mb-1 opacity-75 small fw-bold">TOTAL JEMAAH</p>
+                      <h2 class="mb-0 fw-bold" id="dashTotalJemaah">0</h2>
+                    </div>
+                    <i class="bi bi-people fs-1 opacity-50"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Card 2: Menunggu Verifikasi -->
+            <div class="col-md-3">
+              <div class="card border-0 shadow-sm bg-warning text-dark h-100">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <p class="mb-1 opacity-75 small fw-bold">MENUNGGU VERIFIKASI</p>
+                      <h2 class="mb-0 fw-bold" id="dashMenunggu">0</h2>
+                    </div>
+                    <i class="bi bi-hourglass-split fs-1 opacity-50"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 3: Siap Berangkat -->
+            <div class="col-md-3">
+              <div class="card border-0 shadow-sm bg-success text-white h-100">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <p class="mb-1 opacity-75 small fw-bold">SIAP BERANGKAT</p>
+                      <h2 class="mb-0 fw-bold" id="dashSiap">0</h2>
+                    </div>
+                    <i class="bi bi-check-circle fs-1 opacity-50"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 4: Paket Aktif -->
+            <div class="col-md-3">
+              <div class="card border-0 shadow-sm bg-info text-dark h-100">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <p class="mb-1 opacity-75 small fw-bold">PAKET AKTIF</p>
+                      <h2 class="mb-0 fw-bold" id="dashTotalPaket">0</h2>
+                    </div>
+                    <i class="bi bi-box-seam fs-1 opacity-50"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Pesan Sambutan -->
+          <div class="card border-0 shadow-sm">
+            <div class="card-body p-4 text-center">
+              <img src="https://cdn-icons-png.flaticon.com/512/3233/3233483.png" alt="Welcome" width="120" class="mb-3 opacity-75">
+              <h5 class="fw-bold">Selamat Datang di Sistem Informasi Umroh</h5>
+              <p class="text-muted mb-0">Gunakan menu di sebelah kiri (atau tombol garis tiga di pojok atas pada HP) untuk mulai mengelola data paket dan pendaftaran jemaah.</p>
+            </div>
+          </div>
+        </div>
+
           <!-- HALAMAN MASTER PAKET -->
-          <div id="subview-paket" class="sub-view" style="display: none;">
+          <div id="view-paket" class="view-section" style="display: none;">
             <div class="d-flex justify-content-between align-items-center mb-3">
               <div>
                 <h3 class="fw-bold text-dark mb-0">Master Paket Umroh</h3>
@@ -201,7 +250,7 @@
           </div>
 
           <!-- HALAMAN DATA JEMAAH -->
-          <div id="subview-jemaah" class="sub-view" style="display: none;">
+          <div id="view-jemaah" class="view-section" style="display: none;">
             <div class="d-flex justify-content-between align-items-center mb-3">
               <div>
                 <h3 class="fw-bold text-dark mb-0">Manajemen Data Jemaah</h3>
@@ -904,6 +953,12 @@
   <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
 
+  <!-- SCRIPT TAMBAHAN UNTUK EXPORT EXCEL (Letakkan di sini) -->
+  <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.bootstrap5.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+
   <!-- 3. Firebase SDK (PASTIKAN HANYA ADA SATU SET INI SAJA) -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -914,10 +969,13 @@
   <script src="js/config/cloudinary.js"></script>
 
   <!-- 5. Logika Modul Aplikasi -->
-  <script src="js/app.js"></script>
+  
   <script src="js/modules/auth.js"></script>
+  <script src="js/modules/dashboard.js"></script>
   <script src="js/modules/paket.js"></script>
   <script src="js/modules/jemaah.js"></script>
+
+  <script src="js/app.js"></script>
 </body>
 </html>
   

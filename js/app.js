@@ -40,35 +40,29 @@ function tampilkanHalaman(viewId) {
 /**
  * Fungsi untuk berpindah sub-menu di dalam Panel Admin
  */
-function switchView(viewName) {
-    // 1. Atur warna menu aktif di Sidebar
-    const navLinks = document.querySelectorAll('.sidebar .nav-link');
-    navLinks.forEach(link => link.classList.remove('active'));
-    
-    // Cari menu yang di-klik, jika ada beri class active
-    const activeLink = document.querySelector(`.sidebar .nav-link[onclick="switchView('${viewName}')"]`);
-    if(activeLink) activeLink.classList.add('active');
-
-    // 2. Sembunyikan semua konten sub-halaman
-    const subViews = document.querySelectorAll('.sub-view');
-    subViews.forEach(view => {
-        view.style.display = 'none';
+// ==========================================
+// FUNGSI NAVIGASI HALAMAN (SPA)
+// ==========================================
+function switchView(viewId) {
+    // 1. Sembunyikan semua halaman yang memiliki class 'view-section'
+    const sections = document.querySelectorAll('.view-section');
+    sections.forEach(section => {
+        section.style.display = 'none';
     });
-    
-    // 3. Tampilkan sub-halaman yang dituju
-    const activeView = document.getElementById('subview-' + viewName);
-    if(activeView) {
-        activeView.style.display = 'block';
+
+    // 2. Tampilkan halaman yang dituju
+    const targetView = document.getElementById(`view-${viewId}`);
+    if (targetView) {
+        targetView.style.display = 'block';
     }
 
-    // ====================================================================
-    // 4. PEMICU (TRIGGER) UNTUK MEMUAT DATA OTOMATIS SAAT MENU DIKLIK
-    // Bagian ini yang sebelumnya hilang dari file Anda
-    // ====================================================================
-    if (viewName === 'paket') {
-        if (typeof loadDataPaket === 'function') loadDataPaket();
-    } else if (viewName === 'jemaah') {
-        if (typeof loadDataJemaah === 'function') loadDataJemaah();
+    // 3. Muat data sesuai dengan halaman yang dibuka
+    if (viewId === 'paket') {
+        loadDataPaket();
+    } else if (viewId === 'jemaah') {
+        loadDataJemaah();
+    } else if (viewId === 'dashboard') {
+        loadDashboardData();
     }
 }
 
