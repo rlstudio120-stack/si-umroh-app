@@ -63,6 +63,8 @@ function switchView(viewId) {
         loadDataJemaah();
     } else if (viewId === 'dashboard') {
         loadDashboardData();
+    } else if (viewId === 'dokumen') {
+        loadAntreanVerifikasi();
     }
 }
 

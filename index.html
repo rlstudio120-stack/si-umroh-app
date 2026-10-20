@@ -89,15 +89,21 @@
               </a>
             </li>
             <li class="nav-item mb-2">
-              <a href="#" class="nav-link text-white" onclick="switchView('paket'); bootstrap.Offcanvas.getInstance(document.getElementById('mobileMenu')).hide();">
-                <i class="bi bi-box-seam me-2"></i> Master Paket
-              </a>
-            </li>
-            <li class="nav-item mb-2">
               <a href="#" class="nav-link text-white" onclick="switchView('jemaah'); bootstrap.Offcanvas.getInstance(document.getElementById('mobileMenu')).hide();">
                 <i class="bi bi-people me-2"></i> Data Jemaah
               </a>
             </li>
+            <li class="nav-item mb-2">
+              <a href="#" class="nav-link text-white" onclick="switchView('dokumen'); bootstrap.Offcanvas.getInstance(document.getElementById('mobileMenu')).hide();">
+                <i class="bi bi-pen me-2"></i> Verfikasi Dokumen
+              </a>
+            </li>
+            <li class="nav-item mb-2">
+              <a href="#" class="nav-link text-white" onclick="switchView('paket'); bootstrap.Offcanvas.getInstance(document.getElementById('mobileMenu')).hide();">
+                <i class="bi bi-box-seam me-2"></i> Master Paket
+              </a>
+            </li>
+            
           </ul>
           <hr class="border-secondary mx-3 mb-3">
           <div class="px-3 pb-4">
@@ -648,7 +654,175 @@
                 </div>
               </div>
               <!-- === AKHIR MODAL EDIT JEMAAH === -->
+              <!-- === HALAMAN VERIFIKASI DOKUMEN === -->
+              <div id="view-dokumen" class="view-section" style="display: none;">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                  <div>
+                    <h3 class="fw-bold text-dark mb-0">Verifikasi Dokumen Jemaah</h3>
+                    <p class="text-muted">Kroscek dan perbaiki data jemaah berdasarkan berkas fisik</p>
+                  </div>
+                </div>
 
+                <!-- Tabel Antrean Verifikasi -->
+                <div class="card border-0 shadow-sm">
+                  <div class="card-body">
+                    <div class="table-responsive">
+                      <table class="table table-hover align-middle w-100" id="tabel-verifikasi">
+                        <thead class="table-light">
+                          <tr>
+                            <th class="text-primary">No. Registrasi</th>
+                            <th>Nama Jemaah</th>
+                            <th>Status Dokumen</th>
+                            <th class="text-end">Aksi</th>
+                          </tr>
+                        </thead>
+                        <tbody id="tbody-verifikasi">
+                          <tr>
+                            <td colspan="4" class="text-center py-4">
+                              <div class="spinner-border text-primary spinner-border-sm me-2"></div>Memuat antrean verifikasi...
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- === MODAL RUANG VERIFIKASI (FULLSCREEN) === -->
+              <div class="modal fade" id="modalRuangVerifikasi" data-bs-backdrop="static" tabindex="-1">
+                <div class="modal-dialog modal-fullscreen">
+                  <div class="modal-content">
+                    <!-- Header Gelap Meniru Versi GAS -->
+                    <div class="modal-header bg-dark text-white border-0 py-2">
+                      <h5 class="modal-title fs-6 fw-bold"><i class="bi bi-shield-check me-2"></i>Ruang Verifikasi & Koreksi Data</h5>
+                      <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    
+                    <div class="modal-body p-0">
+                      <div class="row g-0 h-100">
+                        
+                        <!-- SISI KIRI: PENAMPIL DOKUMEN (70%) -->
+                        <div class="col-lg-8 border-end h-100 d-flex flex-column">
+                          <!-- Tombol Navigasi Dokumen -->
+                          <div class="p-3 border-bottom bg-white d-flex gap-2 flex-wrap" id="dokumen-tabs">
+                            <button class="btn btn-outline-primary btn-sm fw-bold active"><i class="bi bi-person-vcard me-1"></i>KTP</button>
+                            <button class="btn btn-outline-primary btn-sm fw-bold"><i class="bi bi-people me-1"></i>KK</button>
+                            <button class="btn btn-outline-primary btn-sm fw-bold"><i class="bi bi-journal-text me-1"></i>Paspor</button>
+                            <!-- Tombol ini nanti akan di-generate otomatis sesuai dokumen yang ada -->
+                          </div>
+                          <!-- Area Gambar Dokumen -->
+                          <div class="flex-grow-1 bg-dark bg-opacity-75 d-flex align-items-center justify-content-center p-4" id="dokumen-viewer">
+                            <h1 class="text-white fw-bold display-4">KTP</h1>
+                            <!-- Nanti elemen <img> akan disuntikkan ke sini -->
+                          </div>
+                        </div>
+                        
+                        <!-- SISI KANAN: FORM KOREKSI & KEPUTUSAN (30%) -->
+                        <div class="col-lg-4 h-100 d-flex flex-column bg-white border-start">
+                          
+                          <!-- 1. HEADER KANAN (Tetap di atas) -->
+                          <div class="p-3 border-bottom shadow-sm z-index-1">
+                            <h6 class="fw-bold text-primary mb-1"><i class="bi bi-person-lines-fill me-1"></i>Koreksi Data Jemaah</h6>
+                            <span class="badge bg-dark" id="verif-info-reg">REG-XXX (Paket)</span>
+                            <small class="d-block mt-2 text-muted" style="font-size: 0.8rem;">Sesuaikan data di bawah ini dengan gambar dokumen.</small>
+                          </div>
+                          
+                          <!-- 2. AREA FORM (Bisa di-scroll) -->
+                          <div class="p-3 flex-grow-1 overflow-auto" style="max-height: calc(100vh - 250px);">
+                            
+                            <!-- Blok: Data Diri Jemaah -->
+                            <div class="mb-4">
+                              <span class="badge bg-primary mb-2"><i class="bi bi-1-circle me-1"></i>Data Diri Jemaah</span>
+                              <div class="mb-2">
+                                <label class="form-label fw-bold mb-1" style="font-size: 0.8rem;">Nama Sesuai KTP/Paspor</label>
+                                <input type="text" class="form-control form-control-sm" id="verif-nama">
+                              </div>
+                              <div class="row g-2 mb-2">
+                                <div class="col-6">
+                                  <label class="form-label fw-bold mb-1" style="font-size: 0.8rem;">NIK</label>
+                                  <input type="text" class="form-control form-control-sm" id="verif-nik">
+                                </div>
+                                <div class="col-6">
+                                  <label class="form-label fw-bold mb-1" style="font-size: 0.8rem;">No. HP</label>
+                                  <input type="text" class="form-control form-control-sm" id="verif-hp">
+                                </div>
+                              </div>
+                              <div class="mb-2">
+                                <label class="form-label fw-bold mb-1" style="font-size: 0.8rem;">Alamat Lengkap</label>
+                                <textarea class="form-control form-control-sm" id="verif-alamat" rows="2"></textarea>
+                              </div>
+                            </div>
+
+                            <!-- Blok: Data Mahram -->
+                            <div class="mb-4 border-top pt-3">
+                              <span class="badge bg-info text-dark mb-2"><i class="bi bi-2-circle me-1"></i>Data Mahram</span>
+                              <div class="row g-2 mb-2">
+                                <div class="col-12">
+                                  <label class="form-label fw-bold mb-1" style="font-size: 0.8rem;">Nama Mahram</label>
+                                  <input type="text" class="form-control form-control-sm" id="verif-nama-mahram">
+                                </div>
+                                <div class="col-6">
+                                  <label class="form-label fw-bold mb-1" style="font-size: 0.8rem;">Hubungan</label>
+                                  <input type="text" class="form-control form-control-sm" id="verif-hubungan-mahram" placeholder="Cth: Suami/Ayah">
+                                </div>
+                                <div class="col-6">
+                                  <label class="form-label fw-bold mb-1" style="font-size: 0.8rem;">No. HP Mahram</label>
+                                  <input type="text" class="form-control form-control-sm" id="verif-hp-mahram">
+                                </div>
+                              </div>
+                            </div>
+
+                            <!-- Blok: Data Paspor -->
+                            <div class="mb-2 border-top pt-3">
+                              <span class="badge bg-success mb-2"><i class="bi bi-3-circle me-1"></i>Data Paspor</span>
+                              <div class="mb-2">
+                                <label class="form-label fw-bold mb-1" style="font-size: 0.8rem;">Nama di Paspor</label>
+                                <input type="text" class="form-control form-control-sm" id="verif-nama-paspor">
+                              </div>
+                              <div class="row g-2 mb-2">
+                                <div class="col-6">
+                                  <label class="form-label fw-bold mb-1" style="font-size: 0.8rem;">No. Paspor</label>
+                                  <input type="text" class="form-control form-control-sm" id="verif-no-paspor">
+                                </div>
+                                <div class="col-6">
+                                  <label class="form-label fw-bold mb-1" style="font-size: 0.8rem;">Kantor Imigrasi</label>
+                                  <input type="text" class="form-control form-control-sm" id="verif-imigrasi">
+                                </div>
+                              </div>
+                            </div>
+                            
+                          </div>
+                          
+                          <!-- 3. AREA KEPUTUSAN (Terkunci di bawah) -->
+                          <div class="p-3 bg-light border-top mt-auto shadow">
+                            <div class="mb-2">
+                              <label class="form-label fw-bold text-dark" style="font-size: 0.85rem;"><i class="bi bi-check2-square me-1"></i>Penilaian Verifikasi</label>
+                              <select class="form-select form-select-sm border-warning fw-bold shadow-sm" id="verif-status">
+                                <option value="Menunggu Verifikasi">Menunggu Verifikasi</option>
+                                <option value="Disetujui" class="text-success">Valid & Disetujui (Siap Berangkat)</option>
+                                <option value="Ditolak" class="text-danger">Ditolak (Butuh Revisi)</option>
+                              </select>
+                            </div>
+                            <div class="mb-3">
+                              <textarea class="form-control form-control-sm shadow-sm" id="verif-catatan" rows="2" placeholder="Catatan/Alasan revisi (wajib jika ditolak)"></textarea>
+                            </div>
+                            
+                            <input type="hidden" id="verif-id-jemaah">
+                            <button class="btn btn-warning w-100 fw-bold rounded-2 py-2 shadow-sm" onclick="simpanKeputusan()">
+                              <i class="bi bi-save me-2"></i>Update & Simpan
+                            </button>
+                          </div>
+                          
+                        </div>
+                        <!-- AKHIR SISI KANAN -->
+                        
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- === AKHIR MODAL RUANG VERIFIKASI === -->
+              <!-- === AKHIR HALAMAN VERIFIKASI === -->
         </div>
         
       </div>
@@ -974,6 +1148,7 @@
   <script src="js/modules/dashboard.js"></script>
   <script src="js/modules/paket.js"></script>
   <script src="js/modules/jemaah.js"></script>
+  <script src="js/modules/verifikasi.js"></script>
 
   <script src="js/app.js"></script>
 </body>
