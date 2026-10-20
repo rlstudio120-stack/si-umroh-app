@@ -2,1157 +2,375 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Al Imron Umroh Travel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal Jemaah - Al Imron Travel</title>
   
-  <!-- Bootstrap 5 CSS & Icons -->
+  <!-- Bootstrap 5 & Icons -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-
-  <!-- PLUGIN MODERN: SweetAlert2 & DataTables CSS -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
-  <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.bootstrap5.min.css">
-  <!-- Custom CSS (Opsional, pastikan Anda membuat file ini nanti) -->
-  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+  
+  <style>
+    body { 
+        background-color: #f8f9fa; 
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .hero-section {
+        background-color: #004ba0;
+        padding: 60px 0 100px 0;
+        color: white;
+    }
+    .search-card {
+        margin-top: -60px;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    }
+    .btn-lacak { background-color: #004ba0; border: none; }
+    .btn-lacak:hover { background-color: #003a80; }
+    
+    /* Styling khusus area hasil */
+    .result-label { font-weight: 500; color: #6c757d; }
+    .result-value { font-weight: bold; color: #212529; }
+    .doc-item { border-bottom: 1px solid #f0f0f0; padding: 12px 0; }
+    .doc-item:last-child { border-bottom: none; }
+    .badge-status { width: 80px; text-align: center; }
+  </style>
 </head>
 <body>
 
-  <div id="app-container">
-    
-    <!-- TAMPILAN PUBLIK / TAMU -->
-    <div id="view-public" class="app-view">
-      <!-- Navigasi Atas -->
-      <nav class="navbar navbar-dark bg-transparent position-absolute w-100 p-3" style="z-index: 10;">
-        <div class="container">
-          <a class="navbar-brand fw-bold" href="#">🕋 Al Imron Travel</a>
-          <a href="login.html" class="btn btn-warning btn-sm fw-bold rounded-pill px-3 shadow-sm">Masuk Petugas</a>
-        </div>
-      </nav>
-
-      <!-- Hero Section Berwarna -->
-      <div class="hero-section text-center pt-5">
-        <div class="container mt-5">
-          <h1 class="fw-bold display-5 mb-3">Lacak & Lengkapi<br>Berkas Umroh Anda</h1>
-          <p class="lead opacity-75">Masukkan Nomor Registrasi untuk memantau status keberangkatan secara real-time.</p>
-        </div>
-      </div>
-
-      <!-- Kotak Pencarian yang Menumpuk di atas Hero -->
-      <div class="container" style="position: relative; z-index: 2;">
-        <div class="row justify-content-center">
-          <div class="col-md-8 col-lg-6">
-            <div class="card p-4">
-              <form id="formCekStatus">
-                <div class="input-group input-group-lg mb-3 shadow-sm rounded-pill overflow-hidden border">
-                  <input type="text" class="form-control border-0 bg-light px-4" placeholder="Cth: REG-2606-0001" required>
-                  <button class="btn btn-primary px-4" type="submit">Lacak Data</button>
-                </div>
-              </form>
-              <div class="text-center mt-3">
-                <span class="text-muted small">Belum mendaftar?</span>
-                <!-- Tombol Pendaftaran berwarna Oranye/Kuning -->
-                <button class="btn btn-warning text-dark fw-bold ms-2 px-3 py-1 rounded-pill">Daftar Umroh</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+  <!-- NAVBAR PUBLIK -->
+  <nav class="navbar navbar-dark shadow-sm" style="background-color: #004ba0;">
+    <div class="container">
+      <a class="navbar-brand fw-bold" href="#">
+        🕋 Al Imron Travel
+      </a>
+      <a href="https://www.enkaimronmandiri.com" target="_blank" class="btn btn-warning rounded-pill fw-bold btn-sm px-4 shadow-sm">
+        <i class="bi bi-globe me-1"></i>Website Resmi
+      </a>
     </div>
-    
-    <!-- TAMPILAN PANEL ADMIN (DASHBOARD UTAMA) -->
-    <div id="view-main" class="app-view" style="display: none;">
-      <!-- ============================================== -->
-      <!-- MOBILE NAVBAR (Tampil HANYA di layar HP) -->
-      <!-- ============================================== -->
-      <nav class="navbar navbar-dark bg-primary d-md-none fixed-top shadow-sm">
-        <div class="container-fluid">
-          <span class="navbar-brand fw-bold mb-0 h5"><i class="bi bi-airplane-engines me-2"></i>SI Umroh</span>
-          <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileMenu" aria-controls="mobileMenu">
-            <span class="navbar-toggler-icon"></span>
-          </button>
-        </div>
-      </nav>
+  </nav>
 
-      <!-- OFFCANVAS MENU MOBILE -->
-      <div class="offcanvas offcanvas-start bg-dark text-white d-md-none" tabindex="-1" id="mobileMenu" style="width: 260px;">
-        <div class="offcanvas-header border-bottom border-secondary">
-          <h5 class="offcanvas-title fw-bold"><i class="bi bi-grid-fill me-2"></i>Menu Navigasi</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-        </div>
-        <div class="offcanvas-body p-0 d-flex flex-column">
-          <ul class="nav nav-pills flex-column mb-auto p-3">
-            <!-- Perhatikan: Kita tambahkan fungsi untuk menutup offcanvas otomatis saat menu diklik -->
-            <li class="nav-item mb-2">
-              <a href="#" class="nav-link text-white" onclick="switchView('dashboard'); bootstrap.Offcanvas.getInstance(document.getElementById('mobileMenu')).hide();">
-                <i class="bi bi-speedometer2 me-2"></i> Dashboard
-              </a>
-            </li>
-            <li class="nav-item mb-2">
-              <a href="#" class="nav-link text-white" onclick="switchView('jemaah'); bootstrap.Offcanvas.getInstance(document.getElementById('mobileMenu')).hide();">
-                <i class="bi bi-people me-2"></i> Data Jemaah
-              </a>
-            </li>
-            <li class="nav-item mb-2">
-              <a href="#" class="nav-link text-white" onclick="switchView('dokumen'); bootstrap.Offcanvas.getInstance(document.getElementById('mobileMenu')).hide();">
-                <i class="bi bi-pen me-2"></i> Verfikasi Dokumen
-              </a>
-            </li>
-            <li class="nav-item mb-2">
-              <a href="#" class="nav-link text-white" onclick="switchView('paket'); bootstrap.Offcanvas.getInstance(document.getElementById('mobileMenu')).hide();">
-                <i class="bi bi-box-seam me-2"></i> Master Paket
-              </a>
-            </li>
-            
-          </ul>
-          <hr class="border-secondary mx-3 mb-3">
-          <div class="px-3 pb-4">
-            <!-- Ganti 'logout()' dengan fungsi logout yang Anda gunakan di auth.js -->
-            <button class="btn btn-danger w-100 fw-bold" onclick="logout()">
-              <i class="bi bi-box-arrow-right me-2"></i> Keluar
-            </button>
-          </div>
-        </div>
-      </div>
-      <!-- === AKHIR MOBILE NAVBAR === -->
-      <div class="d-flex">
-        
-        <!-- SIDEBAR -->
-        <div class="text-white p-3 sidebar" style="width: 250px; min-height: 100vh; background-color:#003152;">
-          <div class="text-center mb-4">
-            <h4 class="mt-2">Panel Admin</h4>
-          </div>
-          <hr>
-          <ul class="nav flex-column">
-            <li class="nav-item"><a href="#" class="nav-link text-white active" onclick="switchView('dashboard')">Dashboard</a></li>
-            <li class="nav-item"><a href="#" class="nav-link text-white" onclick="switchView('jemaah')">Data Jemaah</a></li>
-            <li class="nav-item"><a href="#" class="nav-link text-white" onclick="switchView('dokumen')">Verifikasi Dokumen</a></li>
-            <li class="nav-item"><a href="#" class="nav-link text-white" onclick="switchView('paket')">Master Paket</a></li>
-            <!-- Menu lain ditambahkan di sini -->
-            <hr class="border-secondary mt-4 mb-2">
-            <li class="nav-item">
-              <a href="#" class="nav-link text-danger fw-bold" onclick="logoutAdmin()">
-                <i class="bi bi-box-arrow-left"></i> Keluar (Logout)
-              </a>
-            </li>
-          </ul>
-        </div>
-        
-        <!-- AREA KONTEN KANAN -->
-        <div class="p-4 flex-grow-1" style="background-color: #f8f9fa;">
+  <!-- AREA BIRU (HERO SECTION) -->
+  <div class="hero-section text-center">
+    <div class="container">
+      <h1 class="display-5 fw-bold mb-3">Lacak & Lengkapi<br>Berkas Umroh Anda</h1>
+      <p class="lead opacity-75 fs-6">Masukkan Nomor Registrasi untuk memantau status keberangkatan secara real-time.</p>
+    </div>
+  </div>
+
+  <!-- AREA KOTAK PENCARIAN -->
+  <div class="container mb-4">
+    <div class="row justify-content-center">
+      <div class="col-md-8 col-lg-7">
+        <div class="card border-0 search-card bg-white p-4 p-md-5">
           
-          <!-- === HALAMAN DASHBOARD === -->
-        <div id="view-dashboard" class="view-section">
-          <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
-              <h3 class="fw-bold text-dark mb-0">Dashboard Ringkasan</h3>
-              <p class="text-muted">Pantau statistik pendaftaran dan paket umroh aktif</p>
+          <!-- Form Pencarian (Tetap di halaman yang sama) -->
+          <form id="formPencarian">
+            <div class="input-group input-group-lg mb-4 shadow-sm rounded-pill overflow-hidden border">
+              <input type="text" class="form-control border-0 px-4 fs-6" id="inputNoReg" placeholder="Cth: REG-2606-0001" required>
+              <button class="btn btn-primary btn-lacak px-4 fw-bold fs-6" type="submit">Lacak Data</button>
             </div>
+          </form>
+
+          <div class="text-center mt-2">
+            <span class="text-muted small me-2">Belum mendaftar?</span>
+            <a href="daftar.html" class="btn btn-warning rounded-pill fw-bold px-4 btn-sm shadow-sm text-dark">
+              Daftar Umroh
+            </a>
           </div>
 
-          <div class="row g-4 mb-4">
-            <!-- Card 1: Total Jemaah -->
-            <div class="col-md-3">
-              <div class="card border-0 shadow-sm bg-primary text-white h-100">
-                <div class="card-body">
-                  <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                      <p class="mb-1 opacity-75 small fw-bold">TOTAL JEMAAH</p>
-                      <h2 class="mb-0 fw-bold" id="dashTotalJemaah">0</h2>
-                    </div>
-                    <i class="bi bi-people fs-1 opacity-50"></i>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <!-- Card 2: Menunggu Verifikasi -->
-            <div class="col-md-3">
-              <div class="card border-0 shadow-sm bg-warning text-dark h-100">
-                <div class="card-body">
-                  <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                      <p class="mb-1 opacity-75 small fw-bold">MENUNGGU VERIFIKASI</p>
-                      <h2 class="mb-0 fw-bold" id="dashMenunggu">0</h2>
-                    </div>
-                    <i class="bi bi-hourglass-split fs-1 opacity-50"></i>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Card 3: Siap Berangkat -->
-            <div class="col-md-3">
-              <div class="card border-0 shadow-sm bg-success text-white h-100">
-                <div class="card-body">
-                  <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                      <p class="mb-1 opacity-75 small fw-bold">SIAP BERANGKAT</p>
-                      <h2 class="mb-0 fw-bold" id="dashSiap">0</h2>
-                    </div>
-                    <i class="bi bi-check-circle fs-1 opacity-50"></i>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Card 4: Paket Aktif -->
-            <div class="col-md-3">
-              <div class="card border-0 shadow-sm bg-info text-dark h-100">
-                <div class="card-body">
-                  <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                      <p class="mb-1 opacity-75 small fw-bold">PAKET AKTIF</p>
-                      <h2 class="mb-0 fw-bold" id="dashTotalPaket">0</h2>
-                    </div>
-                    <i class="bi bi-box-seam fs-1 opacity-50"></i>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <!-- Pesan Sambutan -->
-          <div class="card border-0 shadow-sm">
-            <div class="card-body p-4 text-center">
-              <img src="https://cdn-icons-png.flaticon.com/512/3233/3233483.png" alt="Welcome" width="120" class="mb-3 opacity-75">
-              <h5 class="fw-bold">Selamat Datang di Sistem Informasi Umroh</h5>
-              <p class="text-muted mb-0">Gunakan menu di sebelah kiri (atau tombol garis tiga di pojok atas pada HP) untuk mulai mengelola data paket dan pendaftaran jemaah.</p>
-            </div>
-          </div>
         </div>
-
-          <!-- HALAMAN MASTER PAKET -->
-          <div id="view-paket" class="view-section" style="display: none;">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-              <div>
-                <h3 class="fw-bold text-dark mb-0">Master Paket Umroh</h3>
-                <p class="text-muted">Kelola jenis paket, durasi, dan harga</p>
-              </div>
-              <button class="btn btn-primary" onclick="bukaModalPaket()">+ Tambah Paket</button>
-            </div>
-            
-            <div class="card shadow-sm border-0">
-              <div class="card-body p-2">
-                <div class="table-responsive">
-                  <table id="tabel-paket" class="table table-hover align-middle mb-0 w-100">
-                    <thead class="table-light">
-                      <tr>
-                        <th class="ps-4">Nama Paket</th>
-                        <th>Durasi</th>
-                        <th>Harga (Rp)</th>
-                        <th>Kuota</th>
-                        <th>Status</th>
-                        <th class="text-center">Aksi</th>
-                      </tr>
-                    </thead>
-                    <tbody id="tabel-paket-body">
-                      <tr><td colspan="6" class="text-center py-4 text-muted">Memuat data paket...</td></tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- HALAMAN DATA JEMAAH -->
-          <div id="view-jemaah" class="view-section" style="display: none;">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-              <div>
-                <h3 class="fw-bold text-dark mb-0">Manajemen Data Jemaah</h3>
-                <p class="text-muted">Kelola data pendaftaran dan status keberangkatan</p>
-              </div>
-              <div>
-                <button class="btn btn-primary shadow-sm" onclick="bukaModalTambahJemaah()">
-                  <i class="bi bi-person-plus"></i> Pendaftaran Baru
-                </button>
-              </div>
-            </div>
-
-            <div class="card shadow-sm border-0">
-              <div class="card-body p-2">
-                <div class="table-responsive">
-                  <table id="tabel-jemaah" class="table table-hover align-middle mb-0 w-100">
-                    <thead class="table-light">
-                      <tr>
-                        <th class="ps-4 d-none d-md-table-cell">No. Registrasi</th>
-                        <th>Nama Jemaah</th>
-                        <th class="d-none d-md-table-cell">Paket</th>
-                        <th>Status</th>
-                        <th class="text-center">Aksi</th>
-                      </tr>
-                    </thead>
-                    <tbody id="tabel-jemaah-body">
-                      <tr><td colspan="5" class="text-center py-4 text-muted">Memuat data jemaah...</td></tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </div>
-          <!-- ============================================== -->
-          <!-- MODAL DETAIL JEMAAH (DESAIN BARU) -->
-          <!-- ============================================== -->
-          <div class="modal fade" id="modalDetailJemaah" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-xl modal-dialog-centered">
-              <div class="modal-content border-0 shadow-lg bg-light">
-                <div class="modal-header bg-dark text-white">
-                  <h5 class="modal-title fw-bold"><i class="bi bi-person-vcard me-2"></i>Profil Detail Jemaah</h5>
-                  <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" onclick="this.blur()"></button>
-                </div>
-                <div class="modal-body p-4">
-                  
-                  <div class="row g-4">
-                    <!-- === KOLOM KIRI (FOTO & STATUS BERKAS) === -->
-                    <div class="col-lg-4">
-                      
-                      <!-- Card Profil Singkat -->
-                      <div class="card border-0 shadow-sm mb-3">
-                        <div class="card-body text-center">
-                          <img src="https://via.placeholder.com/150" id="detFoto" class="rounded mb-3" style="width: 150px; height: 200px; object-fit: cover; border: 2px solid #eee;" alt="Foto Jemaah">
-                          <button class="btn btn-primary btn-sm w-100 mb-3" onclick="document.getElementById('btnEditDariDetail').click()"><i class="bi bi-cloud-upload"></i> Ganti / Upload Pass Foto</button>
-                          
-                          <h5 class="fw-bold text-primary mb-1" id="detNamaSingkat">-</h5>
-                          <div class="bg-dark text-white rounded px-2 py-1 mb-3 d-inline-block fw-bold small" id="detNoReg">-</div>
-                          
-                          <div id="detStatusBadge" class="mb-4"></div>
-                          
-                          <div class="text-start border-top pt-3">
-                            <p class="mb-1 text-muted small">Paket Pilihan:</p>
-                            <h6 class="fw-bold mb-3" id="detPaketPilihan">-</h6>
-                            <p class="mb-1 text-muted small">Tanggal Mendaftar:</p>
-                            <h6 class="fw-bold mb-0" id="detTglDaftar">-</h6>
-                          </div>
-                        </div>
-                      </div>
-
-                      <!-- Card Status Fisik Berkas -->
-                      <div class="card border-0 shadow-sm">
-                        <div class="card-body">
-                          <h6 class="fw-bold mb-3">Status Fisik Berkas</h6>
-                          <table class="table table-sm table-borderless align-middle mb-0 small">
-                            <!-- Input File Tersembunyi untuk proses Upload Langsung -->
-                            <input type="file" id="updFileKtp" class="d-none" accept="image/*" onchange="prosesUpdateBerkas('Ktp')">
-                            <input type="file" id="updFileKk" class="d-none" accept="image/*" onchange="prosesUpdateBerkas('Kk')">
-                            <input type="file" id="updFileNikah" class="d-none" accept="image/*" onchange="prosesUpdateBerkas('Nikah')">
-                            <input type="file" id="updFilePaspor" class="d-none" accept="image/*" onchange="prosesUpdateBerkas('Paspor')">
-                            <input type="file" id="updFileLahir" class="d-none" accept="image/*" onchange="prosesUpdateBerkas('Lahir')">
-
-                            <tr>
-                              <td class="fw-bold">KTP</td>
-                              <td class="text-end" id="badgeKtp"></td>
-                              <td width="1%"><button class="btn btn-info btn-sm py-0" onclick="document.getElementById('updFileKtp').click()">Update</button></td>
-                            </tr>
-                            <tr>
-                              <td class="fw-bold">Kartu Keluarga</td>
-                              <td class="text-end" id="badgeKk"></td>
-                              <td width="1%"><button class="btn btn-info btn-sm py-0" onclick="document.getElementById('updFileKk').click()">Update</button></td>
-                            </tr>
-                            <tr>
-                              <td class="fw-bold">Akte / Buku Nikah</td>
-                              <td class="text-end" id="badgeNikah"></td>
-                              <td width="1%"><button class="btn btn-info btn-sm py-0" onclick="document.getElementById('updFileNikah').click()">Update</button></td>
-                            </tr>
-                            <tr>
-                              <td class="fw-bold">Paspor</td>
-                              <td class="text-end" id="badgePaspor"></td>
-                              <td width="1%"><button class="btn btn-info btn-sm py-0" onclick="document.getElementById('updFilePaspor').click()">Update</button></td>
-                            </tr>
-                            <tr>
-                              <td class="fw-bold">Akta Kelahiran</td>
-                              <td class="text-end" id="badgeLahir"></td>
-                              <td width="1%"><button class="btn btn-info btn-sm py-0" onclick="document.getElementById('updFileLahir').click()">Update</button></td>
-                            </tr>
-                          </table>
-                        </div>
-                      </div>
-
-                    </div>
-
-                    <!-- === KOLOM KANAN (INFORMASI DETAIL) === -->
-                    <div class="col-lg-8">
-                      
-                      <!-- Informasi Pribadi -->
-                      <div class="card border-0 shadow-sm mb-3">
-                        <div class="card-body p-4">
-                          <h6 class="text-primary fw-bold border-bottom pb-2 mb-3">Informasi Pribadi</h6>
-                          <div class="row mb-2">
-                            <div class="col-md-4 text-muted small">NIK KTP</div>
-                            <div class="col-md-8 fw-bold" id="detNikKtp">-</div>
-                          </div>
-                          <div class="row mb-2">
-                            <div class="col-md-4 text-muted small">Tempat, Tgl Lahir</div>
-                            <div class="col-md-8 fw-bold" id="detTempatTglLahir">-</div>
-                          </div>
-                          <div class="row mb-2">
-                            <div class="col-md-4 text-muted small">Jenis Kelamin</div>
-                            <div class="col-md-8 fw-bold" id="detJk">-</div>
-                          </div>
-                          <div class="row mb-2">
-                            <div class="col-md-4 text-muted small">Alamat Lengkap</div>
-                            <div class="col-md-8 fw-bold" id="detAlamat">-</div>
-                          </div>
-                          <div class="row mb-2">
-                            <div class="col-md-4 text-muted small">No. Handphone</div>
-                            <div class="col-md-8 fw-bold" id="detNoHp">-</div>
-                          </div>
-                          <div class="row mb-2">
-                            <div class="col-md-4 text-muted small">Email</div>
-                            <div class="col-md-8 fw-bold" id="detEmail">-</div>
-                          </div>
-                        </div>
-                      </div>
-
-                      <!-- Keimigrasian & Mahram -->
-                      <div class="card border-0 shadow-sm mb-3">
-                        <div class="card-body p-4">
-                          <h6 class="text-primary fw-bold border-bottom pb-2 mb-3">Keimigrasian & Mahram</h6>
-                          <div class="row mb-2">
-                            <div class="col-md-4 text-muted small">Nomor Paspor</div>
-                            <div class="col-md-8 fw-bold" id="detNoPaspor">-</div>
-                          </div>
-                          <div class="row mb-2">
-                            <div class="col-md-4 text-muted small">Tempat Terbit</div>
-                            <div class="col-md-8 fw-bold" id="detTempatTerbit">-</div>
-                          </div>
-                          <div class="row mb-2">
-                            <div class="col-md-4 text-muted small">Masa Berlaku</div>
-                            <div class="col-md-8 fw-bold" id="detMasaBerlaku">-</div>
-                          </div>
-                          <div class="row mb-2">
-                            <div class="col-md-4 text-muted small">Pendamping (Mahram)</div>
-                            <div class="col-md-8 fw-bold" id="detMahram">-</div>
-                          </div>
-                        </div>
-                      </div>
-
-                      <!-- Kontak Darurat -->
-                      <div class="card border-0 shadow-sm">
-                        <div class="card-body p-4">
-                          <h6 class="text-primary fw-bold border-bottom pb-2 mb-3">Kontak Darurat</h6>
-                          <div class="row mb-2">
-                            <div class="col-md-4 text-muted small">Nama Kontak</div>
-                            <div class="col-md-8 fw-bold" id="detDaruratNama">-</div>
-                          </div>
-                          <div class="row mb-2">
-                            <div class="col-md-4 text-muted small">Hubungan / No. HP</div>
-                            <div class="col-md-8 fw-bold" id="detDaruratHubHp">-</div>
-                          </div>
-                        </div>
-                      </div>
-
-                    </div>
-                  </div>
-
-                </div>
-                <div class="modal-footer bg-white border-top">
-                  <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Tutup</button>
-                  <button type="button" class="btn btn-primary fw-bold text-white px-3 shadow-sm me-2" id="btnCetakBukti">
-                    <i class="bi bi-printer"></i> Cetak Bukti
-                  </button>
-                  <button type="button" class="btn btn-warning fw-bold text-dark px-4 shadow-sm" id="btnEditDariDetail">
-                    <i class="bi bi-pencil-square"></i> Edit Data Jemaah
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-          <!-- === AKHIR MODAL DETAIL JEMAAH === -->
-             <!-- ============================================== -->
-              <!-- MODAL EDIT JEMAAH (DESAIN BARU 2 KOLOM) -->
-              <!-- ============================================== -->
-              <div class="modal fade" id="modalEditJemaah" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
-                <div class="modal-dialog modal-xl">
-                  <div class="modal-content bg-light">
-                    <div class="modal-header bg-warning text-dark border-0">
-                      <h5 class="modal-title fw-bold"><i class="bi bi-pencil-square me-2"></i>Form Edit Data Jemaah</h5>
-                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="this.blur()"></button>
-                    </div>
-                    <div class="modal-body">
-                      <form id="formEditJemaah" onsubmit="submitEditJemaah(event)">
-                        <input type="hidden" id="editReg">
-                        
-                        <div class="row g-4">
-                          <!-- === KOLOM KIRI === -->
-                          <div class="col-lg-6">
-                            
-                            <!-- 1. Pilihan Paket -->
-                            <div class="card border-0 shadow-sm mb-3">
-                              <div class="card-body">
-                                <h6 class="text-primary fw-bold border-bottom pb-2">1. Pilihan Paket</h6>
-                                <select class="form-select" id="editPaket" required></select>
-                              </div>
-                            </div>
-
-                            <!-- 2. Data Diri Jemaah -->
-                            <div class="card border-0 shadow-sm">
-                              <div class="card-body">
-                                <h6 class="text-primary fw-bold border-bottom pb-2">2. Data Diri Jemaah</h6>
-                                <div class="mb-2">
-                                  <label class="form-label small fw-bold">Nama</label>
-                                  <input type="text" class="form-control form-control-sm" id="editNama" required>
-                                </div>
-                                <div class="mb-2">
-                                  <label class="form-label small fw-bold">NIK</label>
-                                  <input type="text" class="form-control form-control-sm" id="editNik" required pattern="[0-9]{16}">
-                                </div>
-                                <div class="row mb-2">
-                                  <div class="col-6">
-                                    <label class="form-label small fw-bold">Tempat Lahir</label>
-                                    <input type="text" class="form-control form-control-sm" id="editTmpLahir" required>
-                                  </div>
-                                  <div class="col-6">
-                                    <label class="form-label small fw-bold">Tgl Lahir</label>
-                                    <input type="date" class="form-control form-control-sm" id="editTglLahir" required>
-                                  </div>
-                                </div>
-                                <div class="mb-2">
-                                  <label class="form-label small fw-bold">Jenis Kelamin</label>
-                                  <select class="form-select form-select-sm" id="editJk" required>
-                                    <option value="Laki-laki">Laki-laki</option>
-                                    <option value="Perempuan">Perempuan</option>
-                                  </select>
-                                </div>
-                                <div class="mb-2">
-                                  <label class="form-label small fw-bold">Alamat Lengkap</label>
-                                  <textarea class="form-control form-control-sm" id="editAlamat" rows="2" required></textarea>
-                                </div>
-                                <div class="row mb-2">
-                                  <div class="col-6">
-                                    <label class="form-label small fw-bold">Kota</label>
-                                    <input type="text" class="form-control form-control-sm" id="editKota" required>
-                                  </div>
-                                  <div class="col-6">
-                                    <label class="form-label small fw-bold">Provinsi</label>
-                                    <input type="text" class="form-control form-control-sm" id="editProvinsi" required>
-                                  </div>
-                                </div>
-                                <div class="row">
-                                  <div class="col-6">
-                                    <label class="form-label small fw-bold">No. HP</label>
-                                    <input type="text" class="form-control form-control-sm" id="editWa" required>
-                                  </div>
-                                  <div class="col-6">
-                                    <label class="form-label small fw-bold">Email</label>
-                                    <input type="email" class="form-control form-control-sm" id="editEmail">
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-
-                          </div>
-
-                          <!-- === KOLOM KANAN === -->
-                          <div class="col-lg-6">
-                            
-                            <!-- 3. Data Mahram -->
-                            <div class="card border-0 shadow-sm mb-3">
-                              <div class="card-body">
-                                <h6 class="text-primary fw-bold border-bottom pb-2">3. Data Mahram</h6>
-                                <div class="row">
-                                  <div class="col-6">
-                                    <label class="form-label small fw-bold">Nama Mahram</label>
-                                    <input type="text" class="form-control form-control-sm" id="editMahramNama">
-                                  </div>
-                                  <div class="col-6">
-                                    <label class="form-label small fw-bold">Hubungan</label>
-                                    <select class="form-select form-select-sm" id="editMahramHub">
-                                      <option value="">-- Pilih --</option>
-                                      <option value="Suami">Suami</option>
-                                      <option value="Istri">Istri</option>
-                                      <option value="Ayah">Ayah</option>
-                                      <option value="Ibu">Ibu</option>
-                                      <option value="Anak">Anak</option>
-                                      <option value="Saudara Kandung">Saudara Kandung</option>
-                                    </select>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-
-                            <!-- 4. Data Paspor -->
-                            <div class="card border-0 shadow-sm mb-3">
-                              <div class="card-body">
-                                <h6 class="text-primary fw-bold border-bottom pb-2">4. Data Paspor</h6>
-                                <div class="mb-2">
-                                  <label class="form-label small fw-bold">No. Paspor</label>
-                                  <input type="text" class="form-control form-control-sm" id="editPasporNo">
-                                </div>
-                                <div class="mb-2">
-                                  <label class="form-label small fw-bold">Tempat Terbit</label>
-                                  <input type="text" class="form-control form-control-sm" id="editPasporTempat">
-                                </div>
-                                <div class="row">
-                                  <div class="col-6">
-                                    <label class="form-label small fw-bold">Tgl. Terbit</label>
-                                    <input type="date" class="form-control form-control-sm" id="editPasporTgl">
-                                  </div>
-                                  <div class="col-6">
-                                    <label class="form-label small fw-bold">Tgl. Expired</label>
-                                    <input type="date" class="form-control form-control-sm" id="editPasporExp">
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-
-                            <!-- 5. Kontak Darurat -->
-                            <div class="card border-0 shadow-sm mb-3">
-                              <div class="card-body">
-                                <h6 class="text-primary fw-bold border-bottom pb-2">5. Kontak Darurat</h6>
-                                <div class="mb-2">
-                                  <label class="form-label small fw-bold">Nama Kontak</label>
-                                  <input type="text" class="form-control form-control-sm" id="editDaruratNama" required>
-                                </div>
-                                <div class="row">
-                                  <div class="col-6">
-                                    <label class="form-label small fw-bold">Hubungan</label>
-                                    <select class="form-select form-select-sm" id="editDaruratHub" required>
-                                      <option value="Suami">Suami</option>
-                                      <option value="Istri">Istri</option>
-                                      <option value="Anak">Anak</option>
-                                      <option value="Orang Tua">Orang Tua</option>
-                                      <option value="Saudara Kandung">Saudara Kandung</option>
-                                    </select>
-                                  </div>
-                                  <div class="col-6">
-                                    <label class="form-label small fw-bold">No. HP Darurat</label>
-                                    <input type="text" class="form-control form-control-sm" id="editDaruratHp" required>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-
-                            <!-- Group & Request -->
-                            <div class="row">
-                              <div class="col-6">
-                                <label class="form-label small fw-bold">Group Keluarga</label>
-                                <input type="text" class="form-control form-control-sm" id="editGrupKeluarga">
-                              </div>
-                              <div class="col-6">
-                                <label class="form-label small fw-bold">Request Khusus</label>
-                                <select class="form-select form-select-sm" id="editReqKhusus">
-                                  <option value="Tidak Ada">Tidak Ada</option>
-                                  <option value="Kursi Roda">Kursi Roda</option>
-                                  <option value="Kamar Khusus">Kamar Khusus</option>
-                                  <option value="Menu Makanan Khusus">Menu Makanan Khusus</option>
-                                </select>
-                              </div>
-                            </div>
-
-                          </div>
-                        </div>
-
-                    </div>
-                    <div class="modal-footer bg-white border-top">
-                      <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal" onclick="this.blur()">Batal</button>
-                      <button type="submit" class="btn btn-warning fw-bold text-dark px-4 shadow-sm" id="btnUpdateJemaah">
-                        <i class="bi bi-save"></i> Simpan Perubahan Data
-                      </button>
-                    </div>
-                    </form>
-                  </div>
-                </div>
-              </div>
-              <!-- === AKHIR MODAL EDIT JEMAAH === -->
-              <!-- === HALAMAN VERIFIKASI DOKUMEN === -->
-              <div id="view-dokumen" class="view-section" style="display: none;">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                  <div>
-                    <h3 class="fw-bold text-dark mb-0">Verifikasi Dokumen Jemaah</h3>
-                    <p class="text-muted">Kroscek dan perbaiki data jemaah berdasarkan berkas fisik</p>
-                  </div>
-                </div>
-
-                <!-- Tabel Antrean Verifikasi -->
-                <div class="card border-0 shadow-sm">
-                  <div class="card-body">
-                    <div class="table-responsive">
-                      <table class="table table-hover align-middle w-100" id="tabel-verifikasi">
-                        <thead class="table-light">
-                          <tr>
-                            <th class="text-primary">No. Registrasi</th>
-                            <th>Nama Jemaah</th>
-                            <th>Status Dokumen</th>
-                            <th class="text-end">Aksi</th>
-                          </tr>
-                        </thead>
-                        <tbody id="tbody-verifikasi">
-                          <tr>
-                            <td colspan="4" class="text-center py-4">
-                              <div class="spinner-border text-primary spinner-border-sm me-2"></div>Memuat antrean verifikasi...
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <!-- === MODAL RUANG VERIFIKASI (FULLSCREEN) === -->
-              <div class="modal fade" id="modalRuangVerifikasi" data-bs-backdrop="static" tabindex="-1">
-                <div class="modal-dialog modal-fullscreen">
-                  <div class="modal-content">
-                    <!-- Header Gelap Meniru Versi GAS -->
-                    <div class="modal-header bg-dark text-white border-0 py-2">
-                      <h5 class="modal-title fs-6 fw-bold"><i class="bi bi-shield-check me-2"></i>Ruang Verifikasi & Koreksi Data</h5>
-                      <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    
-                    <div class="modal-body p-0">
-                      <div class="row g-0 h-100">
-                        
-                        <!-- SISI KIRI: PENAMPIL DOKUMEN (70%) -->
-                        <div class="col-lg-8 border-end h-100 d-flex flex-column">
-                          <!-- Tombol Navigasi Dokumen -->
-                          <div class="p-3 border-bottom bg-white d-flex gap-2 flex-wrap" id="dokumen-tabs">
-                            <button class="btn btn-outline-primary btn-sm fw-bold active"><i class="bi bi-person-vcard me-1"></i>KTP</button>
-                            <button class="btn btn-outline-primary btn-sm fw-bold"><i class="bi bi-people me-1"></i>KK</button>
-                            <button class="btn btn-outline-primary btn-sm fw-bold"><i class="bi bi-journal-text me-1"></i>Paspor</button>
-                            <!-- Tombol ini nanti akan di-generate otomatis sesuai dokumen yang ada -->
-                          </div>
-                          <!-- Area Gambar Dokumen -->
-                          <div class="flex-grow-1 bg-dark bg-opacity-75 d-flex align-items-center justify-content-center p-4" id="dokumen-viewer">
-                            <h1 class="text-white fw-bold display-4">KTP</h1>
-                            <!-- Nanti elemen <img> akan disuntikkan ke sini -->
-                          </div>
-                        </div>
-                        
-                        <!-- SISI KANAN: FORM KOREKSI & KEPUTUSAN (30%) -->
-                        <div class="col-lg-4 h-100 d-flex flex-column bg-white border-start">
-                          
-                          <!-- 1. HEADER KANAN (Tetap di atas) -->
-                          <div class="p-3 border-bottom shadow-sm z-index-1">
-                            <h6 class="fw-bold text-primary mb-1"><i class="bi bi-person-lines-fill me-1"></i>Koreksi Data Jemaah</h6>
-                            <span class="badge bg-dark" id="verif-info-reg">REG-XXX (Paket)</span>
-                            <small class="d-block mt-2 text-muted" style="font-size: 0.8rem;">Sesuaikan data di bawah ini dengan gambar dokumen.</small>
-                          </div>
-                          
-                          <!-- 2. AREA FORM (Bisa di-scroll) -->
-                          <div class="p-3 flex-grow-1 overflow-auto" style="max-height: calc(100vh - 250px);">
-                            
-                            <!-- Blok: Data Diri Jemaah -->
-                            <div class="mb-4">
-                              <span class="badge bg-primary mb-2"><i class="bi bi-1-circle me-1"></i>Data Diri Jemaah</span>
-                              <div class="mb-2">
-                                <label class="form-label fw-bold mb-1" style="font-size: 0.8rem;">Nama Sesuai KTP/Paspor</label>
-                                <input type="text" class="form-control form-control-sm" id="verif-nama">
-                              </div>
-                              <div class="row g-2 mb-2">
-                                <div class="col-6">
-                                  <label class="form-label fw-bold mb-1" style="font-size: 0.8rem;">NIK</label>
-                                  <input type="text" class="form-control form-control-sm" id="verif-nik">
-                                </div>
-                                <div class="col-6">
-                                  <label class="form-label fw-bold mb-1" style="font-size: 0.8rem;">No. HP</label>
-                                  <input type="text" class="form-control form-control-sm" id="verif-hp">
-                                </div>
-                              </div>
-                              <div class="mb-2">
-                                <label class="form-label fw-bold mb-1" style="font-size: 0.8rem;">Alamat Lengkap</label>
-                                <textarea class="form-control form-control-sm" id="verif-alamat" rows="2"></textarea>
-                              </div>
-                            </div>
-
-                            <!-- Blok: Data Mahram -->
-                            <div class="mb-4 border-top pt-3">
-                              <span class="badge bg-info text-dark mb-2"><i class="bi bi-2-circle me-1"></i>Data Mahram</span>
-                              <div class="row g-2 mb-2">
-                                <div class="col-12">
-                                  <label class="form-label fw-bold mb-1" style="font-size: 0.8rem;">Nama Mahram</label>
-                                  <input type="text" class="form-control form-control-sm" id="verif-nama-mahram">
-                                </div>
-                                <div class="col-6">
-                                  <label class="form-label fw-bold mb-1" style="font-size: 0.8rem;">Hubungan</label>
-                                  <input type="text" class="form-control form-control-sm" id="verif-hubungan-mahram" placeholder="Cth: Suami/Ayah">
-                                </div>
-                                <div class="col-6">
-                                  <label class="form-label fw-bold mb-1" style="font-size: 0.8rem;">No. HP Mahram</label>
-                                  <input type="text" class="form-control form-control-sm" id="verif-hp-mahram">
-                                </div>
-                              </div>
-                            </div>
-
-                            <!-- Blok: Data Paspor -->
-                            <div class="mb-2 border-top pt-3">
-                              <span class="badge bg-success mb-2"><i class="bi bi-3-circle me-1"></i>Data Paspor</span>
-                              <div class="mb-2">
-                                <label class="form-label fw-bold mb-1" style="font-size: 0.8rem;">Nama di Paspor</label>
-                                <input type="text" class="form-control form-control-sm" id="verif-nama-paspor">
-                              </div>
-                              <div class="row g-2 mb-2">
-                                <div class="col-6">
-                                  <label class="form-label fw-bold mb-1" style="font-size: 0.8rem;">No. Paspor</label>
-                                  <input type="text" class="form-control form-control-sm" id="verif-no-paspor">
-                                </div>
-                                <div class="col-6">
-                                  <label class="form-label fw-bold mb-1" style="font-size: 0.8rem;">Kantor Imigrasi</label>
-                                  <input type="text" class="form-control form-control-sm" id="verif-imigrasi">
-                                </div>
-                              </div>
-                            </div>
-                            
-                          </div>
-                          
-                          <!-- 3. AREA KEPUTUSAN (Terkunci di bawah) -->
-                          <div class="p-3 bg-light border-top mt-auto shadow">
-                            <div class="mb-2">
-                              <label class="form-label fw-bold text-dark" style="font-size: 0.85rem;"><i class="bi bi-check2-square me-1"></i>Penilaian Verifikasi</label>
-                              <select class="form-select form-select-sm border-warning fw-bold shadow-sm" id="verif-status">
-                                <option value="Menunggu Verifikasi">Menunggu Verifikasi</option>
-                                <option value="Disetujui" class="text-success">Valid & Disetujui (Siap Berangkat)</option>
-                                <option value="Ditolak" class="text-danger">Ditolak (Butuh Revisi)</option>
-                              </select>
-                            </div>
-                            <div class="mb-3">
-                              <textarea class="form-control form-control-sm shadow-sm" id="verif-catatan" rows="2" placeholder="Catatan/Alasan revisi (wajib jika ditolak)"></textarea>
-                            </div>
-                            
-                            <input type="hidden" id="verif-id-jemaah">
-                            <button class="btn btn-warning w-100 fw-bold rounded-2 py-2 shadow-sm" onclick="simpanKeputusan()">
-                              <i class="bi bi-save me-2"></i>Update & Simpan
-                            </button>
-                          </div>
-                          
-                        </div>
-                        <!-- AKHIR SISI KANAN -->
-                        
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <!-- === AKHIR MODAL RUANG VERIFIKASI === -->
-              <!-- === AKHIR HALAMAN VERIFIKASI === -->
-        </div>
-        
-      </div>
-    </div>
-    
-  </div>
-
-
-  <!-- ============================================== -->
-  <!-- MODAL MASTER PAKET (Untuk Tambah/Edit) -->
-  <!-- ============================================== -->
-  <div class="modal fade" id="modalPaket" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header bg-primary text-white">
-          <h5 class="modal-title fw-bold" id="modalPktTitle">Tambah Paket Baru</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <form id="formPaket" onsubmit="submitPaket(event)">
-            <input type="hidden" id="pktId">
-            
-            <div class="mb-3">
-              <label class="form-label fw-bold">Nama Paket</label>
-              <input type="text" class="form-control" id="pktNama" placeholder="Contoh: Hemat 10 Hari (Promo)" required>
-            </div>
-            <div class="row mb-3">
-              <div class="col-6">
-                <label class="form-label fw-bold">Durasi (Hari)</label>
-                <input type="number" class="form-control" id="pktDurasi" required>
-              </div>
-              <div class="col-6">
-                <label class="form-label fw-bold">Kuota Jemaah</label>
-                <input type="number" class="form-control" id="pktKuota" required>
-              </div>
-            </div>
-            <div class="row mb-3">
-              <div class="col-6">
-                <label class="form-label fw-bold">Harga Paket (Rp)</label>
-                <input type="number" class="form-control" id="pktHarga" required>
-              </div>
-              <div class="col-6">
-                <label class="form-label fw-bold">Status Paket</label>
-                <select class="form-select" id="pktStatus">
-                  <option value="Aktif">Aktif</option>
-                  <option value="Nonaktif">Nonaktif / Tutup</option>
-                </select>
-              </div>
-            </div>
-        </div>
-        <div class="modal-footer bg-light">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="this.blur()">Batal</button>
-          <button type="submit" class="btn btn-primary" id="btnSimpanPaket">Simpan Paket</button>
-        </div>
-        </form>
       </div>
     </div>
   </div>
-  <!-- === AKHIR MODAL MASTER PAKET === -->
 
-  <!-- ============================================== -->
-  <!-- MODAL PENDAFTARAN JEMAAH (DESAIN BARU) -->
-  <!-- ============================================== -->
-  <div class="modal fade" id="modalJemaah" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
-    <div class="modal-dialog modal-xl"> <!-- Menggunakan modal-xl agar lebih lebar -->
-      <div class="modal-content">
-        <div class="modal-header bg-primary text-white">
-          <h5 class="modal-title fw-bold"><i class="bi bi-person-plus-fill me-2"></i>Form Pendaftaran Jemaah Baru</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" onclick="this.blur()"></button>
-        </div>
-        <div class="modal-body bg-light">
-          <form id="formTambahJemaah" onsubmit="submitJemaah(event)">
+  <!-- ========================================== -->
+  <!-- AREA HASIL PENCARIAN (AWALNYA DISEMBUNYIKAN) -->
+  <!-- ========================================== -->
+  <div class="container pb-5" id="areaHasil" style="display: none;">
+    <div class="row justify-content-center">
+      <div class="col-md-8 col-lg-7">
+        <div class="card border-0 shadow-sm" style="border-radius: 12px;">
+          <div class="card-body p-4 p-md-5">
             
-            <div class="row g-4">
-              <!-- ================= KOLOM KIRI ================= -->
-              <div class="col-lg-6">
+            <h5 class="text-primary fw-bold text-center mb-4">Hasil Pencarian</h5>
+            
+            <!-- Detail Informasi -->
+            <div class="row mb-2">
+              <div class="col-5 col-sm-4 result-label">Nama Jemaah</div>
+              <div class="col-7 col-sm-8 result-value">: <span id="hasilNama">-</span></div>
+            </div>
+            <div class="row mb-2">
+              <div class="col-5 col-sm-4 result-label">Paket Pilihan</div>
+              <div class="col-7 col-sm-8 result-value">: <span id="hasilPaket">-</span></div>
+            </div>
+            <div class="row mb-4">
+              <div class="col-5 col-sm-4 result-label">Status Pendaftaran</div>
+              <div class="col-7 col-sm-8 result-value">: <span class="badge" id="hasilStatus">-</span></div>
+            </div>
+
+            <!-- Progres Kesiapan -->
+            <div class="mb-4">
+              <div class="d-flex justify-content-between mb-1">
+                <span class="small result-label">Progres Administrasi Kesiapan:</span>
+                <span class="small fw-bold text-primary" id="teksProgres">0%</span>
+              </div>
+              <div class="progress" style="height: 10px;">
+                <div id="barProgres" class="progress-bar bg-success" role="progressbar" style="width: 0%;"></div>
+              </div>
+            </div>
+
+            <!-- Pesan Peringatan -->
+            <div class="alert alert-warning border-warning border-opacity-50 text-center small mb-4" style="background-color: #fff8e1;">
+              Mohon lengkapi persyaratan dokumen di bawah ini untuk mempercepat proses.
+            </div>
+
+            <!-- Kotak Dokumen -->
+            <div class="border rounded-3 p-3 p-md-4 bg-white shadow-sm">
+              <h6 class="fw-bold mb-3 text-dark"><i class="bi bi-folder2-open me-2"></i>Kelengkapan Berkas Fisik</h6>
+              
+              <!-- List Dokumen (Akan di-update oleh JavaScript) -->
+              <div id="listDokumen">
+                <!-- KTP -->
+                <div class="d-flex justify-content-between align-items-center doc-item">
+                  <span class="small text-dark">Scan KTP</span>
+                  <div><span class="badge badge-status me-2" id="badge-ktp">Memuat...</span><button class="btn btn-outline-primary btn-sm px-3 rounded-1" onclick="triggerUpload('ktp', 'Scan KTP')">Upload</button></div>
+                </div>
+                <!-- KK -->
+                <div class="d-flex justify-content-between align-items-center doc-item">
+                  <span class="small text-dark">Kartu Keluarga</span>
+                  <div><span class="badge badge-status me-2" id="badge-kk">Memuat...</span><button class="btn btn-outline-primary btn-sm px-3 rounded-1" onclick="triggerUpload('kk', 'Kartu Keluarga')">Upload</button></div>
+                </div>
+                <!-- Paspor -->
+                <div class="d-flex justify-content-between align-items-center doc-item">
+                  <span class="small text-dark">Paspor</span>
+                  <div><span class="badge badge-status me-2" id="badge-paspor">Memuat...</span><button class="btn btn-outline-primary btn-sm px-3 rounded-1" onclick="triggerUpload('paspor', 'Paspor')">Upload</button></div>
+                </div>
+                <!-- Foto -->
+                <div class="d-flex justify-content-between align-items-center doc-item">
+                  <span class="small text-dark">Pass Foto Latar Putih</span>
+                  <div><span class="badge badge-status me-2" id="badge-foto">Memuat...</span><button class="btn btn-outline-primary btn-sm px-3 rounded-1" onclick="triggerUpload('foto', 'Pass Foto')">Upload</button></div>
+                </div>
+                <!-- Buku Nikah -->
+                <div class="d-flex justify-content-between align-items-center doc-item">
+                  <span class="small text-dark">Akte / Buku Nikah</span>
+                  <div><span class="badge badge-status me-2" id="badge-nikah">Memuat...</span><button class="btn btn-outline-primary btn-sm px-3 rounded-1" onclick="triggerUpload('nikah', 'Buku Nikah')">Upload</button></div>
+                </div>
+                <!-- Akta Kelahiran -->
+                <div class="d-flex justify-content-between align-items-center doc-item">
+                  <span class="small text-dark">Scan Akta Kelahiran</span>
+                  <div><span class="badge badge-status me-2" id="badge-lahir">Memuat...</span><button class="btn btn-outline-primary btn-sm px-3 rounded-1" onclick="triggerUpload('lahir', 'Akta Kelahiran')">Upload</button></div>
+                </div>
                 
-                <!-- 1. Pilihan Paket -->
-                <div class="card border-0 shadow-sm mb-3">
-                  <div class="card-body">
-                    <h6 class="text-primary fw-bold border-bottom pb-2">1. Pilihan Paket</h6>
-                    <select class="form-select" id="inputPaket" required>
-                      <option value="">-- Memuat Paket... --</option>
-                    </select>
-                  </div>
-                </div>
-
-                <!-- 2. Data Diri Jemaah -->
-                <div class="card border-0 shadow-sm mb-3">
-                  <div class="card-body">
-                    <h6 class="text-primary fw-bold border-bottom pb-2">2. Data Diri Jemaah</h6>
-                    <div class="mb-2">
-                      <label class="form-label small fw-bold">Nama Sesuai KTP</label>
-                      <input type="text" class="form-control form-control-sm" id="inputNama" required>
-                    </div>
-                    <div class="mb-2">
-                      <label class="form-label small fw-bold">NIK KTP</label>
-                      <input type="text" class="form-control form-control-sm" id="inputNik" required pattern="[0-9]{16}">
-                    </div>
-                    <div class="row mb-2">
-                      <div class="col-6">
-                        <label class="form-label small fw-bold">Tempat Lahir</label>
-                        <input type="text" class="form-control form-control-sm" id="inputTmpLahir" required>
-                      </div>
-                      <div class="col-6">
-                        <label class="form-label small fw-bold">Tanggal Lahir</label>
-                        <input type="date" class="form-control form-control-sm" id="inputTglLahir" required>
-                      </div>
-                    </div>
-                    <div class="mb-2">
-                      <label class="form-label small fw-bold">Jenis Kelamin</label>
-                      <select class="form-select form-select-sm" id="inputJk" required>
-                        <option value="">-- Pilih --</option>
-                        <option value="Laki-laki">Laki-laki</option>
-                        <option value="Perempuan">Perempuan</option>
-                      </select>
-                    </div>
-                    <div class="mb-2">
-                      <label class="form-label small fw-bold">Alamat Lengkap</label>
-                      <textarea class="form-control form-control-sm" id="inputAlamat" rows="2" required></textarea>
-                    </div>
-                    <div class="row mb-2">
-                      <div class="col-6">
-                        <label class="form-label small fw-bold">Kabupaten / Kota</label>
-                        <input type="text" class="form-control form-control-sm" id="inputKota" required>
-                      </div>
-                      <div class="col-6">
-                        <label class="form-label small fw-bold">Provinsi</label>
-                        <input type="text" class="form-control form-control-sm" id="inputProvinsi" required>
-                      </div>
-                    </div>
-                    <div class="row">
-                      <div class="col-6">
-                        <label class="form-label small fw-bold">No. WhatsApp</label>
-                        <input type="text" class="form-control form-control-sm" id="inputWa" required>
-                      </div>
-                      <div class="col-6">
-                        <label class="form-label small fw-bold">Email (Opsional)</label>
-                        <input type="email" class="form-control form-control-sm" id="inputEmail">
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- 3. Kontak Darurat -->
-                <div class="card border-0 shadow-sm">
-                  <div class="card-body">
-                    <h6 class="text-primary fw-bold border-bottom pb-2">3. Kontak Darurat (Keluarga)</h6>
-                    <div class="mb-2">
-                      <label class="form-label small fw-bold">Nama Kontak</label>
-                      <input type="text" class="form-control form-control-sm" id="inputDaruratNama" required>
-                    </div>
-                    <div class="row">
-                      <div class="col-6">
-                        <label class="form-label small fw-bold">Hubungan</label>
-                        <select class="form-select form-select-sm" id="inputDaruratHub" required>
-                          <option value="">-- Pilih --</option>
-                          <option value="Suami">Suami</option>
-                          <option value="Istri">Istri</option>
-                          <option value="Anak">Anak</option>
-                          <option value="Orang Tua">Orang Tua</option>
-                          <option value="Saudara">Saudara</option>
-                        </select>
-                      </div>
-                      <div class="col-6">
-                        <label class="form-label small fw-bold">No. HP Darurat</label>
-                        <input type="text" class="form-control form-control-sm" id="inputDaruratHp" required>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
               </div>
 
-              <!-- ================= KOLOM KANAN ================= -->
-              <div class="col-lg-6">
-                
-                <!-- 4. Data Mahram -->
-                <div class="card border-0 shadow-sm mb-3">
-                  <div class="card-body">
-                    <h6 class="text-primary fw-bold border-bottom pb-2">4. Data Mahram (Opsional)</h6>
-                    <div class="row">
-                      <div class="col-6">
-                        <label class="form-label small fw-bold">Nama Mahram</label>
-                        <input type="text" class="form-control form-control-sm" id="inputMahramNama">
-                      </div>
-                      <div class="col-6">
-                        <label class="form-label small fw-bold">Hubungan</label>
-                        <select class="form-select form-select-sm" id="inputMahramHub">
-                          <option value="">-- Pilih --</option>
-                          <option value="Suami">Suami</option>
-                          <option value="Istri">Istri</option>
-                          <option value="Ayah">Ayah</option>
-                          <option value="Ibu">Ibu</option>
-                          <option value="Anak">Anak</option>
-                          <option value="Saudara Kandung">Saudara Kandung</option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- 5. Data Paspor -->
-                <div class="card border-0 shadow-sm mb-3">
-                  <div class="card-body">
-                    <h6 class="text-primary fw-bold border-bottom pb-2">5. Data Paspor (Kosongi jika belum ada)</h6>
-                    <div class="mb-2">
-                      <label class="form-label small fw-bold">Nomor Paspor</label>
-                      <input type="text" class="form-control form-control-sm" id="inputPasporNo">
-                    </div>
-                    <div class="mb-2">
-                      <label class="form-label small fw-bold">Tempat Terbit</label>
-                      <input type="text" class="form-control form-control-sm" id="inputPasporTempat">
-                    </div>
-                    <div class="row mb-2">
-                      <div class="col-6">
-                        <label class="form-label small fw-bold">Tgl. Terbit</label>
-                        <input type="date" class="form-control form-control-sm" id="inputPasporTgl">
-                      </div>
-                      <div class="col-6">
-                        <label class="form-label small fw-bold">Tgl. Expired</label>
-                        <input type="date" class="form-control form-control-sm" id="inputPasporExp">
-                      </div>
-                    </div>
-                    <div class="row">
-                      <div class="col-6">
-                        <label class="form-label small fw-bold">Group Keluarga</label>
-                        <input type="text" class="form-control form-control-sm" id="inputGrupKeluarga" placeholder="Contoh: KEL-A">
-                      </div>
-                      <div class="col-6">
-                        <label class="form-label small fw-bold">Request Khusus</label>
-                        <select class="form-select form-select-sm" id="inputReqKhusus">
-                          <option value="Tidak Ada">Tidak Ada</option>
-                          <option value="Kursi Roda">Kursi Roda</option>
-                          <option value="Kamar Khusus">Kamar Khusus</option>
-                          <option value="Menu Makanan Khusus">Menu Makanan Khusus</option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- 6. Upload Berkas -->
-                <div class="card border-warning shadow-sm">
-                  <div class="card-body bg-light">
-                    <h6 class="text-dark fw-bold border-bottom pb-2"><i class="bi bi-cloud-upload me-2"></i>6. Upload Berkas Fisik</h6>
-                    
-                    <div class="mb-2">
-                      <label class="form-label small fw-bold">Scan KTP <span class="text-danger">*</span></label>
-                      <input type="file" class="form-control form-control-sm" id="fileKtp" accept="image/*" required>
-                    </div>
-                    <div class="mb-2">
-                      <label class="form-label small fw-bold">Kartu Keluarga (KK) <span class="text-danger">*</span></label>
-                      <input type="file" class="form-control form-control-sm" id="fileKk" accept="image/*" required>
-                    </div>
-                    <div class="mb-2">
-                      <label class="form-label small fw-bold">Akte / Buku Nikah <span class="text-danger">*</span></label>
-                      <input type="file" class="form-control form-control-sm" id="fileNikah" accept="image/*" required>
-                    </div>
-                    <div class="mb-2">
-                      <label class="form-label small fw-bold">Akta Kelahiran <span class="text-danger">*</span></label>
-                      <input type="file" class="form-control form-control-sm" id="fileLahir" accept="image/*" required>
-                    </div>
-                    <div class="mb-2">
-                      <label class="form-label small fw-bold">Pass Foto (Latar Putih) <span class="text-danger">*</span></label>
-                      <input type="file" class="form-control form-control-sm" id="fileFoto" accept="image/*" required>
-                    </div>
-                    <div>
-                      <label class="form-label small fw-bold">Scan Paspor (Jika Ada)</label>
-                      <input type="file" class="form-control form-control-sm" id="filePaspor" accept="image/*">
-                    </div>
-
-                  </div>
-                </div>
-
-              </div>
             </div>
 
+          </div>
         </div>
-        <div class="modal-footer bg-white">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="this.blur()">Batal</button>
-          <button type="submit" class="btn btn-primary shadow-sm fw-bold" id="btnSimpanJemaah">
-            <i class="bi bi-save"></i> Simpan Pendaftaran
-          </button>
-        </div>
-        </form>
       </div>
     </div>
   </div>
-  <!-- === AKHIR MODAL PENDAFTARAN JEMAAH === -->
 
- <!-- ============================================== -->
-  <!-- PEMANGGILAN LIBRARY JAVASCRIPT & FIREBASE -->
-  <!-- ============================================== -->
-  
-  <!-- 1. jQuery & Bootstrap -->
-  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <!-- AREA FOOTER -->
+  <div class="container text-center text-muted small mt-2 pb-4">
+    <p>Jika Anda lupa nomor registrasi, silakan hubungi <a href="https://wa.me/6281234567890" target="_blank" class="text-decoration-none fw-bold text-success"><i class="bi bi-whatsapp"></i> Admin Kami</a>.</p>
+    <p class="opacity-50">&copy; 2026 PT. Enka Imron Mandiri. Semua Hak Cipta Dilindungi.</p>
+  </div>
+
+  <!-- Input File Tersembunyi -->
+  <input type="file" id="hiddenFileInput" class="d-none" accept="image/*">
+
+  <!-- LIBRARY -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  
-  <!-- 2. Plugin Modern (SweetAlert & DataTables) -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-  <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
 
-  <!-- SCRIPT TAMBAHAN UNTUK EXPORT EXCEL (Letakkan di sini) -->
-  <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
-  <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.bootstrap5.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
-
-  <!-- 3. Firebase SDK (PASTIKAN HANYA ADA SATU SET INI SAJA) -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-
-  <!-- 4. Konfigurasi Utama Kita -->
+  <!-- FIREBASE SDK -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  
+  <!-- PEMANGGIL KONFIGURASI TERPUSAT -->
   <script src="js/config/firebase.js"></script>
   <script src="js/config/cloudinary.js"></script>
-
-  <!-- 5. Logika Modul Aplikasi -->
   
-  <script src="js/modules/auth.js"></script>
-  <script src="js/modules/dashboard.js"></script>
-  <script src="js/modules/paket.js"></script>
-  <script src="js/modules/jemaah.js"></script>
-  <script src="js/modules/verifikasi.js"></script>
-
-  <script src="js/app.js"></script>
-</body>
-</html>
   
+  <script>
+    // Variabel global untuk keperluan upload
+    let aktifNoReg = '';
+    let aktifJenisUpload = '';
+
+    // Event Listener Form Pencarian
+    document.getElementById('formPencarian').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const noReg = document.getElementById('inputNoReg').value.trim();
+        if(noReg) {
+            cariDataJemaah(noReg);
+        }
+    });
+
+    // Fungsi Utama Pencarian
+    function cariDataJemaah(noReg) {
+        Swal.fire({
+            title: 'Mencari Data...',
+            allowOutsideClick: false,
+            didOpen: () => { Swal.showLoading(); }
+        });
+
+        db.collection("jemaah").doc(noReg).get().then((doc) => {
+            if (doc.exists) {
+                Swal.close();
+                const data = doc.data();
+                aktifNoReg = noReg;
+                
+                // Tampilkan Teks Utama
+                document.getElementById('hasilNama').innerText = data.nama || '-';
+                document.getElementById('hasilPaket').innerText = data.paket || '-';
+                
+                // Pewarnaan Status
+                const elStatus = document.getElementById('hasilStatus');
+                elStatus.innerText = data.status || 'Menunggu Verifikasi';
+                if(data.status === 'Siap Berangkat' || data.status === 'Disetujui') {
+                    elStatus.className = 'badge bg-success fs-6';
+                } else if(data.status === 'Butuh Revisi' || data.status === 'Ditolak') {
+                    elStatus.className = 'badge bg-danger fs-6';
+                } else {
+                    elStatus.className = 'badge text-dark fs-6';
+                    elStatus.style.backgroundColor = '#e2e3e5';
+                }
+
+                // Kalkulasi Dokumen
+                let totalDokumen = 6; // KTP, KK, Paspor, Foto, Nikah, Lahir
+                let dokumenSelesai = 0;
+
+                dokumenSelesai += cekDokumen('ktp', data.urlKtp);
+                dokumenSelesai += cekDokumen('kk', data.urlKk);
+                dokumenSelesai += cekDokumen('paspor', data.urlPaspor);
+                dokumenSelesai += cekDokumen('foto', data.urlFoto);
+                dokumenSelesai += cekDokumen('nikah', data.urlNikah);
+                dokumenSelesai += cekDokumen('lahir', data.urlLahir);
+                
+                // Update Bar Progres
+                const persentase = Math.round((dokumenSelesai / totalDokumen) * 100);
+                document.getElementById('teksProgres').innerText = persentase + '%';
+                document.getElementById('barProgres').style.width = persentase + '%';
+
+                // Munculkan Kotak Hasil
+                const areaHasil = document.getElementById('areaHasil');
+                areaHasil.style.display = 'block';
+                
+                // Animasi Scroll Halus
+                setTimeout(() => {
+                    areaHasil.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100);
+                
+            } else {
+                Swal.fire('Tidak Ditemukan', `Nomor Registrasi ${noReg} tidak ada dalam sistem.`, 'warning');
+                document.getElementById('areaHasil').style.display = 'none';
+            }
+        }).catch((error) => {
+            console.error("Error:", error);
+            Swal.fire('Terjadi Kesalahan', 'Gagal menghubungi server database.', 'error');
+        });
+    }
+
+    // Fungsi Render Badge Dokumen
+    function cekDokumen(idElement, nilaiField) {
+        const badge = document.getElementById('badge-' + idElement);
+        if (nilaiField && nilaiField !== '') {
+            // Tambahkan me-3 di sini untuk jarak kanan
+            badge.className = 'badge badge-status bg-success text-white py-2 me-3';
+            badge.innerHTML = '<i class="bi bi-check-circle me-1"></i>Sudah';
+            return 1; 
+        } else {
+            // Tambahkan me-3 di sini untuk jarak kanan
+            badge.className = 'badge badge-status bg-danger text-white py-2 me-3';
+            badge.innerHTML = '<i class="bi bi-x-circle me-1"></i>Belum';
+            return 0; 
+        }
+    }
+
+    // Fungsi Persiapan Upload
+    function triggerUpload(jenisDoc, namaDoc) {
+        if(!aktifNoReg) return;
+        aktifJenisUpload = jenisDoc;
+        
+        Swal.fire({
+            title: `Upload ${namaDoc}`,
+            text: `Pilih gambar ${namaDoc} dari perangkat Anda.`,
+            icon: 'info',
+            showCancelButton: true,
+            confirmButtonText: 'Pilih File',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('hiddenFileInput').click();
+            }
+        });
+    }
+
+    // ==========================================
+    // INTEGRASI UPLOAD KE CLOUDINARY & FIREBASE
+    // ==========================================
+    
+    document.getElementById('hiddenFileInput').addEventListener('change', async function(e) {
+        const file = e.target.files[0];
+        if(!file) return;
+
+        Swal.fire({
+            title: 'Mengunggah Dokumen...',
+            html: 'Mohon tunggu, sedang mengirim file ke server.',
+            allowOutsideClick: false,
+            didOpen: () => { Swal.showLoading(); }
+        });
+
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            // Variabel UPLOAD_PRESET dan CLOUD_NAME ditarik otomatis dari cloudinary.js
+            formData.append('upload_preset', UPLOAD_PRESET); 
+
+            const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`;
+            const response = await fetch(cloudinaryUrl, {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                throw new Error('Gagal mengunggah gambar ke Cloudinary');
+            }
+
+            const dataCloudinary = await response.json();
+            const fileUrl = dataCloudinary.secure_url; 
+
+            let fieldToUpdate = {};
+            if (aktifJenisUpload === 'ktp') fieldToUpdate = { fileKtp: fileUrl };
+            else if (aktifJenisUpload === 'kk') fieldToUpdate = { fileKk: fileUrl };
+            else if (aktifJenisUpload === 'paspor') fieldToUpdate = { filePaspor: fileUrl };
+            else if (aktifJenisUpload === 'foto') fieldToUpdate = { fileFoto: fileUrl };
+            else if (aktifJenisUpload === 'nikah') fieldToUpdate = { fileNikah: fileUrl };
+            else if (aktifJenisUpload === 'lahir') fieldToUpdate = { fileLahir: fileUrl };
+
+            await db.collection("jemaah").doc(aktifNoReg).update(fieldToUpdate);
+
+            e.target.value = ''; 
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: 'Dokumen berhasil diunggah dan disimpan.'
+            }).then(() => {
+                cariDataJemaah(aktifNoReg);
+            });
+
+        } catch (error) {
+            console.error("Upload Error:", error);
+            Swal.fire('Gagal!', 'Terjadi kesalahan saat mengunggah dokumen. Pastikan internet stabil.', 'error');
+            e.target.value = ''; 
+        }
+    });
+
+  </script>
 </body>
 </html>

@@ -1,51 +1,118 @@
-// js/modules/dashboard.js
+// Variabel global untuk menyimpan instance grafik agar tidak menumpuk saat direfresh
+let chartPaket = null;
 
 function loadDashboardData() {
-    // 1. Ambil dan hitung statistik Jemaah
-    db.collection("jemaah").get().then((snapshot) => {
-        let total = snapshot.size;
-        let menunggu = 0;
-        let siap = 0;
-
-        snapshot.forEach(doc => {
-            const status = doc.data().status;
-            if (status === 'Menunggu Verifikasi') menunggu++;
-            else if (status === 'Siap Berangkat') siap++;
-        });
-
-        // Tampilkan ke layar dengan efek animasi angka (opsional tapi elegan)
-        animateValue("dashTotalJemaah", 0, total, 1000);
-        animateValue("dashMenunggu", 0, menunggu, 1000);
-        animateValue("dashSiap", 0, siap, 1000);
-
-    }).catch((error) => {
-        console.error("Gagal memuat data jemaah untuk dashboard:", error);
+    // 1. Hitung Total Paket Aktif
+    db.collection("paket").get().then((snapshot) => {
+        document.getElementById('stat-paket').innerText = snapshot.size;
     });
 
-    // 2. Ambil dan hitung statistik Paket Aktif
-    db.collection("paket").where("status", "==", "Aktif").get().then((snapshot) => {
-        animateValue("dashTotalPaket", 0, snapshot.size, 1000);
-    }).catch((error) => {
-        console.error("Gagal memuat data paket untuk dashboard:", error);
+    // 2. Ambil Data Jemaah untuk Statistik, Grafik, dan Tabel Terbaru
+    db.collection("jemaah").get().then((snapshot) => {
+        let totalJemaah = 0;
+        let menunggu = 0;
+        let siap = 0;
+        
+        // Objek untuk menghitung jumlah jemaah per paket
+        let hitungPaket = {};
+        
+        // Array untuk menampung pendaftar terbaru
+        let dataTerbaru = [];
+
+        snapshot.forEach((doc) => {
+            const jm = doc.data();
+            totalJemaah++;
+            
+            // Hitung status
+            if (jm.status === 'Menunggu Verifikasi') menunggu++;
+            if (jm.status === 'Siap Berangkat' || jm.status === 'Disetujui') siap++;
+
+            // Hitung komposisi paket
+            const namaPaket = jm.paket || 'Tanpa Paket';
+            if (hitungPaket[namaPaket]) {
+                hitungPaket[namaPaket]++;
+            } else {
+                hitungPaket[namaPaket] = 1;
+            }
+
+            // Kumpulkan data untuk tabel (simpan timestamp pendaftaran jika ada, di sini kita kumpulkan semua dulu)
+            dataTerbaru.push(jm);
+        });
+
+        // Update angka di kartu statistik
+        document.getElementById('stat-total-jemaah').innerText = totalJemaah;
+        document.getElementById('stat-menunggu').innerText = menunggu;
+        document.getElementById('stat-siap').innerText = siap;
+
+        // Render Grafik Pie
+        renderGrafikPaket(hitungPaket);
+
+        // Render Tabel 5 Pendaftar Terbaru (Ambil 5 dari belakang)
+        renderTabelTerbaru(dataTerbaru.slice(-5).reverse());
+    }).catch(error => {
+        console.error("Gagal memuat dashboard:", error);
     });
 }
 
-// Fungsi kecil untuk membuat efek animasi saat angka berubah
-function animateValue(id, start, end, duration) {
-    if (start === end) {
-        document.getElementById(id).innerText = end;
-        return;
+function renderGrafikPaket(dataPaket) {
+    const ctx = document.getElementById('grafikPaket').getContext('2d');
+    
+    // Hancurkan grafik lama jika halaman direfresh agar tidak tumpang tindih
+    if (chartPaket) {
+        chartPaket.destroy();
     }
-    let range = end - start;
-    let current = start;
-    let increment = end > start ? 1 : -1;
-    let stepTime = Math.abs(Math.floor(duration / range));
-    let obj = document.getElementById(id);
-    let timer = setInterval(function() {
-        current += increment;
-        obj.innerText = current;
-        if (current == end) {
-            clearInterval(timer);
+
+    const labelPaket = Object.keys(dataPaket);
+    const jumlahPaket = Object.values(dataPaket);
+
+    // Jika tidak ada data, beri grafik kosong
+    if (labelPaket.length === 0) {
+        labelPaket.push("Belum ada data");
+        jumlahPaket.push(1);
+    }
+
+    chartPaket = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: labelPaket,
+            datasets: [{
+                data: jumlahPaket,
+                backgroundColor: [
+                    '#0d6efd', '#ffc107', '#198754', '#0dcaf0', '#6f42c1', '#d63384'
+                ],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'bottom' }
+            },
+            cutout: '70%' // Membuat lubang di tengah agar berbentuk donat
         }
-    }, stepTime);
+    });
+}
+
+function renderTabelTerbaru(dataJemaah) {
+    const tbody = document.getElementById('tbody-terbaru');
+    let html = '';
+
+    if (dataJemaah.length === 0) {
+        html = '<tr><td colspan="3" class="text-center text-muted">Belum ada pendaftar.</td></tr>';
+    } else {
+        dataJemaah.forEach(jm => {
+            let badgeColor = 'bg-secondary';
+            if (jm.status === 'Menunggu Verifikasi') badgeColor = 'bg-warning text-dark';
+            else if (jm.status === 'Siap Berangkat' || jm.status === 'Disetujui') badgeColor = 'bg-success';
+
+            html += `
+            <tr>
+                <td class="fw-bold">${jm.nama || '-'}</td>
+                <td><small class="text-muted">${jm.paket || '-'}</small></td>
+                <td><span class="badge ${badgeColor}">${jm.status || '-'}</span></td>
+            </tr>
+            `;
+        });
+    }
+    tbody.innerHTML = html;
 }

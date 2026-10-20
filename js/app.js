@@ -2,22 +2,6 @@
 
 let currentUser = null;
 
-// Saat halaman pertama kali dimuat
-document.addEventListener('DOMContentLoaded', () => {
-    // Mengecek apakah ada instruksi khusus di URL (seperti index.html?view=dashboard)
-    const urlParams = new URLSearchParams(window.location.search);
-    const viewParam = urlParams.get('view');
-
-    // Jika URL meminta dashboard, langsung tampilkan Panel Admin
-    if (viewParam === 'dashboard') {
-        tampilkanHalaman('view-main');
-        switchView('dashboard');
-    } else {
-        // Jika tidak, tampilkan halaman beranda publik
-        tampilkanHalaman('view-public');
-    }
-});
-
 /**
  * Fungsi untuk berpindah halaman utama (Aman dari error null)
  */
@@ -110,3 +94,8 @@ function showCustomConfirm(message, callback, title = 'Konfirmasi') {
         }
     });
 }
+
+// Paksa aplikasi untuk langsung membuka Dashboard saat admin.html dimuat
+document.addEventListener("DOMContentLoaded", () => {
+    switchView('dashboard');
+});

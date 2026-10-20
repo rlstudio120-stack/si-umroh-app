@@ -22,8 +22,8 @@ document.addEventListener('DOMContentLoaded', () => {
             // Eksekusi Login Firebase
             auth.signInWithEmailAndPassword(emailVal, passVal)
                 .then((userCredential) => {
-                    // Jika sukses, lempar admin ke halaman index.html (dashboard)
-                    window.location.href = 'index.html?view=dashboard';
+                    // PERUBAHAN 1: Jika sukses, lempar ke halaman admin.html
+                    window.location.href = 'admin.html';
                 })
                 .catch((error) => {
                     const errorCode = error.code;
@@ -42,31 +42,45 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Tombol Logout jika ada (di index.html)
-    const btnLogout = document.getElementById('btnLogout');
-    if (btnLogout) {
-        btnLogout.addEventListener('click', (e) => {
-            e.preventDefault();
-            auth.signOut().then(() => {
-                window.location.href = 'index.html';
-            });
+    // Fungsi Logout Global (Bisa dipanggil dari mana saja)
+    window.logoutAdmin = function(event) {
+        if(event) event.preventDefault(); // Mencegah layar lompat ke atas saat link diklik
+        
+        // Konfirmasi sebelum keluar menggunakan SweetAlert (Opsional tapi keren)
+        Swal.fire({
+            title: 'Yakin ingin keluar?',
+            text: "Anda akan mengakhiri sesi admin saat ini.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Ya, Keluar!',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                auth.signOut().then(() => {
+                    window.location.href = 'login.html';
+                }).catch((error) => {
+                    Swal.fire('Error', 'Gagal logout: ' + error.message, 'error');
+                });
+            }
         });
-    }
+    };
 });
 
 // Penjaga Sesi Keamanan (Global Observer)
 auth.onAuthStateChanged((user) => {
     const isLoginPage = window.location.pathname.includes('login.html');
+    const isAdminPage = window.location.pathname.includes('admin.html');
     
     if (user) {
-        // Jika sudah login tapi iseng buka halaman login.html, tendang ke index.html
+        // PERUBAHAN 3: Jika sudah login tapi iseng buka login.html, tendang ke admin.html
         if (isLoginPage) {
-            window.location.href = 'index.html?view=dashboard';
+            window.location.href = 'admin.html';
         }
     } else {
-        // Jika belum login, tapi sedang di dalam dashboard (index.html dengan parameter dashboard)
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('view') === 'dashboard' && !isLoginPage) {
+        // PERUBAHAN 4: Jika BELUM login, tapi mencoba menyusup ke admin.html, tendang ke login.html
+        if (isAdminPage) {
             window.location.href = 'login.html';
         }
     }
