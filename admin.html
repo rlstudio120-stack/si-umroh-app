@@ -1007,6 +1007,9 @@
                             <button class="btn btn-primary fw-bold shadow-sm" onclick="simpanFormasiRooming()">
                               <i class="bi bi-save me-1"></i> Simpan Formasi
                             </button>
+                            <button class="btn btn-success fw-bold shadow-sm" onclick="cetakRooming()">
+                              <i class="bi bi-printer me-1"></i> Cetak PDF
+                            </button>
                           </div>
                         </div>
 
@@ -1033,6 +1036,78 @@
                     </div>
                   </div>
                 </div>
+
+                <!-- === MODAL MANAJEMEN DENAH BUS (FULLSCREEN) === -->
+                <div class="modal fade" id="modalBus" tabindex="-1" data-bs-backdrop="static">
+                  <div class="modal-dialog modal-fullscreen">
+                    <div class="modal-content bg-light">
+                      
+                      <!-- Header Modal -->
+                      <div class="modal-header text-white border-0 py-2" style="background-color: #20c997;">
+                        <h5 class="modal-title fs-6 fw-bold"><i class="bi bi-bus-front-fill me-2"></i>Manajemen Posisi Duduk Bus</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                      </div>
+                      
+                      <div class="modal-body p-4">
+                        <!-- Informasi Jadwal & Tombol Aksi -->
+                        <div class="d-flex justify-content-between align-items-center bg-white p-3 rounded shadow-sm mb-4 border">
+                          <div>
+                            <h5 class="fw-bold mb-1" id="bus-paket-info">Paket: -</h5>
+                            <small class="text-muted" id="bus-jadwal-info">ID Keberangkatan: -</small>
+                          </div>
+                          <div class="d-flex gap-2">
+                            <button class="btn btn-warning fw-bold shadow-sm" onclick="autoBus()">
+                              <i class="bi bi-arrow-repeat me-1"></i> Auto Seating (Prioritas Mahram)
+                            </button>
+                            <button class="btn btn-primary fw-bold shadow-sm" onclick="simpanFormasiBus()">
+                              <i class="bi bi-save me-1"></i> Simpan Formasi Bus
+                            </button>
+                            <button class="btn btn-success fw-bold shadow-sm" onclick="cetakBus()">
+                              <i class="bi bi-printer me-1"></i> Cetak PDF
+                            </button>
+                          </div>
+                        </div>
+
+                        <div class="row g-4">
+                          <!-- Area Jemaah Belum Dapat Kursi -->
+                          <div class="col-md-4">
+                            <div class="card border-dark h-100 shadow-sm">
+                              <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center py-2">
+                                <span class="fw-bold"><i class="bi bi-person-x me-1"></i>BELUM DAPAT KURSI</span>
+                                <span class="badge bg-secondary" id="badge-KRS-BELUM">0 Org</span>
+                              </div>
+                              <div class="card-body p-2 bg-light overflow-auto dropzone-bus" id="KRS-BELUM" style="height: 70vh;" ondragover="allowDropBus(event)" ondrop="dropBus(event)">
+                                <div class="text-center py-4 text-muted small">Memuat jemaah...</div>
+                              </div>
+                            </div>
+                          </div>
+
+                          <!-- Area Visual Denah Bus -->
+                          <div class="col-md-8">
+                            <div class="card border-0 shadow-sm" style="background-color: #e9ecef;">
+                              <div class="card-body text-center p-4">
+                                
+                                <!-- Kepala Bus -->
+                                <div class="d-flex justify-content-between mb-4 border-bottom border-dark pb-3">
+                                  <div class="border rounded p-2 bg-white fw-bold"><i class="bi bi-door-open me-2"></i>Pintu Depan</div>
+                                  <div class="border rounded p-2 bg-white fw-bold"><img src="https://cdn-icons-png.flaticon.com/512/1006/1006764.png" width="20" class="me-2">Sopir & TL</div>
+                                </div>
+
+                                <!-- Grid Kursi Bus -->
+                                <div id="area-grid-bus" class="d-flex flex-column align-items-center">
+                                  <!-- Render via JS -->
+                                </div>
+
+                              </div>
+                            </div>
+                          </div>
+
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <!-- === AKHIR MODAL DENAH BUS === -->
 
 
 
