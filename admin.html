@@ -292,8 +292,16 @@
                       <!-- Card Profil Singkat -->
                       <div class="card border-0 shadow-sm mb-3">
                         <div class="card-body text-center">
-                          <img src="https://via.placeholder.com/150" id="detFoto" class="rounded mb-3" style="width: 150px; height: 200px; object-fit: cover; border: 2px solid #eee;" alt="Foto Jemaah">
-                          <button class="btn btn-primary btn-sm w-100 mb-3" onclick="document.getElementById('btnEditDariDetail').click()"><i class="bi bi-cloud-upload"></i> Ganti / Upload Pass Foto</button>
+                          <!-- Gambar Foto -->
+    <img id="detFoto" src="https://via.placeholder.com/150" class="img-fluid rounded mb-2 shadow-sm" style="max-height: 200px; object-fit: cover;">
+    
+    <!-- Input File Tersembunyi -->
+    <input type="file" id="updFileFoto" class="d-none" accept="image/*" onchange="prosesUpdateBerkas('Foto')">
+    
+    <!-- Tombol Pemicu -->
+    <button type="button" class="btn btn-primary btn-sm w-100" onclick="document.getElementById('updFileFoto').click()">
+        <i class="bi bi-camera me-1"></i> Ganti / Upload Foto
+    </button>
                           
                           <h5 class="fw-bold text-primary mb-1" id="detNamaSingkat">-</h5>
                           <div class="bg-dark text-white rounded px-2 py-1 mb-3 d-inline-block fw-bold small" id="detNoReg">-</div>

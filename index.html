@@ -346,12 +346,12 @@
             const fileUrl = dataCloudinary.secure_url; 
 
             let fieldToUpdate = {};
-            if (aktifJenisUpload === 'ktp') fieldToUpdate = { fileKtp: fileUrl };
-            else if (aktifJenisUpload === 'kk') fieldToUpdate = { fileKk: fileUrl };
-            else if (aktifJenisUpload === 'paspor') fieldToUpdate = { filePaspor: fileUrl };
-            else if (aktifJenisUpload === 'foto') fieldToUpdate = { fileFoto: fileUrl };
-            else if (aktifJenisUpload === 'nikah') fieldToUpdate = { fileNikah: fileUrl };
-            else if (aktifJenisUpload === 'lahir') fieldToUpdate = { fileLahir: fileUrl };
+            if (aktifJenisUpload === 'ktp') fieldToUpdate = { urlKtp: fileUrl };
+            else if (aktifJenisUpload === 'kk') fieldToUpdate = { urlKk: fileUrl };
+            else if (aktifJenisUpload === 'paspor') fieldToUpdate = { urlPaspor: fileUrl };
+            else if (aktifJenisUpload === 'foto') fieldToUpdate = { urlFoto: fileUrl };
+            else if (aktifJenisUpload === 'nikah') fieldToUpdate = { urlNikah: fileUrl };
+            else if (aktifJenisUpload === 'lahir') fieldToUpdate = { urlLahir: fileUrl };
 
             await db.collection("jemaah").doc(aktifNoReg).update(fieldToUpdate);
 

@@ -4,8 +4,6 @@
 // FUNGSI MEMUAT DATA JEMAAH KE TABEL
 // ==========================================
 function loadDataJemaah() {
-    // 1. HANCURKAN DATATABLES LAMA SEBELUM MENGAMBIL DATA BARU
-    // Ini penting agar DataTables tidak kebingungan dengan perubahan baris HTML
     if ($.fn.DataTable.isDataTable('#tabel-jemaah')) {
         $('#tabel-jemaah').DataTable().clear().destroy();
     }
@@ -13,24 +11,20 @@ function loadDataJemaah() {
     const tbody = document.querySelector('#tabel-jemaah tbody');
     tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4"><div class="spinner-border text-primary spinner-border-sm me-2"></div>Memuat data...</td></tr>';
 
-    // 2. AMBIL DATA DARI FIREBASE
     db.collection("jemaah").get().then((snapshot) => {
         let html = '';
         
         if (!snapshot.empty) {
             snapshot.forEach((doc) => {
                 const jm = doc.data();
-                jm.id = doc.id; // Sertakan ID dokumen
+                jm.id = doc.id; 
 
-                // Tentukan warna badge status
                 let badgeColor = 'bg-secondary';
                 if (jm.status === 'Menunggu Verifikasi') badgeColor = 'bg-warning text-dark';
                 else if (jm.status === 'Siap Berangkat') badgeColor = 'bg-success';
 
-                // Encode data untuk dilempar ke fungsi Modal Detail
                 const encodedData = encodeURIComponent(JSON.stringify(jm));
 
-                // 3. CETAK BARIS TABEL (Gunakan tombol warna penuh/solid)
                 html += `
                 <tr>
                     <td class="align-middle fw-bold">${jm.id}</td>
@@ -52,18 +46,14 @@ function loadDataJemaah() {
             });
         }
 
-        // 4. MASUKKAN DATA HTML KE DALAM TBODY
         tbody.innerHTML = html;
 
-        // 5. BANGKITKAN KEMBALI DATATABLES DENGAN TOMBOL EXCEL
-        // Dilakukan HANYA setelah baris HTML (<tr>) benar-benar terisi
         $('#tabel-jemaah').DataTable({
             language: { 
                 url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/id.json',
                 emptyTable: "Belum ada data jemaah yang mendaftar."
             },
             pageLength: 10,
-            // 'dom' dengan huruf B (Buttons) besar
             dom: '<"d-flex flex-wrap justify-content-between align-items-center mb-3"Bf>rt<"d-flex flex-wrap justify-content-between align-items-center mt-3"ip>',
             buttons: [
                 {
@@ -72,7 +62,6 @@ function loadDataJemaah() {
                     className: 'btn btn-success btn-sm shadow-sm fw-bold',
                     title: 'Laporan Data Jemaah Umroh - ' + new Date().toLocaleDateString('id-ID'),
                     exportOptions: {
-                        // Hanya ekspor kolom index 0 sampai 3 (Kolom Aksi di index 4 tidak diikutkan)
                         columns: [0, 1, 2, 3] 
                     }
                 }
@@ -86,7 +75,7 @@ function loadDataJemaah() {
 }
 
 // ==========================================
-// FUNGSI UNTUK MEMBUKA MODAL DETAIL (DESAIN BARU)
+// FUNGSI UNTUK MEMBUKA MODAL DETAIL
 // ==========================================
 function lihatDetailJemaah(encodedJSON) {
     const jm = JSON.parse(decodeURIComponent(encodedJSON));
@@ -97,16 +86,14 @@ function lihatDetailJemaah(encodedJSON) {
     document.getElementById('detNoReg').innerText = jm.id;
     document.getElementById('detPaketPilihan').innerText = jm.paket || '-';
     
-    // Format Tanggal Daftar
     let tglDaftar = '-';
     if (jm.createdAt && jm.createdAt.seconds) {
         tglDaftar = new Date(jm.createdAt.seconds * 1000).toLocaleDateString('id-ID', {day: '2-digit', month: '2-digit', year: 'numeric'});
     }
     document.getElementById('detTglDaftar').innerText = tglDaftar;
 
-    // Status Badge
     let badgeColor = 'bg-secondary';
-    if (jm.status === 'Menunggu Verifikasi') badgeColor = 'bg-success'; // Di desain warnanya hijau
+    if (jm.status === 'Menunggu Verifikasi') badgeColor = 'bg-success'; 
     else if (jm.status === 'Siap Berangkat') badgeColor = 'bg-primary';
     document.getElementById('detStatusBadge').innerHTML = `<span class="badge ${badgeColor} w-100 py-2">${jm.status || '-'}</span>`;
 
@@ -120,8 +107,9 @@ function lihatDetailJemaah(encodedJSON) {
         }
     };
     
+    // PERBAIKAN: Penamaan field diselaraskan dengan index.html
     setBerkas(jm.urlKtp, 'badgeKtp');
-    setBerkas(jm.urlKk, 'badgeKk');
+    setBerkas(jm.urlKk, 'badgeKk'); 
     setBerkas(jm.urlNikah, 'badgeNikah');
     setBerkas(jm.urlPaspor, 'badgePaspor');
     setBerkas(jm.urlLahir, 'badgeLahir');
@@ -129,13 +117,11 @@ function lihatDetailJemaah(encodedJSON) {
     // --- KOLOM KANAN (INFORMASI PRIBADI) ---
     document.getElementById('detNikKtp').innerText = jm.nik || '-';
     
-    // Gabung Tempat & Tanggal Lahir
     let tempatTglLahir = (jm.tempatLahir || '-') + ', ' + (jm.tglLahir ? new Date(jm.tglLahir).toLocaleDateString('id-ID', {day: '2-digit', month: 'long', year: 'numeric'}) : '-');
     document.getElementById('detTempatTglLahir').innerText = tempatTglLahir;
     
     document.getElementById('detJk').innerText = jm.jk || '-';
     
-    // Gabung Alamat Lengkap
     let alamatLengkap = (jm.alamat || '-') + ', ' + (jm.kota || '-') + ' - ' + (jm.provinsi || '-');
     document.getElementById('detAlamat').innerText = alamatLengkap;
     
@@ -146,7 +132,6 @@ function lihatDetailJemaah(encodedJSON) {
     document.getElementById('detNoPaspor').innerText = jm.pasporNo || '-';
     document.getElementById('detTempatTerbit').innerText = jm.pasporTempat || '-';
     
-    // Gabung Masa Berlaku Paspor
     let masaBerlaku = '-';
     if (jm.pasporTgl && jm.pasporExp) {
         let terbit = new Date(jm.pasporTgl).toLocaleDateString('id-ID', {day: '2-digit', month: 'long', year: 'numeric'});
@@ -155,7 +140,6 @@ function lihatDetailJemaah(encodedJSON) {
     }
     document.getElementById('detMasaBerlaku').innerText = masaBerlaku;
     
-    // Gabung Mahram
     let infoMahram = '-';
     if (jm.mahramNama) infoMahram = `${jm.mahramNama} (${jm.mahramHub || '-'})`;
     document.getElementById('detMahram').innerText = infoMahram;
@@ -164,20 +148,17 @@ function lihatDetailJemaah(encodedJSON) {
     document.getElementById('detDaruratNama').innerText = jm.daruratNama || '-';
     document.getElementById('detDaruratHubHp').innerText = (jm.daruratHub || '-') + ' / ' + (jm.daruratHp || '-');
 
-    // Setel aksi Tombol Edit Data Jemaah (Bawah Kanan)
     const btnEdit = document.getElementById('btnEditDariDetail');
     btnEdit.onclick = function() {
         bootstrap.Modal.getInstance(document.getElementById('modalDetailJemaah')).hide();
         bukaModalEditJemaah(encodedJSON);
     };
 
-    // Setel aksi Tombol Cetak Bukti
     const btnCetak = document.getElementById('btnCetakBukti');
     btnCetak.onclick = function() {
         cetakBuktiPendaftaran(jm);
     };
 
-    // Tampilkan Modal
     const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('modalDetailJemaah'));
     modal.show();
 }
@@ -211,7 +192,6 @@ async function submitJemaah(event) {
     btn.disabled = true;
 
     try {
-        // Siapkan array untuk menampung proses upload agar berjalan serentak
         let uploadPromises = [];
         
         const fKtp = document.getElementById('fileKtp').files[0];
@@ -221,7 +201,6 @@ async function submitJemaah(event) {
         const fFoto = document.getElementById('fileFoto').files[0];
         const fPaspor = document.getElementById('filePaspor').files[0];
 
-        // Masukkan file yang ada ke antrean upload
         let urlKtp = fKtp ? uploadKeCloudinary(fKtp) : Promise.resolve("");
         let urlKk = fKk ? uploadKeCloudinary(fKk) : Promise.resolve("");
         let urlNikah = fNikah ? uploadKeCloudinary(fNikah) : Promise.resolve("");
@@ -229,23 +208,19 @@ async function submitJemaah(event) {
         let urlFoto = fFoto ? uploadKeCloudinary(fFoto) : Promise.resolve("");
         let urlPaspor = fPaspor ? uploadKeCloudinary(fPaspor) : Promise.resolve("");
 
-        // Eksekusi semua upload secara bersamaan (jauh lebih cepat)
         const [resKtp, resKk, resNikah, resLahir, resFoto, resPaspor] = await Promise.all([
             urlKtp, urlKk, urlNikah, urlLahir, urlFoto, urlPaspor
         ]);
 
-        // Buat Nomor Registrasi
         const date = new Date();
         const yy = date.getFullYear().toString().slice(-2);
         const mm = ("0" + (date.getMonth() + 1)).slice(-2);
         const random = Math.floor(1000 + Math.random() * 9000);
         const noReg = `REG-${yy}${mm}-${random}`;
 
-        // Kumpulkan Data Form
         const payloadData = {
             paket: document.getElementById('inputPaket').value,
             
-            // Data Diri
             nama: document.getElementById('inputNama').value,
             nik: document.getElementById('inputNik').value,
             tempatLahir: document.getElementById('inputTmpLahir').value,
@@ -257,16 +232,13 @@ async function submitJemaah(event) {
             wa: document.getElementById('inputWa').value,
             email: document.getElementById('inputEmail').value,
 
-            // Kontak Darurat
             daruratNama: document.getElementById('inputDaruratNama').value,
             daruratHub: document.getElementById('inputDaruratHub').value,
             daruratHp: document.getElementById('inputDaruratHp').value,
 
-            // Mahram
             mahramNama: document.getElementById('inputMahramNama').value,
             mahramHub: document.getElementById('inputMahramHub').value,
 
-            // Paspor
             pasporNo: document.getElementById('inputPasporNo').value,
             pasporTempat: document.getElementById('inputPasporTempat').value,
             pasporTgl: document.getElementById('inputPasporTgl').value,
@@ -274,9 +246,9 @@ async function submitJemaah(event) {
             grupKeluarga: document.getElementById('inputGrupKeluarga').value,
             reqKhusus: document.getElementById('inputReqKhusus').value,
 
-            // Berkas Cloudinary URL
+            // PERBAIKAN: Penamaan field penyimpanan
             urlKtp: resKtp,
-            urlKk: resKk,
+            urlKK: resKk, // Menjadi urlKK
             urlNikah: resNikah,
             urlLahir: resLahir,
             urlFoto: resFoto,
@@ -286,7 +258,6 @@ async function submitJemaah(event) {
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         };
 
-        // Simpan ke Firestore
         await db.collection("jemaah").doc(noReg).set(payloadData);
 
         showCustomAlert(`Pendaftaran berhasil!\nNomor Registrasi: ${noReg}`, "success", "Berhasil");
@@ -411,11 +382,10 @@ async function submitEditJemaah(event) {
 // ==========================================
 async function prosesUpdateBerkas(jenis) {
     const fileInput = document.getElementById(`updFile${jenis}`);
-    if (fileInput.files.length === 0) return;
+    if (!fileInput || fileInput.files.length === 0) return;
 
     const noReg = document.getElementById('detNoReg').innerText;
     
-    // Tampilkan notifikasi loading tanpa menutup modal
     Swal.fire({
         title: 'Mengupload Berkas...',
         html: `Silakan tunggu, sedang memperbarui file ${jenis}.`,
@@ -426,34 +396,47 @@ async function prosesUpdateBerkas(jenis) {
     try {
         const urlFile = await uploadKeCloudinary(fileInput.files[0]);
         let updateData = {};
-        updateData[`url${jenis}`] = urlFile; // Misalnya jadi urlKtp, urlKk
+        
+        // Penyesuaian nama field di Firebase
+        let fieldName = `url${jenis}`;
+        if (jenis === 'Kk' || jenis === 'KK') {
+            fieldName = 'urlKK';
+        }
+        updateData[fieldName] = urlFile; 
 
+        // Update ke Firebase
         await db.collection("jemaah").doc(noReg).update(updateData);
         
-        // Update badge secara real-time
-        document.getElementById(`badge${jenis}`).innerHTML = '<span class="badge bg-success">Sudah Ada</span>';
+        // PERBAIKAN: Pemisahan logika untuk Foto dan Berkas Teks
+        if (jenis === 'Foto') {
+            // Jika Foto, ganti gambar profil langsung
+            const imgElement = document.getElementById('detFoto');
+            if (imgElement) imgElement.src = urlFile;
+        } else {
+            // Jika dokumen lain, ubah lencana (badge) menjadi hijau
+            const badgeElement = document.getElementById(`badge${jenis}`);
+            if (badgeElement) badgeElement.innerHTML = '<span class="badge bg-success">Sudah Ada</span>';
+        }
         
-        showCustomAlert(`Berkas ${jenis} berhasil diperbarui!`, "success");
-        loadDataJemaah(); // Segarkan tabel di belakang layar
+        showCustomAlert(`Berkas berhasil diperbarui!`, "success");
+        loadDataJemaah(); // Refresh data tabel di latar belakang
     } catch (error) {
         showCustomAlert(`Gagal upload berkas: ${error.message}`, "error");
     } finally {
-        fileInput.value = ''; // Kosongkan kembali input
+        fileInput.value = ''; // Kosongkan kembali memori input
     }
 }
 
 // ==========================================
-// FUNGSI CETAK BUKTI PENDAFTARAN (PDF / KERTAS)
+// FUNGSI CETAK BUKTI PENDAFTARAN
 // ==========================================
 function cetakBuktiPendaftaran(jm) {
     const tglDaftar = jm.createdAt && jm.createdAt.seconds 
         ? new Date(jm.createdAt.seconds * 1000).toLocaleDateString('id-ID', {day: '2-digit', month: 'long', year: 'numeric'}) 
         : '-';
 
-    // Buka tab baru kosong
     const printWindow = window.open('', '_blank');
     
-    // Tulis struktur HTML untuk kertas cetak
     printWindow.document.write(`
         <html>
         <head>
@@ -506,11 +489,8 @@ function cetakBuktiPendaftaran(jm) {
             </div>
 
             <script>
-                // Otomatis memunculkan dialog print setelah halaman selesai dimuat
                 window.onload = function() {
                     window.print();
-                    // Opsional: Tutup tab otomatis setelah ngeprint
-                    // window.onafterprint = function() { window.close(); } 
                 };
             </script>
         </body>
