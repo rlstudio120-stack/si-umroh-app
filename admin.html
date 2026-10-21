@@ -62,6 +62,7 @@
                 <i class="bi bi-pen me-2"></i> Verfikasi Dokumen
               </a>
             </li>
+            
             <li class="nav-item mb-2">
               <a href="#" class="nav-link text-white" onclick="switchView('paket'); bootstrap.Offcanvas.getInstance(document.getElementById('mobileMenu')).hide();">
                 <i class="bi bi-box-seam me-2"></i> Master Paket
@@ -88,15 +89,40 @@
           </div>
           <hr>
           <ul class="nav flex-column">
-            <li class="nav-item"><a href="#" class="nav-link text-white active" onclick="switchView('dashboard')">Dashboard</a></li>
-            <li class="nav-item"><a href="#" class="nav-link text-white" onclick="switchView('jemaah')">Data Jemaah</a></li>
-            <li class="nav-item"><a href="#" class="nav-link text-white" onclick="switchView('dokumen')">Verifikasi Dokumen</a></li>
-            <li class="nav-item"><a href="#" class="nav-link text-white" onclick="switchView('paket')">Master Paket</a></li>
-            <!-- Menu lain ditambahkan di sini -->
+            <li class="nav-item">
+              <a href="#" class="nav-link text-white active" onclick="switchView('dashboard')">
+                <i class="bi bi-speedometer2 me-2"></i> Dashboard
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="#" class="nav-link text-white" onclick="switchView('jemaah')">
+                <i class="bi bi-people me-2"></i> Data Jemaah
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="#" class="nav-link text-white" onclick="switchView('dokumen')">
+                <i class="bi bi-file-earmark-check me-2"></i> Verifikasi Dokumen
+              </a>
+            </li>
+            
+            <!-- MENU BARU: KEBERANGKATAN -->
+            <li class="nav-item">
+              <a href="#" class="nav-link text-white" onclick="switchView('keberangkatan'); loadDataJadwal();">
+                <i class="bi bi-airplane-fill me-2"></i> Keberangkatan
+              </a>
+            </li>
+            
+            <li class="nav-item">
+              <a href="#" class="nav-link text-white" onclick="switchView('paket')">
+                <i class="bi bi-box-seam me-2"></i> Master Paket
+              </a>
+            </li>
+            
             <hr class="border-secondary mt-4 mb-2">
+            
             <li class="nav-item">
               <a href="#" class="nav-link text-danger fw-bold" onclick="logoutAdmin(event)">
-                <i class="bi bi-box-arrow-left"></i> Keluar (Logout)
+                <i class="bi bi-box-arrow-left me-2"></i> Keluar (Logout)
               </a>
             </li>
           </ul>
@@ -111,6 +137,9 @@
               <h3 class="fw-bold text-dark mb-0">Dashboard Ringkasan</h3>
               <p class="text-muted">Pantau statistik pendaftaran dan paket umroh aktif secara real-time</p>
             </div>
+            <button class="btn btn-danger btn-sm shadow-sm" onclick="injectDummyJemaah()">
+  <i class="bi bi-bug me-1"></i> INJEK DATA DUMMY
+</button>
 
             <!-- 4 Kartu Statistik -->
             <div class="row g-3 mb-4">
@@ -293,15 +322,15 @@
                       <div class="card border-0 shadow-sm mb-3">
                         <div class="card-body text-center">
                           <!-- Gambar Foto -->
-    <img id="detFoto" src="https://via.placeholder.com/150" class="img-fluid rounded mb-2 shadow-sm" style="max-height: 200px; object-fit: cover;">
-    
-    <!-- Input File Tersembunyi -->
-    <input type="file" id="updFileFoto" class="d-none" accept="image/*" onchange="prosesUpdateBerkas('Foto')">
-    
-    <!-- Tombol Pemicu -->
-    <button type="button" class="btn btn-primary btn-sm w-100" onclick="document.getElementById('updFileFoto').click()">
-        <i class="bi bi-camera me-1"></i> Ganti / Upload Foto
-    </button>
+                          <img id="detFoto" src="https://via.placeholder.com/150" class="img-fluid rounded mb-2 shadow-sm" style="max-height: 200px; object-fit: cover;">
+                          
+                          <!-- Input File Tersembunyi -->
+                          <input type="file" id="updFileFoto" class="d-none" accept="image/*" onchange="prosesUpdateBerkas('Foto')">
+                          
+                          <!-- Tombol Pemicu -->
+                          <button type="button" class="btn btn-primary btn-sm w-100" onclick="document.getElementById('updFileFoto').click()">
+                              <i class="bi bi-camera me-1"></i> Ganti / Upload Foto
+                          </button>
                           
                           <h5 class="fw-bold text-primary mb-1" id="detNamaSingkat">-</h5>
                           <div class="bg-dark text-white rounded px-2 py-1 mb-3 d-inline-block fw-bold small" id="detNoReg">-</div>
@@ -613,22 +642,21 @@
                               </div>
                             </div>
 
-                            <!-- Group & Request -->
-                            <div class="row">
-                              <div class="col-6">
-                                <label class="form-label small fw-bold">Group Keluarga</label>
-                                <input type="text" class="form-control form-control-sm" id="editGrupKeluarga">
+                            <!-- Group & Request Kamar (Form Edit) -->
+                              <div class="row g-3 mb-3 border p-3 rounded bg-light">
+                                <div class="col-md-6">
+                                  <label class="form-label small fw-bold">Request Kamar Khusus</label>
+                                  <select class="form-select border-primary" id="editRequestKamar" onchange="aturLogikaKamarEdit()">
+                                    <option value="Reguler">Reguler (Pisah Sesuai Gender)</option>
+                                    <option value="Private">Private (Digabung Berdasarkan Mahram)</option>
+                                    <option value="Grup">Grup Keluarga (Rombongan Besar)</option>
+                                  </select>
+                                </div>
+                                <div class="col-md-6">
+                                  <label class="form-label small fw-bold text-muted">Nama Grup Keluarga</label>
+                                  <input type="text" class="form-control" id="editNamaGrup" placeholder="Contoh: KEL-SANTOSO" disabled>
+                                </div>
                               </div>
-                              <div class="col-6">
-                                <label class="form-label small fw-bold">Request Khusus</label>
-                                <select class="form-select form-select-sm" id="editReqKhusus">
-                                  <option value="Tidak Ada">Tidak Ada</option>
-                                  <option value="Kursi Roda">Kursi Roda</option>
-                                  <option value="Kamar Khusus">Kamar Khusus</option>
-                                  <option value="Menu Makanan Khusus">Menu Makanan Khusus</option>
-                                </select>
-                              </div>
-                            </div>
 
                           </div>
                         </div>
@@ -814,6 +842,200 @@
               </div>
               <!-- === AKHIR MODAL RUANG VERIFIKASI === -->
               <!-- === AKHIR HALAMAN VERIFIKASI === -->
+
+              <!-- === HALAMAN JADWAL KEBERANGKATAN === -->
+                <div id="view-keberangkatan" class="view-section" style="display: none;">
+                  <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                      <h3 class="fw-bold text-dark mb-0">Jadwal Keberangkatan</h3>
+                      <p class="text-muted">Kelola penerbangan dan grup jemaah</p>
+                    </div>
+                    <button class="btn btn-primary fw-bold shadow-sm" onclick="bukaModalTambahJadwal()">
+                      <i class="bi bi-plus"></i> Tambah Jadwal
+                    </button>
+                  </div>
+
+                  <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                      <div class="table-responsive">
+                        <table class="table table-hover align-middle w-100" id="tabel-jadwal">
+                          <thead class="table-light">
+                            <tr>
+                              <th class="text-primary">ID Jadwal</th>
+                              <th>Paket</th>
+                              <th>Tgl Berangkat</th>
+                              <th>Pesawat</th>
+                              <th>Tour Leader</th>
+                              <th class="text-center">Aksi</th>
+                            </tr>
+                          </thead>
+                          <tbody id="tbody-jadwal">
+                            <tr><td colspan="6" class="text-center py-4">Memuat data jadwal...</td></tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- === MODAL TAMBAH/EDIT JADWAL === -->
+                <div class="modal fade" id="modalJadwal" tabindex="-1" data-bs-backdrop="static">
+                  <div class="modal-dialog">
+                    <div class="modal-content border-0 shadow">
+                      <form id="formJadwal" onsubmit="submitJadwal(event)">
+                        <div class="modal-header bg-primary text-white border-0">
+                          <h5 class="modal-title fw-bold" id="modalJadwalTitle">Tambah Jadwal Baru</h5>
+                          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body p-4">
+                          <input type="hidden" id="jadwal-id-doc"> <!-- ID Dokumen Firebase -->
+                          <input type="hidden" id="jadwal-id-tampil"> <!-- ID Tampil seperti DEP-202607-001 -->
+
+                          <div class="mb-3">
+                            <label class="form-label small">Paket Umroh</label>
+                            <select class="form-select fw-bold" id="jadwal-paket" required>
+                              <option value="">-- Pilih Paket Umroh --</option>
+                            </select>
+                          </div>
+                          
+                          <div class="row g-2 mb-3">
+                            <div class="col-6">
+                              <label class="form-label small">Tanggal Berangkat</label>
+                              <input type="date" class="form-control" id="jadwal-tgl-berangkat" required>
+                            </div>
+                            <div class="col-6">
+                              <label class="form-label small">Tanggal Pulang</label>
+                              <input type="date" class="form-control" id="jadwal-tgl-pulang" required>
+                            </div>
+                          </div>
+
+                          <div class="mb-3">
+                            <label class="form-label small">Nomor Penerbangan</label>
+                            <input type="text" class="form-control" id="jadwal-pesawat" placeholder="Contoh: SV-819" required>
+                          </div>
+
+                          <div class="row g-2 mb-3">
+                            <div class="col-6">
+                              <label class="form-label small">Tour Leader</label>
+                              <input type="text" class="form-control" id="jadwal-tl">
+                            </div>
+                            <div class="col-6">
+                              <label class="form-label small">Muthawif</label>
+                              <input type="text" class="form-control" id="jadwal-muthawif">
+                            </div>
+                          </div>
+                        </div>
+                        <div class="modal-footer bg-light border-0">
+                          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                          <button type="submit" class="btn btn-primary fw-bold" id="btnSimpanJadwal">Simpan Jadwal</button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- === MODAL MANIFEST JEMAAH === -->
+                <div class="modal fade" id="modalManifest" tabindex="-1">
+                  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+                    <div class="modal-content border-0 shadow">
+                      
+                      <!-- Header Hijau sesuai desain -->
+                      <div class="modal-header text-white border-0" style="background-color: #198754;"> 
+                        <h5 class="modal-title fw-bold"><i class="bi bi-people-fill me-2"></i>Data Manifest Jemaah</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                      </div>
+                      
+                      <div class="modal-body p-4 bg-light">
+                        <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
+                          <div>
+                            <h6 class="fw-bold mb-1" id="manifest-id-jadwal">Jadwal: DEP-XXXXXX-XXX</h6>
+                            <small class="text-muted" id="manifest-info-paket">Paket: - | Berangkat: -</small>
+                          </div>
+                        </div>
+                        
+                        <div class="table-responsive bg-white rounded shadow-sm p-3">
+                          <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                              <tr>
+                                <th class="text-primary">No. Reg</th>
+                                <th>Nama Jemaah</th>
+                                <th>L/P</th>
+                                <th>No. HP</th>
+                                <th>Status Kesiapan</th>
+                              </tr>
+                            </thead>
+                            <tbody id="tbody-manifest">
+                              <tr><td colspan="6" class="text-center py-4">Memuat data manifest...</td></tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                      
+                      <div class="modal-footer border-0 bg-white">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                      </div>
+                      
+                    </div>
+                  </div>
+                </div>
+
+                <!-- === MODAL MANAJEMEN ROOMING (FULLSCREEN) === -->
+                <div class="modal fade" id="modalRooming" tabindex="-1" data-bs-backdrop="static">
+                  <div class="modal-dialog modal-fullscreen">
+                    <div class="modal-content bg-light">
+                      
+                      <!-- Header Modal -->
+                      <div class="modal-header text-white border-0 py-2" style="background-color: #0d6efd;">
+                        <h5 class="modal-title fs-6 fw-bold"><i class="bi bi-door-open-fill me-2"></i>Manajemen Rooming & Pembagian Kamar</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                      </div>
+                      
+                      <div class="modal-body p-4">
+                        <!-- Informasi Jadwal & Tombol Aksi -->
+                        <div class="d-flex justify-content-between align-items-center bg-white p-3 rounded shadow-sm mb-4 border">
+                          <div>
+                            <h5 class="fw-bold mb-1" id="rooming-paket-info">Paket: -</h5>
+                            <small class="text-muted" id="rooming-jadwal-info">ID Keberangkatan: -</small>
+                          </div>
+                          <div class="d-flex gap-2">
+                            <button class="btn btn-warning fw-bold shadow-sm" onclick="autoRooming()">
+                              <i class="bi bi-arrow-repeat me-1"></i> Reset ke Auto Rooming
+                            </button>
+                            <button class="btn btn-outline-secondary fw-bold shadow-sm" onclick="tambahKamarManual()">
+                              <i class="bi bi-plus-square me-1"></i> Tambah Kamar
+                            </button>
+                            <button class="btn btn-primary fw-bold shadow-sm" onclick="simpanFormasiRooming()">
+                              <i class="bi bi-save me-1"></i> Simpan Formasi
+                            </button>
+                          </div>
+                        </div>
+
+                        <!-- Area Drag & Drop Kamar -->
+                        <div class="row g-3" id="area-kamar">
+                          <!-- Kartu Kamar akan di-generate oleh JavaScript di sini -->
+                          
+                          <!-- Area Kamar Induk: Belum Dapat Kamar -->
+                          <div class="col-md-3 mb-3">
+                            <div class="card border-dark h-100 shadow-sm">
+                              <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center py-2">
+                                <span class="fw-bold"><i class="bi bi-person-x me-1"></i>BELUM DIATUR</span>
+                                <span class="badge bg-secondary" id="badge-KMR-BELUM">0 Org</span>
+                              </div>
+                              <!-- AREA DROPZONE -->
+                              <div class="card-body p-2 bg-light overflow-auto dropzone-kamar" id="KMR-BELUM" style="min-height: 400px; max-height: 60vh;" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="drop(event)">
+                                <div class="text-center py-4 text-muted small id-loading">Memuat jemaah...</div>
+                              </div>
+                            </div>
+                          </div>
+
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+
+
         </div>
         
       </div>
@@ -853,7 +1075,7 @@
             <div class="row mb-3">
               <div class="col-6">
                 <label class="form-label fw-bold">Harga Paket (Rp)</label>
-                <input type="number" class="form-control" id="pktHarga" required>
+                <input type="text" class="form-control" id="pktHarga" placeholder="Cth: 40.000.000" required>
               </div>
               <div class="col-6">
                 <label class="form-label fw-bold">Status Paket</label>
@@ -1038,21 +1260,22 @@
                         <input type="date" class="form-control form-control-sm" id="inputPasporExp">
                       </div>
                     </div>
-                    <div class="row">
-                      <div class="col-6">
-                        <label class="form-label small fw-bold">Group Keluarga</label>
-                        <input type="text" class="form-control form-control-sm" id="inputGrupKeluarga" placeholder="Contoh: KEL-A">
+                    <!-- Group & Request Kamar (Form Tambah) -->
+                      <div class="row g-3 mb-3 border p-3 rounded bg-light">
+                        <div class="col-md-6">
+                          <label class="form-label small fw-bold">Request Kamar Khusus</label>
+                          <select class="form-select border-primary" id="inputRequestKamar" onchange="aturLogikaKamarTambah()">
+                            <option value="Reguler">Reguler (Pisah Sesuai Gender)</option>
+                            <option value="Private">Private (Digabung Berdasarkan Mahram)</option>
+                            <option value="Grup">Grup Keluarga (Rombongan Besar)</option>
+                          </select>
+                        </div>
+                        <div class="col-md-6">
+                          <label class="form-label small fw-bold text-muted">Nama Grup Keluarga</label>
+                          <input type="text" class="form-control" id="inputNamaGrup" placeholder="Contoh: KEL-A" disabled>
+                          <small class="text-muted" style="font-size: 0.7rem;">*Terbuka jika memilih Grup Keluarga</small>
+                        </div>
                       </div>
-                      <div class="col-6">
-                        <label class="form-label small fw-bold">Request Khusus</label>
-                        <select class="form-select form-select-sm" id="inputReqKhusus">
-                          <option value="Tidak Ada">Tidak Ada</option>
-                          <option value="Kursi Roda">Kursi Roda</option>
-                          <option value="Kamar Khusus">Kamar Khusus</option>
-                          <option value="Menu Makanan Khusus">Menu Makanan Khusus</option>
-                        </select>
-                      </div>
-                    </div>
                   </div>
                 </div>
 
@@ -1105,6 +1328,8 @@
   </div>
   <!-- === AKHIR MODAL PENDAFTARAN JEMAAH === -->
 
+  
+
  <!-- ============================================== -->
   <!-- PEMANGGILAN LIBRARY JAVASCRIPT & FIREBASE -->
   <!-- ============================================== -->
@@ -1140,6 +1365,7 @@
   <script src="js/modules/paket.js"></script>
   <script src="js/modules/jemaah.js"></script>
   <script src="js/modules/verifikasi.js"></script>
+  <script src="js/modules/keberangkatan.js"></script>
 
   <script>
   window.addEventListener('DOMContentLoaded', () => {

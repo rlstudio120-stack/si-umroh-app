@@ -91,11 +91,16 @@ function submitPaket(event) {
     btn.disabled = true;
     
     const id = document.getElementById('pktId').value;
+    
+    // --- TAMBAHAN: Tangkap dan bersihkan titik pada harga ---
+    const hargaMentah = document.getElementById('pktHarga').value;
+    const hargaBersih = parseInt(hargaMentah.replace(/\./g, ''), 10) || 0;
+    
     const dataPaket = {
         nama: document.getElementById('pktNama').value,
         durasi: parseInt(document.getElementById('pktDurasi').value),
         kuota: parseInt(document.getElementById('pktKuota').value),
-        harga: parseInt(document.getElementById('pktHarga').value),
+        harga: hargaBersih, // <-- Memasukkan harga yang sudah bersih dari titik
         status: document.getElementById('pktStatus').value,
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     };
@@ -128,4 +133,25 @@ function hapusDataPaket(id) {
             loadDataPaket();
         }).catch(err => showCustomAlert(err.message, "error"));
     }
+}
+
+function formatRupiah(angka) {
+    let number_string = angka.toString().replace(/[^,\d]/g, ''),
+        split = number_string.split(','),
+        sisa = split[0].length % 3,
+        rupiah = split[0].substr(0, sisa),
+        ribuan = split[0].substr(sisa).match(/\d{3}/gi);
+
+    if (ribuan) {
+        let separator = sisa ? '.' : '';
+        rupiah += separator + ribuan.join('.');
+    }
+    return rupiah;
+}
+
+const inputHarga = document.getElementById('pktHarga');
+if (inputHarga) {
+    inputHarga.addEventListener('input', function(e) {
+        this.value = formatRupiah(this.value);
+    });
 }

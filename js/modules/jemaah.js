@@ -243,8 +243,8 @@ async function submitJemaah(event) {
             pasporTempat: document.getElementById('inputPasporTempat').value,
             pasporTgl: document.getElementById('inputPasporTgl').value,
             pasporExp: document.getElementById('inputPasporExp').value,
-            grupKeluarga: document.getElementById('inputGrupKeluarga').value,
-            reqKhusus: document.getElementById('inputReqKhusus').value,
+            grup: document.getElementById('inputNamaGrup').value,
+            requestKamar: document.getElementById('inputRequestKamar').value,
 
             // PERBAIKAN: Penamaan field penyimpanan
             urlKtp: resKtp,
@@ -287,6 +287,9 @@ function hapusJemaah(noReg) {
 // FUNGSI EDIT JEMAAH (TANPA UPLOAD FILE)
 // ==========================================
 function bukaModalEditJemaah(encodedJSON) {
+    // Cegah aksi default tombol agar halaman tidak mental
+    if (event) event.preventDefault(); 
+    
     const jm = JSON.parse(decodeURIComponent(encodedJSON));
     
     document.getElementById('editReg').value = jm.id;
@@ -313,8 +316,12 @@ function bukaModalEditJemaah(encodedJSON) {
     document.getElementById('editDaruratHub').value = jm.daruratHub || 'Suami';
     document.getElementById('editDaruratHp').value = jm.daruratHp || '';
     
-    document.getElementById('editGrupKeluarga').value = jm.grupKeluarga || '';
-    document.getElementById('editReqKhusus').value = jm.reqKhusus || 'Tidak Ada';
+    // --- PERBAIKAN BAGIAN KAMAR (Menggunakan 'jm') ---
+    const elRequest = document.getElementById('editRequestKamar');
+    const elGrup = document.getElementById('editNamaGrup');
+    
+    if (elRequest) elRequest.value = jm.requestKamar || 'Reguler';
+    if (elGrup) elGrup.value = jm.grup || '';
 
     const selectPaket = document.getElementById('editPaket');
     selectPaket.innerHTML = '<option value="">-- Memuat Paket... --</option>';
@@ -322,51 +329,71 @@ function bukaModalEditJemaah(encodedJSON) {
         let options = '';
         snapshot.forEach(doc => {
             const isSelected = (doc.data().nama === jm.paket) ? 'selected' : '';
-            options += `<option value="${doc.data().nama}" ${isSelected}>${doc.data().nama} (${doc.data().durasi} Hari)</option>`;
+            options += `<option value="${doc.data().nama}" ${isSelected}>${doc.data().nama}</option>`;
         });
         selectPaket.innerHTML = options;
     });
+    
+    // Panggil logika buka/tutup form kamar khusus edit
+    if (typeof aturLogikaKamarEdit === "function") {
+        aturLogikaKamarEdit();
+    }
 
     const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('modalEditJemaah'));
     modal.show();
 }
 
+// ==========================================
+// FUNGSI SIMPAN PERUBAHAN EDIT JEMAAH (KEBAL ERROR)
+// ==========================================
 async function submitEditJemaah(event) {
     event.preventDefault();
     const btn = document.getElementById('btnUpdateJemaah');
     btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Menyimpan...';
     btn.disabled = true;
 
+    // Fungsi pintar untuk mengambil data dengan aman (mencegah error 'null')
+    const ambilNilai = (idElem) => {
+        const el = document.getElementById(idElem);
+        return el ? el.value : '';
+    };
+
     try {
-        const noReg = document.getElementById('editReg').value;
+        const noReg = ambilNilai('editReg');
+        if (!noReg) throw new Error("ID Jemaah (noReg) tidak ditemukan di form!");
+
         const payloadData = {
-            paket: document.getElementById('editPaket').value,
-            nama: document.getElementById('editNama').value,
-            nik: document.getElementById('editNik').value,
-            tempatLahir: document.getElementById('editTmpLahir').value,
-            tglLahir: document.getElementById('editTglLahir').value,
-            jk: document.getElementById('editJk').value,
-            alamat: document.getElementById('editAlamat').value,
-            kota: document.getElementById('editKota').value,
-            provinsi: document.getElementById('editProvinsi').value,
-            wa: document.getElementById('editWa').value,
-            email: document.getElementById('editEmail').value,
-            mahramNama: document.getElementById('editMahramNama').value,
-            mahramHub: document.getElementById('editMahramHub').value,
-            pasporNo: document.getElementById('editPasporNo').value,
-            pasporTempat: document.getElementById('editPasporTempat').value,
-            pasporTgl: document.getElementById('editPasporTgl').value,
-            pasporExp: document.getElementById('editPasporExp').value,
-            daruratNama: document.getElementById('editDaruratNama').value,
-            daruratHub: document.getElementById('editDaruratHub').value,
-            daruratHp: document.getElementById('editDaruratHp').value,
-            grupKeluarga: document.getElementById('editGrupKeluarga').value,
-            reqKhusus: document.getElementById('editReqKhusus').value
+            paket: ambilNilai('editPaket'),
+            nama: ambilNilai('editNama'),
+            nik: ambilNilai('editNik'),
+            tempatLahir: ambilNilai('editTmpLahir'),
+            tglLahir: ambilNilai('editTglLahir'),
+            jk: ambilNilai('editJk'),
+            alamat: ambilNilai('editAlamat'),
+            kota: ambilNilai('editKota'),
+            provinsi: ambilNilai('editProvinsi'),
+            wa: ambilNilai('editWa'),
+            email: ambilNilai('editEmail'),
+            mahramNama: ambilNilai('editMahramNama'),
+            mahramHub: ambilNilai('editMahramHub'),
+            pasporNo: ambilNilai('editPasporNo'),
+            pasporTempat: ambilNilai('editPasporTempat'),
+            pasporTgl: ambilNilai('editPasporTgl'),
+            pasporExp: ambilNilai('editPasporExp'),
+            daruratNama: ambilNilai('editDaruratNama'),
+            daruratHub: ambilNilai('editDaruratHub'),
+            daruratHp: ambilNilai('editDaruratHp'),
+            
+            // Kolom Kamar Khusus
+            requestKamar: ambilNilai('editRequestKamar'),
+            grup: ambilNilai('editNamaGrup')
         };
 
         await db.collection("jemaah").doc(noReg).update(payloadData);
         showCustomAlert("Data jemaah berhasil diperbarui!", "success");
-        loadDataJemaah(); 
+        
+        // Coba refresh data jika fungsi loadDataJemaah tersedia
+        if (typeof loadDataJemaah === "function") loadDataJemaah(); 
         
         bootstrap.Modal.getInstance(document.getElementById('modalEditJemaah')).hide();
     } catch (error) {
@@ -374,6 +401,28 @@ async function submitEditJemaah(event) {
     } finally {
         btn.innerHTML = '<i class="bi bi-save"></i> Simpan Perubahan Data';
         btn.disabled = false;
+    }
+}
+
+function aturLogikaKamar() {
+    const pilihan = document.getElementById('jm-request-kamar').value;
+    const inputGrup = document.getElementById('jm-nama-grup');
+    const labelGrup = document.getElementById('label-nama-grup');
+
+    if (pilihan === 'Grup') {
+        // Unfreeze: Buka gembok jika memilih Grup
+        inputGrup.disabled = false;
+        inputGrup.classList.add('border-primary');
+        labelGrup.classList.remove('text-muted');
+        labelGrup.classList.add('text-primary');
+        inputGrup.focus();
+    } else {
+        // Freeze: Kunci kembali dan kosongkan nilainya
+        inputGrup.disabled = true;
+        inputGrup.value = ''; 
+        inputGrup.classList.remove('border-primary');
+        labelGrup.classList.add('text-muted');
+        labelGrup.classList.remove('text-primary');
     }
 }
 
@@ -498,4 +547,25 @@ function cetakBuktiPendaftaran(jm) {
     `);
     
     printWindow.document.close();
+}
+
+function aturLogikaKamarTambah() {
+    const pilihan = document.getElementById('inputRequestKamar').value;
+    const inputGrup = document.getElementById('inputNamaGrup');
+    if (pilihan === 'Grup') {
+        inputGrup.disabled = false; inputGrup.classList.add('border-primary'); inputGrup.focus();
+    } else {
+        inputGrup.disabled = true; inputGrup.value = ''; inputGrup.classList.remove('border-primary');
+    }
+}
+
+function aturLogikaKamarEdit() {
+    const pilihan = document.getElementById('editRequestKamar');
+    const inputGrup = document.getElementById('editNamaGrup');
+    if (!pilihan || !inputGrup) return;
+    if (pilihan.value === 'Grup') {
+        inputGrup.disabled = false; inputGrup.classList.add('border-primary');
+    } else {
+        inputGrup.disabled = true; inputGrup.value = ''; inputGrup.classList.remove('border-primary');
+    }
 }

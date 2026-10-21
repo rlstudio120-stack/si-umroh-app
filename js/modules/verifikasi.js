@@ -79,25 +79,28 @@ function bukaRuangVerifikasi(encodedData) {
     // 1. Pecah data jemaah
     const data = JSON.parse(decodeURIComponent(encodedData));
     
-    // 2. Isi form di sebelah kanan
+    // 2. Isi form di sebelah kanan (Sesuai ID form di admin.html)
     document.getElementById('verif-id-jemaah').value = data.id;
     document.getElementById('verif-info-reg').innerText = `${data.id} (${data.paket || '-'})`;
     
     // Data Diri
     document.getElementById('verif-nama').value = data.nama || '';
     document.getElementById('verif-nik').value = data.nik || '';
-    document.getElementById('verif-hp').value = data.hp || '';
+    // PERBAIKAN: Gunakan data.wa (Sesuai field Firestore kita)
+    document.getElementById('verif-hp').value = data.wa || ''; 
     document.getElementById('verif-alamat').value = data.alamat || '';
     
-    // Data Mahram (Sesuaikan nama variabel misal data.namaMahram dengan field Firestore Anda)
-    document.getElementById('verif-nama-mahram').value = data.namaMahram || '';
-    document.getElementById('verif-hubungan-mahram').value = data.hubunganMahram || '';
-    document.getElementById('verif-hp-mahram').value = data.hpMahram || '';
+    // Data Mahram 
+    // PERBAIKAN: Gunakan data.mahramNama dan data.mahramHub
+    document.getElementById('verif-nama-mahram').value = data.mahramNama || '';
+    document.getElementById('verif-hubungan-mahram').value = data.mahramHub || '';
+    document.getElementById('verif-hp-mahram').value = data.daruratHp || ''; // Menggunakan no HP darurat
     
     // Data Paspor
-    document.getElementById('verif-nama-paspor').value = data.namaPaspor || '';
-    document.getElementById('verif-no-paspor').value = data.noPaspor || '';
-    document.getElementById('verif-imigrasi').value = data.kantorImigrasi || '';
+    // PERBAIKAN: Gunakan data.pasporNo dan data.pasporTempat
+    document.getElementById('verif-nama-paspor').value = data.nama || ''; // Default samakan dengan nama
+    document.getElementById('verif-no-paspor').value = data.pasporNo || '';
+    document.getElementById('verif-imigrasi').value = data.pasporTempat || '';
     
     // Set status default dropdown
     let statusPilihan = data.status;
@@ -126,14 +129,14 @@ function siapkanViewerDokumen(data) {
     tabsContainer.innerHTML = ''; 
     viewerContainer.innerHTML = '<h5 class="text-white">Memuat dokumen...</h5>';
 
-    // Nama field disesuaikan dengan Firestore Anda (urlKtp dan urlKk)
-    // Field yang belum ada tetap ditulis berjaga-jaga jika besok ditambahkan
+    // PERBAIKAN: Selaraskan dengan field url Firebase yang benar, termasuk Foto
     const daftarDokumen = [
+        { nama: 'Pas Foto', url: data.urlFoto, icon: 'bi-person-bounding-box' },
         { nama: 'KTP', url: data.urlKtp, icon: 'bi-person-vcard' },
-        { nama: 'KK', url: data.urlKk, icon: 'bi-people' },
-        { nama: 'Buku Nikah', url: data.bukuNikah, icon: 'bi-book' }, 
-        { nama: 'Paspor', url: data.paspor, icon: 'bi-journal-text' }, 
-        { nama: 'Akta Lahir', url: data.aktaLahir, icon: 'bi-file-earmark-person' } 
+        { nama: 'KK', url: data.urlKk, icon: 'bi-people' }, // Pastikan urlKK huruf besar
+        { nama: 'Buku Nikah', url: data.urlNikah, icon: 'bi-book' }, 
+        { nama: 'Paspor', url: data.urlPaspor, icon: 'bi-journal-text' }, 
+        { nama: 'Akta Lahir', url: data.urlLahir, icon: 'bi-file-earmark-person' } 
     ];
 
     let dokumenTersedia = 0;
@@ -329,18 +332,17 @@ function simpanKeputusan() {
     else if (statusFinal === 'Ditolak') statusFinal = 'Butuh Revisi';
 
     // 5. Eksekusi Update ke Firebase Firestore
-    // PASTIKAN nama properti di kiri titik dua (seperti namaMahram) SESUAI dengan nama field di database Anda!
+    // PERBAIKAN: Gunakan key field yang benar saat menyimpan kembali ke database
     db.collection("jemaah").doc(idJemaah).update({
         nama: namaBaru,
         nik: nikBaru,
-        hp: hpBaru,
+        wa: hpBaru, // Disimpan kembali sebagai wa
         alamat: alamatBaru,
-        namaMahram: namaMahramBaru,
-        hubunganMahram: hubunganMahramBaru,
-        hpMahram: hpMahramBaru,
-        namaPaspor: namaPasporBaru,
-        noPaspor: noPasporBaru,
-        kantorImigrasi: imigrasiBaru,
+        mahramNama: namaMahramBaru, // Disimpan kembali sebagai mahramNama
+        mahramHub: hubunganMahramBaru, 
+        daruratHp: hpMahramBaru, 
+        pasporNo: noPasporBaru, // Disimpan kembali sebagai pasporNo
+        pasporTempat: imigrasiBaru, // Disimpan kembali sebagai pasporTempat
         status: statusFinal,
         catatan_verifikasi: catatan
     }).then(() => {
@@ -358,6 +360,8 @@ function simpanKeputusan() {
             showConfirmButton: false
         }).then(() => {
             loadAntreanVerifikasi(); 
+            // Opsional: Refresh tabel jemaah utama jika ada
+            if(typeof loadDataJemaah === 'function') loadDataJemaah();
         });
 
     }).catch((error) => {
