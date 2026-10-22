@@ -63,6 +63,12 @@
               </a>
             </li>
             
+            <li class="nav-item">
+              <a href="#" class="nav-link text-white" onclick="switchView('surat'); loadDataSurat();">
+                <i class="bi bi-envelope-paper me-2"></i> Surat & Dokumen
+              </a>
+            </li>
+
             <li class="nav-item mb-2">
               <a href="#" class="nav-link text-white" onclick="switchView('paket'); bootstrap.Offcanvas.getInstance(document.getElementById('mobileMenu')).hide();">
                 <i class="bi bi-box-seam me-2"></i> Master Paket
@@ -111,6 +117,12 @@
                 <i class="bi bi-airplane-fill me-2"></i> Keberangkatan
               </a>
             </li>
+
+            <li class="nav-item">
+              <a href="#" class="nav-link text-white" onclick="switchView('surat'); loadDataSurat();">
+                <i class="bi bi-envelope-paper me-2"></i> Surat & Dokumen
+              </a>
+            </li>
             
             <li class="nav-item">
               <a href="#" class="nav-link text-white" onclick="switchView('paket')">
@@ -138,8 +150,8 @@
               <p class="text-muted">Pantau statistik pendaftaran dan paket umroh aktif secara real-time</p>
             </div>
             <button class="btn btn-danger btn-sm shadow-sm" onclick="injectDummyJemaah()">
-  <i class="bi bi-bug me-1"></i> INJEK DATA DUMMY
-</button>
+              <i class="bi bi-bug me-1"></i> INJEK DATA DUMMY
+            </button>
 
             <!-- 4 Kartu Statistik -->
             <div class="row g-3 mb-4">
@@ -841,7 +853,6 @@
                 </div>
               </div>
               <!-- === AKHIR MODAL RUANG VERIFIKASI === -->
-              <!-- === AKHIR HALAMAN VERIFIKASI === -->
 
               <!-- === HALAMAN JADWAL KEBERANGKATAN === -->
                 <div id="view-keberangkatan" class="view-section" style="display: none;">
@@ -1108,6 +1119,272 @@
                   </div>
                 </div>
                 <!-- === AKHIR MODAL DENAH BUS === -->
+
+                <!-- === HALAMAN SURAT & DOKUMEN === -->
+                  <div id="view-surat" class="view-section" style="display: none;">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                      <div>
+                        <h3 class="fw-bold text-dark mb-0">Surat & Dokumen Jemaah</h3>
+                        <p class="text-muted">Cetak surat rekomendasi, pengantar, dan dokumen pendukung lainnya otomatis</p>
+                      </div>
+                      <div>
+                        <button class="btn btn-outline-dark fw-bold shadow-sm" onclick="bukaModalSettingSurat()">
+                          <i class="bi bi-gear-fill me-1"></i> Pengaturan Kop Surat
+                        </button>
+                      </div>
+                    </div>
+                    <div class="card shadow-sm border-0">
+                      <div class="card-body p-2">
+                        <div class="table-responsive">
+                          <table id="tabel-surat" class="table table-hover align-middle mb-0 w-100">
+                            <thead class="table-light">
+                              <tr>
+                                <th class="ps-4">No. Registrasi</th>
+                                <th>Nama Jemaah</th>
+                                <th>Paket</th>
+                                <th class="text-center">Aksi Dokumen</th>
+                              </tr>
+                            </thead>
+                            <tbody id="tbody-surat">
+                              <tr><td colspan="4" class="text-center py-4 text-muted">Memuat data jemaah...</td></tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- MODAL KONFIGURASI CETAK SURAT -->
+                    <div class="modal fade" id="modalSurat" tabindex="-1" data-bs-backdrop="static">
+                      <div class="modal-dialog modal-lg">
+                        <div class="modal-content border-0 shadow">
+                          <div class="modal-header bg-success text-white border-0">
+                            <h5 class="modal-title fw-bold"><i class="bi bi-printer me-2"></i>Cetak Surat & Dokumen Jemaah</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                          </div>
+                          <form onsubmit="cetakDokumenSurat(event)">
+                            <div class="modal-body p-4 bg-light">
+                              <div class="alert alert-info py-2 small mb-4">
+                                Mencetak surat untuk: <strong id="surat-nama-jemaah">Nama Jemaah</strong>
+                              </div>
+                              
+                              <div class="row mb-3">
+                                <div class="col-md-6">
+                                  <label class="form-label small fw-bold">Pilih Jenis Surat</label>
+                                  <select class="form-select border-success fw-bold" id="surat-jenis" onchange="ubahFormSurat()" required>
+                                    <option value="paspor">Surat Rekomendasi Paspor</option>
+                                    <option value="berangkat">Surat Keterangan Berangkat Umroh</option>
+                                    <option value="batal">Surat Keterangan Batal/Tunda (Sakit)</option>
+                                  </select>
+                                </div>
+                                <div class="col-md-6">
+                                  <label class="form-label small fw-bold">Nomor Surat (Otomatis)</label>
+                                  <input type="text" class="form-control" id="surat-no" required>
+                                </div>
+                              </div>
+
+                              <div class="row mb-3">
+                                <div class="col-md-6">
+                                  <label class="form-label small fw-bold">Tanggal Surat Dicetak</label>
+                                  <input type="date" class="form-control" id="surat-tgl-cetak" required>
+                                </div>
+                                <div class="col-md-6">
+                                  <label class="form-label small fw-bold">Teks Tanggal Keberangkatan</label>
+                                  <input type="text" class="form-control" id="surat-tgl-berangkat" placeholder="Contoh: 12 s.d. 23 Oktober 2026" required>
+                                </div>
+                              </div>
+
+                              <!-- KOLOM DINAMIS (Muncul jika pilih Surat Keterangan) -->
+                              <div id="area-surat-keterangan" class="d-none border-top pt-3 mt-3">
+                                <h6 class="fw-bold text-primary mb-3">Tambahan Data Surat Keterangan</h6>
+                                <div class="row mb-3">
+                                  <div class="col-md-6">
+                                    <label class="form-label small fw-bold">Pekerjaan / Jabatan Jemaah</label>
+                                    <input type="text" class="form-control form-control-sm" id="surat-pekerjaan" placeholder="Contoh: TAPM Kab. Bangkalan">
+                                  </div>
+                                  <div class="col-md-6">
+                                    <label class="form-label small fw-bold">Nama & Alamat Instansi</label>
+                                    <input type="text" class="form-control form-control-sm" id="surat-instansi" placeholder="Contoh: Kantor TPP, Mlajah...">
+                                  </div>
+                                </div>
+                              </div>
+
+                              <!-- TOGGLE TANDA TANGAN DIGITAL -->
+                              <div class="mb-3 border p-2 rounded bg-white shadow-sm d-flex justify-content-between align-items-center">
+                                <label class="form-check-label small fw-bold mb-0 text-primary" for="surat-pakai-ttd">
+                                  <i class="bi bi-pen-fill me-1"></i> Cetak TTD & Stempel Digital?
+                                </label>
+                                <div class="form-check form-switch mb-0">
+                                  <input class="form-check-input fs-5" type="checkbox" id="surat-pakai-ttd" style="cursor: pointer;">
+                                </div>
+                              </div>
+
+                              <!-- KOLOM DINAMIS (Muncul jika pilih Batal/Sakit) -->
+                              <div id="area-surat-batal" class="d-none border-top pt-3 mt-2">
+                                <div class="row mb-2">
+                                  <div class="col-md-4">
+                                    <label class="form-label small fw-bold">No. Paspor</label>
+                                    <input type="text" class="form-control form-control-sm" id="surat-paspor" placeholder="Ketik jika ada">
+                                  </div>
+                                  <div class="col-md-4">
+                                    <label class="form-label small fw-bold">Nomor Visa</label>
+                                    <input type="text" class="form-control form-control-sm" id="surat-visa" placeholder="Contoh: 6174080432">
+                                  </div>
+                                  <div class="col-md-4">
+                                    <label class="form-label small fw-bold">Kode Tiket</label>
+                                    <input type="text" class="form-control form-control-sm" id="surat-tiket" placeholder="Contoh: 9902149879662">
+                                  </div>
+                                </div>
+                                <div class="mb-2">
+                                  <label class="form-label small fw-bold text-danger">Alasan Batal / Tunda</label>
+                                  <textarea class="form-control form-control-sm" id="surat-alasan" rows="2">Karena jemaah yang bersangkutan mengalami gangguan kesehatan (sakit), sehingga tidak memungkinkan untuk mengikuti perjalanan ibadah umrah sesuai jadwal yang telah ditetapkan, maka yang bersangkutan tidak jadi berangkat melaksanakan ibadah umrah pada periode keberangkatan tersebut.</textarea>
+                                </div>
+                              </div>
+
+                            </div>
+                            <div class="modal-footer bg-white border-0">
+                              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                              <button type="submit" class="btn btn-success fw-bold shadow-sm"><i class="bi bi-printer-fill me-1"></i> Cetak Dokumen</button>
+                            </div>
+                          </form>
+                        </div>
+                      </div>
+                    </div>
+                  <!-- === AKHIR HALAMAN SURAT === -->
+                   <!-- MODAL PENGATURAN KOP SURAT -->
+                    <div class="modal fade" id="modalSettingSurat" tabindex="-1" data-bs-backdrop="static">
+                      <div class="modal-dialog modal-lg">
+                        <div class="modal-content border-0 shadow">
+                          <div class="modal-header bg-dark text-white border-0">
+                            <h5 class="modal-title fw-bold"><i class="bi bi-gear-fill me-2"></i>Pengaturan Kop & Logo Surat</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                          </div>
+                          <form onsubmit="simpanSettingSurat(event)">
+                            <div class="modal-body p-4 bg-light">
+                              <h6 class="fw-bold text-primary border-bottom pb-2 mb-3">Teks & Format Kop Surat</h6>
+                              
+                              <!-- Baris 1: Nama Perusahaan -->
+                              <div class="mb-3 border p-3 rounded bg-white shadow-sm">
+                                <label class="form-label small fw-bold text-dark">Baris 1 (Nama Perusahaan Utama)</label>
+                                <input type="text" class="form-control fw-bold mb-2" id="set-kop-nama" placeholder="Contoh: PT. ENKA IMRON MANDIRI" required>
+                                <div class="d-flex gap-2 align-items-center flex-wrap">
+                                  <input type="color" id="set-kop-nama-color" class="form-control form-control-color p-1" style="width:40px; height:31px;" title="Warna Teks">
+                                  <div class="input-group input-group-sm" style="width: 110px;">
+                                    <input type="number" id="set-kop-nama-size" class="form-control" placeholder="Ukuran">
+                                    <span class="input-group-text">pt</span>
+                                  </div>
+                                  <select class="form-select form-select-sm" id="set-kop-nama-font" style="width: 140px;">
+                                    <option value="Arial, sans-serif">Arial</option>
+                                    <option value="'Times New Roman', serif">Times New Roman</option>
+                                    <option value="'Courier New', monospace">Courier New</option>
+                                    <option value="Georgia, serif">Georgia</option>
+                                    <option value="Verdana, sans-serif">Verdana</option>
+                                  </select>
+                                  <div class="btn-group btn-group-sm" role="group">
+                                    <input type="checkbox" class="btn-check" id="set-kop-nama-b"><label class="btn btn-outline-dark fw-bold" for="set-kop-nama-b">B</label>
+                                    <input type="checkbox" class="btn-check" id="set-kop-nama-i"><label class="btn btn-outline-dark fst-italic" for="set-kop-nama-i">I</label>
+                                    <input type="checkbox" class="btn-check" id="set-kop-nama-u"><label class="btn btn-outline-dark text-decoration-underline" for="set-kop-nama-u">U</label>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <!-- Baris 2: Sub / Slogan -->
+                              <div class="mb-3 border p-3 rounded bg-white shadow-sm">
+                                <label class="form-label small fw-bold text-dark">Baris 2 (Slogan / Deskripsi)</label>
+                                <input type="text" class="form-control mb-2" id="set-kop-sub" placeholder="Contoh: Penyelenggara Perjalanan Ibadah Umroh...">
+                                <div class="d-flex gap-2 align-items-center flex-wrap">
+                                  <input type="color" id="set-kop-sub-color" class="form-control form-control-color p-1" style="width:40px; height:31px;" title="Warna Teks">
+                                  <div class="input-group input-group-sm" style="width: 110px;">
+                                    <input type="number" id="set-kop-sub-size" class="form-control" placeholder="Ukuran">
+                                    <span class="input-group-text">pt</span>
+                                  </div>
+                                  <select class="form-select form-select-sm" id="set-kop-sub-font" style="width: 140px;">
+                                    <option value="Arial, sans-serif">Arial</option>
+                                    <option value="'Times New Roman', serif">Times New Roman</option>
+                                    <option value="'Courier New', monospace">Courier New</option>
+                                    <option value="Georgia, serif">Georgia</option>
+                                    <option value="Verdana, sans-serif">Verdana</option>
+                                  </select>
+                                  <div class="btn-group btn-group-sm" role="group">
+                                    <input type="checkbox" class="btn-check" id="set-kop-sub-b"><label class="btn btn-outline-dark fw-bold" for="set-kop-sub-b">B</label>
+                                    <input type="checkbox" class="btn-check" id="set-kop-sub-i"><label class="btn btn-outline-dark fst-italic" for="set-kop-sub-i">I</label>
+                                    <input type="checkbox" class="btn-check" id="set-kop-sub-u"><label class="btn btn-outline-dark text-decoration-underline" for="set-kop-sub-u">U</label>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <!-- Baris 3: Alamat -->
+                              <div class="mb-4 border p-3 rounded bg-white shadow-sm">
+                                <label class="form-label small fw-bold text-dark">Baris 3 (Alamat Lengkap & Kontak)</label>
+                                <textarea class="form-control mb-2" id="set-kop-alamat" rows="2" placeholder="Contoh: Jl. Veteran Gg. VI..."></textarea>
+                                <div class="d-flex gap-2 align-items-center flex-wrap">
+                                  <input type="color" id="set-kop-alamat-color" class="form-control form-control-color p-1" style="width:40px; height:31px;" title="Warna Teks">
+                                  <div class="input-group input-group-sm" style="width: 110px;">
+                                    <input type="number" id="set-kop-alamat-size" class="form-control" placeholder="Ukuran">
+                                    <span class="input-group-text">pt</span>
+                                  </div>
+                                  <select class="form-select form-select-sm" id="set-kop-alamat-font" style="width: 140px;">
+                                    <option value="Arial, sans-serif">Arial</option>
+                                    <option value="'Times New Roman', serif">Times New Roman</option>
+                                    <option value="'Courier New', monospace">Courier New</option>
+                                    <option value="Georgia, serif">Georgia</option>
+                                    <option value="Verdana, sans-serif">Verdana</option>
+                                  </select>
+                                  <div class="btn-group btn-group-sm" role="group">
+                                    <input type="checkbox" class="btn-check" id="set-kop-alamat-b"><label class="btn btn-outline-dark fw-bold" for="set-kop-alamat-b">B</label>
+                                    <input type="checkbox" class="btn-check" id="set-kop-alamat-i"><label class="btn btn-outline-dark fst-italic" for="set-kop-alamat-i">I</label>
+                                    <input type="checkbox" class="btn-check" id="set-kop-alamat-u"><label class="btn btn-outline-dark text-decoration-underline" for="set-kop-alamat-u">U</label>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <h6 class="fw-bold text-primary border-bottom pb-2 mb-3">Pengaturan Penomoran Otomatis</h6>
+                              <div class="row g-3 mb-4 border p-3 rounded bg-white shadow-sm mx-1">
+                                <div class="col-md-6">
+                                  <label class="form-label small fw-bold">Nomor Terakhir - Rekomendasi (SR)</label>
+                                  <input type="number" class="form-control" id="set-no-sr" placeholder="Contoh: 24">
+                                  <small class="text-muted" style="font-size:0.7rem;">Surat berikutnya akan memakai nomor +1 dari angka ini.</small>
+                                </div>
+                                <div class="col-md-6">
+                                  <label class="form-label small fw-bold">Nomor Terakhir - Keterangan (SK)</label>
+                                  <input type="number" class="form-control" id="set-no-sk" placeholder="Contoh: 284">
+                                </div>
+                              </div>
+
+                              <h6 class="fw-bold text-primary border-bottom pb-2 mb-3">Upload Logo</h6>
+                              <div class="row g-3">
+                                <div class="col-md-4">
+                                  <label class="form-label small fw-bold">Logo Pojok Kiri</label>
+                                  <input type="file" class="form-control form-control-sm mb-2" id="set-file-kiri" accept="image/*">
+                                  <img id="preview-logo-kiri" src="" class="img-thumbnail d-none" style="height: 60px;">
+                                </div>
+                                <div class="col-md-4">
+                                  <label class="form-label small fw-bold">Logo Pojok Kanan</label>
+                                  <input type="file" class="form-control form-control-sm mb-2" id="set-file-kanan" accept="image/*">
+                                  <img id="preview-logo-kanan" src="" class="img-thumbnail d-none" style="height: 60px;">
+                                </div>
+                                <div class="col-md-4">
+                                  <label class="form-label small fw-bold">Background (Watermark)</label>
+                                  <input type="file" class="form-control form-control-sm mb-2" id="set-file-watermark" accept="image/*">
+                                  <img id="preview-logo-watermark" src="" class="img-thumbnail d-none" style="height: 60px;">
+                                </div>
+                                <div class="col-md-4 mt-3">
+                                  <label class="form-label small fw-bold text-primary">Tanda Tangan & Stempel</label>
+                                  <input type="file" class="form-control form-control-sm mb-2" id="set-file-ttd" accept="image/*">
+                                  <img id="preview-ttd" src="" class="img-thumbnail d-none" style="height: 60px;">
+                                </div>
+                              </div>
+                            </div>
+                            <div class="modal-footer bg-white border-0">
+                              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                              <button type="submit" class="btn btn-primary fw-bold shadow-sm" id="btnSimpanSettingSurat">
+                                <i class="bi bi-save me-1"></i> Simpan Pengaturan
+                              </button>
+                            </div>
+                          </form>
+                        </div>
+                      </div>
+                    </div>
 
 
 
@@ -1441,6 +1718,7 @@
   <script src="js/modules/jemaah.js"></script>
   <script src="js/modules/verifikasi.js"></script>
   <script src="js/modules/keberangkatan.js"></script>
+  <script src="js/modules/surat.js"></script>
 
   <script>
   window.addEventListener('DOMContentLoaded', () => {
