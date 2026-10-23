@@ -8,7 +8,7 @@ let konfigurasiSurat = {
     sub: { text: 'Penyelenggara Perjalanan Ibadah Umroh & Haji Khusus', color: '#000000', size: 11, font: 'Arial, sans-serif', bold: false, italic: false, underline: false },
     alamat: { text: 'Jl. Veteran Gg. VI No. 7 Pamekasan Madura', color: '#000000', size: 10, font: 'Arial, sans-serif', bold: false, italic: false, underline: false },
     logoKiri: '', logoKanan: '', watermark: '', ttd: '',
-    noSR: 0, noSK: 0 // Default Nomor Terakhir
+    noSR: 0, noSK: 0, noKWT: 0 // Default Nomor Terakhir
 };
 
 db.collection("settings").doc("kop_surat").get().then((doc) => {
@@ -29,6 +29,7 @@ db.collection("settings").doc("kop_surat").get().then((doc) => {
         konfigurasiSurat.ttd = data.ttd || '';
         konfigurasiSurat.noSR = parseInt(data.noSR) || 0;
         konfigurasiSurat.noSK = parseInt(data.noSK) || 0;
+        konfigurasiSurat.noKWT = parseInt(data.noKWT) || 0;
     }
 });
 
@@ -64,6 +65,7 @@ function bukaModalSettingSurat() {
     
     document.getElementById('set-no-sr').value = konfigurasiSurat.noSR;
     document.getElementById('set-no-sk').value = konfigurasiSurat.noSK;
+    document.getElementById('set-no-kwt').value = konfigurasiSurat.noKWT;
     
     const showPreview = (id, url) => {
         const img = document.getElementById(id);
@@ -99,6 +101,7 @@ async function simpanSettingSurat(event) {
             ttd: await up('set-file-ttd', konfigurasiSurat.ttd),
             noSR: parseInt(document.getElementById('set-no-sr').value) || 0,
             noSK: parseInt(document.getElementById('set-no-sk').value) || 0,
+            noKWT: parseInt(document.getElementById('set-no-kwt').value) || 0,
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         };
 
