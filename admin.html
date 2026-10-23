@@ -85,6 +85,10 @@
               <i class="bi bi-box-seam me-3"></i> Master Paket
             </a>
           </div>
+          <div class="section-title text-warning fw-bold mt-4 mb-2 px-3" style="font-size: 11px; letter-spacing: 1px;">MASTER DATA & AKSES</div>
+          <a href="#" class="nav-link nav-link-custom" onclick="switchView('users'); setActiveMenu(this)">
+            <i class="bi bi-person-lines-fill me-3"></i> Manajemen User
+          </a>
 
           <div class="sidebar-footer p-3 border-top border-secondary mt-auto">
             <button class="btn btn-outline-warning-custom w-100 mb-2 py-2 fw-bold shadow-sm" onclick="alert('Form ganti password segera hadir!')">
@@ -141,6 +145,10 @@
                 <i class="bi bi-box-seam me-3"></i> Master Paket
               </a>
             </div>
+            <div class="section-title text-warning fw-bold mt-4 mb-2 px-3" style="font-size: 11px; letter-spacing: 1px;">MASTER DATA & AKSES</div>
+              <a href="#" class="nav-link nav-link-custom" onclick="switchView('users'); setActiveMenu(this)">
+                <i class="bi bi-person-lines-fill me-3"></i> Manajemen User
+              </a>
 
             <div class="sidebar-footer p-3 border-top border-secondary mt-auto">
               <button class="btn btn-outline-warning-custom w-100 mb-2 py-2 fw-bold shadow-sm" onclick="alert('Form ganti password segera hadir!')">
@@ -165,6 +173,9 @@
             </div>
             <button class="btn btn-danger btn-sm shadow-sm" onclick="injectDummyJemaah()">
               <i class="bi bi-bug me-1"></i> INJEK DATA DUMMY
+            </button>
+            <button class="btn btn-danger btn-sm fw-bold ms-2" onclick="hapusSeluruhDataJemaah()">
+              <i class="bi bi-trash3-fill me-1"></i> Kosongkan Data
             </button>
 
             <!-- 4 Kartu Statistik -->
@@ -969,6 +980,36 @@
                 </div>
               </div>
 
+              <!-- === VIEW MANAJEMEN USER === -->
+              <div id="view-users" class="view-section" style="display: none;">
+                <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+                  <h4 class="fw-bold m-0 text-dark">Manajemen User & Hak Akses (Role)</h4>
+                  <button class="btn btn-primary fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#modalTambahAdmin" style="background-color: #1a237e; border: none;">
+                    <i class="bi bi-plus-lg me-1"></i> Tambah User
+                  </button>
+                </div>
+                
+                <div class="card border-0 shadow-sm rounded-4">
+                  <div class="card-body p-4">
+                    <div class="table-responsive">
+                      <table id="tabel-users" class="table table-hover align-middle w-100" style="font-size: 14.5px;">
+                        <thead class="table-light">
+                          <tr>
+                            <th class="text-secondary small fw-bold" style="letter-spacing: 0.5px;">ROLE AKSES</th>
+                            <th class="text-secondary small fw-bold" style="letter-spacing: 0.5px;">NAMA & USERNAME PENGELOLA</th>
+                            <th class="text-secondary small fw-bold text-center" style="letter-spacing: 0.5px;">STATUS</th>
+                            <th class="text-secondary small fw-bold text-center" style="letter-spacing: 0.5px;">AKSI</th>
+                          </tr>
+                        </thead>
+                        <tbody id="data-users">
+                          <!-- Data akan diisi oleh JavaScript -->
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <!-- MODAL KASIR (BAYAR & RIWAYAT) -->
               <div class="modal fade" id="modalKasir" tabindex="-1" data-bs-backdrop="static">
                 <div class="modal-dialog modal-lg">
@@ -1648,10 +1689,9 @@
                       </div>
                     </div>
 
-
-
         </div>
-        
+
+                
       </div>
     </div>
     
@@ -1942,9 +1982,98 @@
   </div>
   <!-- === AKHIR MODAL PENDAFTARAN JEMAAH === -->
 
-  
+  <!-- MODAL TAMBAH AKUN STAF / ADMIN -->
+  <div class="modal fade" id="modalTambahAdmin" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-header bg-dark text-white border-0">
+          <h5 class="modal-title fw-bold"><i class="bi bi-person-badge me-2"></i>Buat Akun Pengguna Baru</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4 bg-light">
+          <form id="form-tambah-admin" onsubmit="simpanAkunAdmin(event)">
+            <div class="mb-3">
+                <label class="form-label small fw-bold text-dark">Nama Lengkap Pengelola <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="reg-nama" required placeholder="Cth: Novi Kamalia">
+            </div>
+            
+            <div class="mb-3">
+              <label class="form-label small fw-bold text-dark">Username <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="reg-username" required placeholder="Cth: kasir1 (Tanpa spasi)">
+              <small class="text-muted" style="font-size: 11px;">Gunakan huruf kecil dan angka saja.</small>
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-bold text-dark">Password <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="reg-password" required minlength="6" placeholder="Minimal 6 karakter">
+            </div>
+            <div class="mb-4">
+              <label class="form-label small fw-bold text-dark">Hak Akses (Role) <span class="text-danger">*</span></label>
+              <select class="form-select" id="reg-role">
+                <option value="kasir">Kasir (Hanya menu Pembayaran & Kwitansi)</option>
+                <option value="admin">Staf Admin (Akses Jemaah, Dokumen & Surat)</option>
+                <option value="superadmin">Super Admin (Akses Penuh Tanpa Batas)</option>
+              </select>
+            </div>
+            <div class="text-end border-top pt-3">
+              <button type="submit" class="btn btn-primary fw-bold shadow-sm w-100" id="btn-simpan-admin">
+                <i class="bi bi-check-circle me-1"></i> Simpan Akun
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- MODAL EDIT AKUN STAF / ADMIN -->
+<div class="modal fade" id="modalEditAdmin" tabindex="-1" data-bs-backdrop="static">
+  <div class="modal-dialog">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header bg-warning text-dark border-0">
+        <h5 class="modal-title fw-bold"><i class="bi bi-pencil-square me-2"></i>Edit Data Pengelola</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4 bg-light">
+        <form id="form-edit-admin" onsubmit="simpanEditAdmin(event)">
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-dark">Nama Lengkap Pengelola <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="edit-reg-nama" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-dark">Username</label>
+            <input type="text" class="form-control bg-light" id="edit-reg-username" readonly disabled>
+            <small class="text-muted" style="font-size: 11px;">Username terkunci dan tidak bisa diubah.</small>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-dark">Password Baru (Opsional)</label>
+            <input type="text" class="form-control" id="edit-reg-password" placeholder="Kosongi jika tidak ingin mengubah sandi">
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-dark">Hak Akses (Role) <span class="text-danger">*</span></label>
+            <select class="form-select" id="edit-reg-role">
+              <option value="kasir">Kasir (Hanya menu Pembayaran & Kwitansi)</option>
+              <option value="admin">Staf Admin (Akses Jemaah, Dokumen & Surat)</option>
+              <option value="superadmin">Super Admin (Akses Penuh Tanpa Batas)</option>
+            </select>
+          </div>
+          <div class="mb-4">
+            <label class="form-label small fw-bold text-dark">Status Akun <span class="text-danger">*</span></label>
+            <select class="form-select border-warning fw-bold" id="edit-reg-status">
+              <option value="Aktif">Aktif (Akses Dibuka)</option>
+              <option value="Nonaktif">Nonaktif (Akses Diblokir sementara)</option>
+            </select>
+          </div>
+          <div class="text-end border-top pt-3">
+            <button type="submit" class="btn btn-warning fw-bold shadow-sm w-100 text-dark" id="btn-update-admin">
+              <i class="bi bi-save me-1"></i> Update Data Akun
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
 
- <!-- ============================================== -->
+  <!-- ============================================== -->
   <!-- PEMANGGILAN LIBRARY JAVASCRIPT & FIREBASE -->
   <!-- ============================================== -->
   

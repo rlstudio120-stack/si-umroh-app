@@ -116,3 +116,55 @@ function renderTabelTerbaru(dataJemaah) {
     }
     tbody.innerHTML = html;
 }
+
+async function hapusSeluruhDataJemaah() {
+    const { value: text } = await Swal.fire({
+        title: 'Peringatan Berbahaya!',
+        text: 'Tindakan ini akan menghapus permanen SELURUH data Jemaah dan riwayat Transaksinya. Ketik "RESET" (huruf besar) untuk melanjutkan:',
+        input: 'text',
+        inputPlaceholder: 'Ketik RESET di sini...',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: '<i class="bi bi-trash me-1"></i> Ya, Hapus Semua!'
+    });
+
+    if (text === 'RESET') {
+        Swal.fire({ 
+            title: 'Sedang membersihkan database...', 
+            allowOutsideClick: false, 
+            didOpen: () => { Swal.showLoading(); }
+        });
+        
+        try {
+            const jemaahSnap = await db.collection("jemaah").get();
+            let totalDihapus = 0;
+            
+            for (let doc of jemaahSnap.docs) {
+                // 1. Hapus riwayat transaksi terlebih dahulu (sub-collection)
+                const trxSnap = await doc.ref.collection("transaksi").get();
+                for (let trxDoc of trxSnap.docs) {
+                    await trxDoc.ref.delete();
+                }
+                // 2. Hapus data utama jemaahnya
+                await doc.ref.delete();
+                totalDihapus++;
+            }
+            
+            Swal.fire({
+                icon: 'success',
+                title: 'Database Bersih!',
+                text: `${totalDihapus} data jemaah beserta riwayat transaksinya telah dihapus permanen.`
+            }).then(() => {
+                // Refresh halaman agar angka dashboard kembali 0
+                window.location.reload();
+            });
+            
+        } catch (err) {
+            Swal.fire('Gagal Menghapus', err.message, 'error');
+        }
+    } else if (text !== undefined) {
+        Swal.fire('Dibatalkan', 'Kata kunci salah atau dibatalkan. Data Anda aman.', 'info');
+    }
+}
