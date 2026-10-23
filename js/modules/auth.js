@@ -6,15 +6,22 @@
 document.addEventListener('DOMContentLoaded', () => {
     const sesi = sessionStorage.getItem('siUmrohUser');
     const isLoginPage = window.location.pathname.includes('login.html');
-    const isAdminPage = window.location.pathname.includes('admin.html');
 
-    // Tendang ke admin jika sudah login
-    if (sesi && isLoginPage) {
-        window.location.href = 'admin.html';
-    } 
-    // Tendang ke login jika belum login tapi memaksa masuk admin
-    else if (!sesi && isAdminPage) {
-        window.location.href = 'login.html';
+    if (sesi) {
+        if (isLoginPage) {
+            // Jika sudah login tapi iseng buka halaman login, kembalikan ke admin
+            window.location.href = 'admin.html';
+        } else {
+            // JALANKAN OTOMATIS PEMOTONG MENU SAAT HALAMAN ADMIN TERBUKA
+            if (typeof terapkanHakAkses === 'function') {
+                terapkanHakAkses();
+            }
+        }
+    } else {
+        if (!isLoginPage) {
+            // Jika belum login mencoba masuk admin, tendang ke login
+            window.location.href = 'login.html';
+        }
     }
 });
 
@@ -91,6 +98,9 @@ window.logoutAdmin = function(event) {
 // ==========================================
 // 3. MESIN PEMBAGI HAK AKSES (ROLE)
 // ==========================================
+// ==========================================
+// 3. MESIN PEMBAGI HAK AKSES (ROLE)
+// ==========================================
 function terapkanHakAkses() {
     const sesi = sessionStorage.getItem('siUmrohUser');
     if (!sesi) return;
@@ -98,11 +108,12 @@ function terapkanHakAkses() {
     const user = JSON.parse(sesi);
     
     // Ubah nama di sidebar
-    document.querySelectorAll('.sidebar-header h6').forEach(el => el.innerText = user.nama);
+    document.querySelectorAll('.sidebar-header h6').forEach(el => el.innerText = user.nama || 'Pengelola');
     document.querySelectorAll('.sidebar-header small').forEach(el => el.innerText = user.role.toUpperCase());
 
     // Batasi Akses Sesuai Role
     if (user.role === 'kasir') {
+        // Kasir HANYA melihat Dashboard dan Kasir & Pembayaran
         sembunyikanMenu('jemaah');
         sembunyikanMenu('dokumen');
         sembunyikanMenu('surat');
@@ -110,11 +121,44 @@ function terapkanHakAkses() {
         sembunyikanMenu('paket');
         sembunyikanMenu('users');
         sembunyikanTombolBerbahaya();
+        
+        // Sembunyikan teks kategori yang sudah kosong
+        sembunyikanKategori('MANAJEMEN JEMAAH');
+        sembunyikanKategori('MASTER DATA & AKSES');
+        
     } else if (user.role === 'admin') {
+        // Staf Admin HANYA melihat Dashboard, Jemaah, Dokumen, Surat, Keberangkatan
+        sembunyikanMenu('kasir');
         sembunyikanMenu('paket');
         sembunyikanMenu('users');
         sembunyikanTombolBerbahaya();
+        
+        // Sembunyikan teks kategori yang sudah kosong
+        sembunyikanKategori('MASTER DATA & AKSES');
     }
+}
+
+// Fungsi Bantuan Sembunyikan Menu Spesifik
+function sembunyikanMenu(viewId) {
+    document.querySelectorAll(`[onclick*="switchView('${viewId}')"]`).forEach(el => {
+        el.style.display = 'none';
+        el.classList.remove('d-flex'); 
+    });
+}
+
+// Fungsi Bantuan Sembunyikan Label Kategori Sidebar
+function sembunyikanKategori(namaKategori) {
+    document.querySelectorAll('.section-title').forEach(el => {
+        if (el.innerText.includes(namaKategori)) {
+            el.style.display = 'none';
+        }
+    });
+}
+
+// Fungsi Bantuan Sembunyikan Tombol Rawan
+function sembunyikanTombolBerbahaya() {
+    document.querySelectorAll('[onclick*="injectDummyJemaah()"]').forEach(el => el.style.display = 'none');
+    document.querySelectorAll('[onclick*="hapusSeluruhDataJemaah()"]').forEach(el => el.style.display = 'none');
 }
 
 function sembunyikanMenu(viewId) {
@@ -244,3 +288,85 @@ async function simpanEditAdmin(event) {
     } catch (err) { Swal.fire('Error', err.message, 'error'); } 
     finally { btn.disabled = false; btn.innerHTML = 'Update Data Akun'; }
 }
+
+// ==========================================
+// 5. MESIN GANTI PASSWORD (MANDIRI)
+// ==========================================
+async function simpanPasswordBaru(event) {
+    event.preventDefault();
+    const btn = document.getElementById('btn-simpan-password');
+    
+    const passLama = document.getElementById('pass-lama').value;
+    const passBaru = document.getElementById('pass-baru').value;
+    const passKonfirmasi = document.getElementById('pass-konfirmasi').value;
+
+    // Validasi pengetikan
+    if (passBaru !== passKonfirmasi) {
+        Swal.fire('Tidak Cocok', 'Password baru dan konfirmasinya tidak sama!', 'warning');
+        return;
+    }
+
+    // Ambil identitas pengguna yang sedang login dari sesi
+    const sesi = sessionStorage.getItem('siUmrohUser');
+    if (!sesi) return;
+    const user = JSON.parse(sesi);
+    const username = user.username;
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Memeriksa...';
+
+    try {
+        // Ambil data akun saat ini dari database
+        const doc = await db.collection("pengguna").doc(username).get();
+        if (!doc.exists) throw new Error("Akun tidak ditemukan di sistem.");
+        const data = doc.data();
+        
+        // Verifikasi password lama
+        if (data.password !== btoa(passLama)) {
+            Swal.fire('Ditolak', 'Password lama yang Anda masukkan salah.', 'error');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-save me-1"></i> Simpan Password Baru';
+            return;
+        }
+
+        // Simpan password baru
+        await db.collection("pengguna").doc(username).update({
+            password: btoa(passBaru),
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        // Sukses & Paksa Logout
+        Swal.fire({
+            icon: 'success',
+            title: 'Password Berhasil Diubah!',
+            text: 'Silakan login kembali menggunakan password baru Anda.',
+            allowOutsideClick: false
+        }).then(() => {
+            sessionStorage.removeItem('siUmrohUser');
+            window.location.href = 'login.html';
+        });
+
+    } catch (error) {
+        Swal.fire('Terjadi Kesalahan', error.message, 'error');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-save me-1"></i> Simpan Password Baru';
+    }
+}
+
+// ==========================================
+// 6. FUNGSI BANTUAN TAMPILKAN/SEMBUNYIKAN PASSWORD
+// ==========================================
+window.togglePassword = function(inputId, btnEl) {
+    const input = document.getElementById(inputId);
+    const icon = btnEl.querySelector('i');
+    
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('bi-eye-slash');
+        icon.classList.add('bi-eye', 'text-primary');
+    } else {
+        input.type = 'password';
+        icon.classList.remove('bi-eye', 'text-primary');
+        icon.classList.add('bi-eye-slash');
+    }
+};

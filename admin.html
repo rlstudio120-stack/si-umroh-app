@@ -91,7 +91,7 @@
           </a>
 
           <div class="sidebar-footer p-3 border-top border-secondary mt-auto">
-            <button class="btn btn-outline-warning-custom w-100 mb-2 py-2 fw-bold shadow-sm" onclick="alert('Form ganti password segera hadir!')">
+            <button class="btn btn-outline-warning-custom w-100 mb-2 py-2 fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#modalGantiPassword")">
               <i class="bi bi-key-fill me-2"></i> Ganti Password
             </button>
             <button class="btn btn-danger-custom w-100 py-2 fw-bold shadow-sm" onclick="logoutAdmin(event)">
@@ -151,7 +151,7 @@
               </a>
 
             <div class="sidebar-footer p-3 border-top border-secondary mt-auto">
-              <button class="btn btn-outline-warning-custom w-100 mb-2 py-2 fw-bold shadow-sm" onclick="alert('Form ganti password segera hadir!')">
+              <button class="btn btn-outline-warning-custom w-100 mb-2 py-2 fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#modalGantiPassword">
                 <i class="bi bi-key-fill me-2"></i> Ganti Password
               </button>
               <button class="btn btn-danger-custom w-100 py-2 fw-bold shadow-sm" onclick="logoutAdmin(event)">
@@ -2065,6 +2065,48 @@
           <div class="text-end border-top pt-3">
             <button type="submit" class="btn btn-warning fw-bold shadow-sm w-100 text-dark" id="btn-update-admin">
               <i class="bi bi-save me-1"></i> Update Data Akun
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL GANTI PASSWORD -->
+<div class="modal fade" id="modalGantiPassword" tabindex="-1" data-bs-backdrop="static">
+  <div class="modal-dialog">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header bg-dark text-white border-0">
+        <h5 class="modal-title fw-bold"><i class="bi bi-key-fill me-2"></i>Ganti Password</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4 bg-light">
+        <form id="form-ganti-password" onsubmit="simpanPasswordBaru(event)">
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-dark">Password Lama <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <input type="password" class="form-control" id="pass-lama" required placeholder="Ketik password saat ini">
+              <button class="btn btn-outline-secondary bg-white" type="button" onclick="togglePassword('pass-lama', this)" tabindex="-1"><i class="bi bi-eye-slash"></i></button>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-dark">Password Baru <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <input type="password" class="form-control" id="pass-baru" required minlength="6" placeholder="Minimal 6 karakter">
+              <button class="btn btn-outline-secondary bg-white" type="button" onclick="togglePassword('pass-baru', this)" tabindex="-1"><i class="bi bi-eye-slash"></i></button>
+            </div>
+          </div>
+          <div class="mb-4">
+            <label class="form-label small fw-bold text-dark">Konfirmasi Password Baru <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <input type="password" class="form-control" id="pass-konfirmasi" required minlength="6" placeholder="Ketik ulang password baru">
+              <button class="btn btn-outline-secondary bg-white" type="button" onclick="togglePassword('pass-konfirmasi', this)" tabindex="-1"><i class="bi bi-eye-slash"></i></button>
+            </div>
+          </div>
+          <div class="text-end border-top pt-3">
+            <button type="submit" class="btn btn-warning fw-bold shadow-sm w-100 text-dark" id="btn-simpan-password">
+              <i class="bi bi-save me-1"></i> Simpan Password Baru
             </button>
           </div>
         </form>

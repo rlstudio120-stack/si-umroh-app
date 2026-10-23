@@ -39,9 +39,12 @@
               <input type="text" class="form-control fw-bold" id="username" placeholder="Username" required>
               <label for="username" class="text-muted">Username</label>
             </div>
-            <div class="form-floating mb-4">
-              <input type="password" class="form-control fw-bold" id="password" placeholder="Password" required>
+            <div class="form-floating mb-4 position-relative">
+              <input type="password" class="form-control fw-bold" id="password" placeholder="Password" required style="padding-right: 45px;">
               <label for="password" class="text-muted">Kata Sandi</label>
+              <button type="button" class="btn border-0 position-absolute top-50 end-0 translate-middle-y text-muted" onclick="togglePassword('password', this)" tabindex="-1">
+                <i class="bi bi-eye-slash"></i>
+              </button>
             </div>
             
             <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold shadow-sm" id="btnLogin">
