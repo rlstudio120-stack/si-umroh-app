@@ -119,21 +119,64 @@ async function simpanSettingSurat(event) {
 // LOGIKA PEMILIHAN SURAT (DROP-DOWN & AUTO NOMOR)
 // ==========================================
 let dataJemaahSurat = null;
+let isFilterSuratLoaded = false;
 
-function loadDataSurat() {
+async function loadDataSurat() {
+    if (!isFilterSuratLoaded) {
+        const selTahun = document.getElementById('filter-surat-tahun');
+        const thnSekarang = new Date().getFullYear();
+        let opsiTahun = `<option value="Semua">Semua Tahun</option>`;
+        for (let t = thnSekarang + 1; t >= thnSekarang - 3; t--) {
+            opsiTahun += `<option value="${t}" ${t === thnSekarang ? 'selected' : ''}>${t}</option>`;
+        }
+        if (selTahun) selTahun.innerHTML = opsiTahun;
+
+        const selPaket = document.getElementById('filter-surat-paket');
+        const snapshot = await db.collection("paket").where("status", "==", "Aktif").get();
+        let opsiPaket = '<option value="Semua">Semua Paket Aktif</option>';
+        let arrPaket = [];
+        snapshot.forEach(doc => arrPaket.push(doc.data()));
+        
+        arrPaket.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+        arrPaket.forEach(p => { opsiPaket += `<option value="${p.nama}">${p.nama}</option>`; });
+        
+        if (selPaket) {
+            selPaket.innerHTML = opsiPaket;
+            if (arrPaket.length > 0) selPaket.value = arrPaket[0].nama;
+        }
+        isFilterSuratLoaded = true;
+    }
+
     const tbody = document.getElementById('tbody-surat');
-    tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4"><div class="spinner-border text-primary spinner-border-sm me-2"></div>Memuat data...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4"><div class="spinner-border text-primary spinner-border-sm me-2"></div>Memuat data jemaah...</td></tr>';
+    
+    const valTahun = document.getElementById('filter-surat-tahun') ? document.getElementById('filter-surat-tahun').value : new Date().getFullYear().toString();
+    const valPaket = document.getElementById('filter-surat-paket') ? document.getElementById('filter-surat-paket').value : 'Semua';
+
     db.collection("jemaah").orderBy("createdAt", "desc").get().then((snapshot) => {
         let html = '';
         snapshot.forEach((doc) => {
             const jm = doc.data(); jm.id = doc.id;
-            html += `<tr>
-                <td class="align-middle fw-bold ps-4 text-primary">${jm.id}</td>
-                <td class="align-middle fw-bold">${jm.nama || '-'}</td>
-                <td class="align-middle">${jm.paket || '-'}</td>
-                <td class="align-middle text-center"><button class="btn btn-primary btn-sm shadow-sm fw-bold" onclick="bukaModalSurat('${encodeURIComponent(JSON.stringify(jm))}')"><i class="bi bi-envelope-paper me-1"></i> Buat Surat</button></td>
-            </tr>`;
+            
+            let passTahun = true;
+            if (valTahun !== 'Semua') {
+                let thnJemaah = jm.createdAt?.seconds ? new Date(jm.createdAt.seconds * 1000).getFullYear().toString() : '-';
+                if (thnJemaah !== valTahun) passTahun = false;
+            }
+            let passPaket = true;
+            if (valPaket !== 'Semua' && jm.paket !== valPaket) passPaket = false;
+
+            if (passTahun && passPaket) {
+                html += `<tr>
+                    <td class="align-middle fw-bold ps-4 text-primary d-none d-md-table-cell">${jm.id}</td>
+                    <td class="align-middle fw-bold">${jm.nama || '-'}</td>
+                    <td class="align-middle">${jm.paket || '-'}</td>
+                    <td class="align-middle text-center"><button class="btn btn-primary btn-sm shadow-sm fw-bold" onclick="bukaModalSurat('${encodeURIComponent(JSON.stringify(jm))}')"><i class="bi bi-envelope-paper me-1"></i> Buat Surat</button></td>
+                </tr>`;
+            }
         });
+        
+        if (html === '') html = '<tr><td colspan="4" class="text-center text-muted py-4">Tidak ada data jemaah untuk filter tersebut.</td></tr>';
         tbody.innerHTML = html;
     });
 }

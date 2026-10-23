@@ -1,9 +1,36 @@
-// js/modules/jemaah.js
+// ==========================================
+// MEMUAT FILTER & DATA JEMAAH KE TABEL
+// ==========================================
+let isFilterJemaahLoaded = false;
 
-// ==========================================
-// FUNGSI MEMUAT DATA JEMAAH KE TABEL
-// ==========================================
-function loadDataJemaah() {
+async function loadDataJemaah() {
+    // 1. Muat Filter secara Async agar bisa mendeteksi paket terbaru
+    if (!isFilterJemaahLoaded) {
+        const selTahun = document.getElementById('filter-jemaah-tahun');
+        const thnSekarang = new Date().getFullYear();
+        let opsiTahun = `<option value="Semua">Semua Tahun</option>`;
+        for (let t = thnSekarang + 1; t >= thnSekarang - 3; t--) {
+            opsiTahun += `<option value="${t}" ${t === thnSekarang ? 'selected' : ''}>${t}</option>`;
+        }
+        if (selTahun) selTahun.innerHTML = opsiTahun;
+
+        const selPaket = document.getElementById('filter-jemaah-paket');
+        const snapshot = await db.collection("paket").where("status", "==", "Aktif").get();
+        let opsiPaket = '<option value="Semua">Semua Paket Aktif</option>';
+        let arrPaket = [];
+        snapshot.forEach(doc => arrPaket.push(doc.data()));
+        
+        // Urutkan paket dari yang terbaru (berdasarkan waktu dibuat)
+        arrPaket.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+        arrPaket.forEach(p => { opsiPaket += `<option value="${p.nama}">${p.nama}</option>`; });
+        
+        if (selPaket) {
+            selPaket.innerHTML = opsiPaket;
+            if (arrPaket.length > 0) selPaket.value = arrPaket[0].nama; // Pilih paket terbaru otomatis
+        }
+        isFilterJemaahLoaded = true;
+    }
+
     if ($.fn.DataTable.isDataTable('#tabel-jemaah')) {
         $('#tabel-jemaah').DataTable().clear().destroy();
     }
@@ -11,66 +38,59 @@ function loadDataJemaah() {
     const tbody = document.querySelector('#tabel-jemaah tbody');
     tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4"><div class="spinner-border text-primary spinner-border-sm me-2"></div>Memuat data...</td></tr>';
 
-    db.collection("jemaah").get().then((snapshot) => {
+    const valTahun = document.getElementById('filter-jemaah-tahun') ? document.getElementById('filter-jemaah-tahun').value : new Date().getFullYear().toString();
+    const valPaket = document.getElementById('filter-jemaah-paket') ? document.getElementById('filter-jemaah-paket').value : 'Semua';
+
+    db.collection("jemaah").orderBy("createdAt", "desc").get().then((snapshot) => {
         let html = '';
         
         if (!snapshot.empty) {
             snapshot.forEach((doc) => {
-                const jm = doc.data();
-                jm.id = doc.id; 
+                const jm = doc.data(); jm.id = doc.id; 
+                
+                let passTahun = true;
+                if (valTahun !== 'Semua') {
+                    let thnJemaah = jm.createdAt?.seconds ? new Date(jm.createdAt.seconds * 1000).getFullYear().toString() : '-';
+                    if (thnJemaah !== valTahun) passTahun = false;
+                }
+                let passPaket = true;
+                if (valPaket !== 'Semua' && jm.paket !== valPaket) passPaket = false;
 
-                let badgeColor = 'bg-secondary';
-                if (jm.status === 'Menunggu Verifikasi') badgeColor = 'bg-warning text-dark';
-                else if (jm.status === 'Siap Berangkat') badgeColor = 'bg-success';
-
-                const encodedData = encodeURIComponent(JSON.stringify(jm));
-
-                html += `
-                <tr>
-                    <td class="align-middle fw-bold">${jm.id}</td>
-                    <td class="align-middle">${jm.nama || '-'}</td>
-                    <td class="align-middle">${jm.paket || '-'}</td>
-                    <td class="align-middle">
-                        <span class="badge ${badgeColor} px-2 py-1">${jm.status || '-'}</span>
-                    </td>
-                    <td class="align-middle whitespace-nowrap">
-                        <button class="btn btn-primary btn-sm me-1 shadow-sm" onclick="lihatDetailJemaah('${encodedData}')" title="Lihat Detail">
-                            <i class="bi bi-search"></i>
-                        </button>
-                        <button class="btn btn-danger btn-sm shadow-sm" onclick="hapusJemaah('${jm.id}')" title="Hapus Jemaah">
-                            <i class="bi bi-trash"></i>
-                        </button>
-                    </td>
-                </tr>
-                `;
+                if (passTahun && passPaket) {
+                    let badgeColor = jm.status === 'Menunggu Verifikasi' ? 'bg-warning text-dark' : (jm.status === 'Siap Berangkat' ? 'bg-success' : 'bg-secondary');
+                    html += `
+                    <tr>
+                        <td class="align-middle fw-bold d-none d-md-table-cell">${jm.id}</td>
+                        <td class="align-middle">${jm.nama || '-'}</td>
+                        <td class="align-middle d-none d-md-table-cell">${jm.paket || '-'}</td>
+                        <td class="align-middle"><span class="badge ${badgeColor} px-2 py-1">${jm.status || '-'}</span></td>
+                        <td class="align-middle whitespace-nowrap">
+                            <button class="btn btn-primary btn-sm me-1 shadow-sm" onclick="lihatDetailJemaah('${encodeURIComponent(JSON.stringify(jm))}')"><i class="bi bi-search"></i></button>
+                            <button class="btn btn-danger btn-sm shadow-sm" onclick="hapusJemaah('${jm.id}')"><i class="bi bi-trash"></i></button>
+                        </td>
+                    </tr>`;
+                }
             });
         }
 
         tbody.innerHTML = html;
 
+        // Inisialisasi Ulang DataTables
         $('#tabel-jemaah').DataTable({
             language: { 
                 url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/id.json',
-                emptyTable: "Belum ada data jemaah yang mendaftar."
+                emptyTable: "Belum ada data jemaah untuk paket dan tahun tersebut."
             },
+            lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "Semua"]], // Teks Opsi Dropdown
             pageLength: 10,
-            dom: '<"d-flex flex-wrap justify-content-between align-items-center mb-3"Bf>rt<"d-flex flex-wrap justify-content-between align-items-center mt-3"ip>',
+            // Perhatikan tambahan huruf 'l' (lengthMenu) dan margin kanan me-3 di bawah ini
+            dom: '<"d-flex flex-wrap justify-content-between align-items-center mb-3"<"d-flex align-items-center"l><"d-flex gap-2"Bf>>rt<"d-flex flex-wrap justify-content-between align-items-center mt-3"ip>',
             buttons: [
-                {
-                    extend: 'excelHtml5',
-                    text: '<i class="bi bi-file-earmark-excel me-1"></i> Download Excel',
-                    className: 'btn btn-success btn-sm shadow-sm fw-bold',
-                    title: 'Laporan Data Jemaah Umroh - ' + new Date().toLocaleDateString('id-ID'),
-                    exportOptions: {
-                        columns: [0, 1, 2, 3] 
-                    }
-                }
+                { extend: 'excelHtml5', text: '<i class="bi bi-file-earmark-excel me-1"></i> Excel', className: 'btn btn-success btn-sm shadow-sm fw-bold', title: `Data Jemaah - ${valPaket}`, exportOptions: { columns: [0, 1, 2, 3] } }
             ]
         });
-
     }).catch((error) => {
-        console.error("Gagal memuat data jemaah:", error);
-        tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger fw-bold py-4"><i class="bi bi-exclamation-triangle me-2"></i>Gagal memuat data: ${error.message}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger py-4">Gagal memuat: ${error.message}</td></tr>`;
     });
 }
 

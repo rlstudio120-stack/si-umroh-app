@@ -1,8 +1,33 @@
 // ==========================================
 // FUNGSI MEMUAT DATA ANTREAN VERIFIKASI
 // ==========================================
-function loadAntreanVerifikasi() {
-    // 1. Bersihkan DataTables jika sudah ada (mencegah error _DT_CellIndex)
+let isFilterVerifLoaded = false;
+
+async function loadAntreanVerifikasi() {
+    if (!isFilterVerifLoaded) {
+        const selTahun = document.getElementById('filter-verif-tahun');
+        const thnSekarang = new Date().getFullYear();
+        let opsiTahun = `<option value="Semua">Semua Tahun</option>`;
+        for (let t = thnSekarang + 1; t >= thnSekarang - 3; t--) {
+            opsiTahun += `<option value="${t}" ${t === thnSekarang ? 'selected' : ''}>${t}</option>`;
+        }
+        if (selTahun) selTahun.innerHTML = opsiTahun;
+
+        const selPaket = document.getElementById('filter-verif-paket');
+        const snapshot = await db.collection("paket").where("status", "==", "Aktif").get();
+        let opsiPaket = '<option value="Semua">Semua Paket Aktif</option>';
+        let arrPaket = [];
+        snapshot.forEach(doc => arrPaket.push(doc.data()));
+        arrPaket.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+        arrPaket.forEach(p => { opsiPaket += `<option value="${p.nama}">${p.nama}</option>`; });
+        
+        if (selPaket) {
+            selPaket.innerHTML = opsiPaket;
+            if (arrPaket.length > 0) selPaket.value = arrPaket[0].nama;
+        }
+        isFilterVerifLoaded = true;
+    }
+
     if ($.fn.DataTable.isDataTable('#tabel-verifikasi')) {
         $('#tabel-verifikasi').DataTable().clear().destroy();
     }
@@ -10,65 +35,55 @@ function loadAntreanVerifikasi() {
     const tbody = document.getElementById('tbody-verifikasi');
     tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4"><div class="spinner-border text-primary spinner-border-sm me-2"></div>Memuat antrean verifikasi...</td></tr>';
 
-    // 2. Ambil data dari Firebase (Koleksi Jemaah)
+    const valTahun = document.getElementById('filter-verif-tahun') ? document.getElementById('filter-verif-tahun').value : new Date().getFullYear().toString();
+    const valPaket = document.getElementById('filter-verif-paket') ? document.getElementById('filter-verif-paket').value : 'Semua';
+
     db.collection("jemaah").orderBy("status", "desc").get().then((snapshot) => {
         let html = '';
-        
-        if (snapshot.empty) {
-            html = '<tr><td colspan="4" class="text-center py-4">Belum ada antrean data jemaah.</td></tr>';
-        } else {
+        if (!snapshot.empty) {
             snapshot.forEach((doc) => {
-                const jm = doc.data();
-                jm.id = doc.id;
-
-                // Tentukan warna badge mengikuti desain GAS Anda
-                let badgeColor = 'bg-warning text-dark'; 
-                let statusText = jm.status || 'Menunggu Verifikasi';
-                
-                if (statusText === 'Siap Berangkat' || statusText === 'Disetujui') {
-                    badgeColor = 'bg-success';
-                } else if (statusText === 'Ditolak' || statusText === 'Butuh Revisi') {
-                    badgeColor = 'bg-danger';
+                const jm = doc.data(); jm.id = doc.id;
+                let passTahun = true;
+                if (valTahun !== 'Semua') {
+                    let thnJemaah = jm.createdAt?.seconds ? new Date(jm.createdAt.seconds * 1000).getFullYear().toString() : '-';
+                    if (thnJemaah !== valTahun) passTahun = false;
                 }
+                let passPaket = true;
+                if (valPaket !== 'Semua' && jm.paket !== valPaket) passPaket = false;
 
-                // Encode data untuk dilempar ke fungsi Fullscreen Modal nanti
-                const encodedData = encodeURIComponent(JSON.stringify(jm));
+                if (passTahun && passPaket) {
+                    let badgeColor = 'bg-warning text-dark'; 
+                    let statusText = jm.status || 'Menunggu Verifikasi';
+                    if (statusText === 'Siap Berangkat' || statusText === 'Disetujui') badgeColor = 'bg-success';
+                    else if (statusText === 'Ditolak' || statusText === 'Butuh Revisi') badgeColor = 'bg-danger';
 
-                // 3. Cetak Baris Tabel
-                html += `
-                <tr>
-                    <td class="align-middle fw-bold text-primary">${jm.id}</td>
-                    <td class="align-middle fw-bold">${jm.nama || '-'}</td>
-                    <td class="align-middle">
-                        <span class="badge ${badgeColor} px-3 py-2 rounded-pill">${statusText}</span>
-                    </td>
-                    <td class="align-middle text-end">
-                        <button class="btn btn-dark btn-sm shadow-sm" onclick="bukaRuangVerifikasi('${encodedData}')">
-                            <i class="bi bi-search me-1"></i> Review
-                        </button>
-                    </td>
-                </tr>
-                `;
+                    html += `
+                    <tr>
+                        <td class="align-middle fw-bold text-primary d-none d-md-table-cell">${jm.id}</td>
+                        <td class="align-middle fw-bold">${jm.nama || '-'}</td>
+                        <td class="align-middle"><span class="badge ${badgeColor} px-3 py-2 rounded-pill">${statusText}</span></td>
+                        <td class="align-middle text-end"><button class="btn btn-dark btn-sm shadow-sm" onclick="bukaRuangVerifikasi('${encodeURIComponent(JSON.stringify(jm))}')"><i class="bi bi-search me-1"></i> Review</button></td>
+                    </tr>`;
+                }
             });
         }
 
+        if (html === '') html = '<tr><td colspan="4" class="text-center py-4 text-muted">Belum ada antrean data jemaah untuk filter tersebut.</td></tr>';
         tbody.innerHTML = html;
 
-        // 4. Bangkitkan kembali DataTables
         $('#tabel-verifikasi').DataTable({
             language: { 
                 url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/id.json',
                 emptyTable: "Belum ada antrean verifikasi."
             },
+            lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "Semua"]],
             pageLength: 10,
             destroy: true,
-            // Tata letak standar tanpa tombol Excel (karena ini hanya halaman untuk mengecek/review)
-            dom: '<"d-flex flex-wrap justify-content-between align-items-center mb-3"f>rt<"d-flex flex-wrap justify-content-between align-items-center mt-3"ip>'
+            // Menambahkan huruf 'l' di bagian ini
+            dom: '<"d-flex flex-wrap justify-content-between align-items-center mb-3"lf>rt<"d-flex flex-wrap justify-content-between align-items-center mt-3"ip>'
         });
-
     }).catch((error) => {
-        console.error("Gagal memuat antrean verifikasi:", error);
-        tbody.innerHTML = `<tr><td colspan="4" class="text-center text-danger fw-bold py-4"><i class="bi bi-exclamation-triangle me-2"></i>Gagal memuat data: ${error.message}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="4" class="text-center text-danger fw-bold py-4">Gagal memuat: ${error.message}</td></tr>`;
     });
 }
 
