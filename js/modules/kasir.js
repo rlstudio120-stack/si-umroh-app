@@ -98,7 +98,6 @@ async function loadDataKasir() {
             }
         });
         
-        if (html === '') html = '<tr><td colspan="5" class="text-center text-muted py-4">Tidak ada data jemaah untuk filter tersebut.</td></tr>';
         tbody.innerHTML = html;
 
         $('#tabel-kasir').DataTable({
