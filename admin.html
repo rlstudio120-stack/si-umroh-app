@@ -402,6 +402,7 @@
                             <input type="file" id="updFileNikah" class="d-none" accept="image/*" onchange="prosesUpdateBerkas('Nikah')">
                             <input type="file" id="updFilePaspor" class="d-none" accept="image/*" onchange="prosesUpdateBerkas('Paspor')">
                             <input type="file" id="updFileLahir" class="d-none" accept="image/*" onchange="prosesUpdateBerkas('Lahir')">
+                            <input type="file" id="updFileVaksin" class="d-none" accept="image/*,.pdf" onchange="prosesUpdateBerkas('Vaksin')">
 
                             <tr>
                               <td class="fw-bold">KTP</td>
@@ -427,6 +428,13 @@
                               <td class="fw-bold">Akta Kelahiran</td>
                               <td class="text-end" id="badgeLahir"></td>
                               <td width="1%"><button class="btn btn-info btn-sm py-0" onclick="document.getElementById('updFileLahir').click()">Update</button></td>
+                            </tr>
+                            <tr>
+                              <td class="fw-bold text-success"><i class="bi bi-shield-plus me-1"></i>Sertifikat Vaksin</td>
+                              <td class="text-end" id="badgeVaksin"></td>
+                              <td width="1%">
+                                <button class="btn btn-success btn-sm py-0 fw-bold shadow-sm" onclick="document.getElementById('updFileVaksin').click()">Upload</button>
+                              </td>
                             </tr>
                           </table>
                         </div>

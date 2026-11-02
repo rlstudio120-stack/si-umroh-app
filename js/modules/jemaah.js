@@ -120,19 +120,23 @@ function lihatDetailJemaah(encodedJSON) {
     // --- KOLOM KIRI (STATUS FISIK BERKAS) ---
     const setBerkas = (url, badgeId) => {
         const badge = document.getElementById(badgeId);
-        if (url) {
-            badge.innerHTML = '<span class="badge bg-success">Sudah Ada</span>';
+        if (!badge) return;
+        
+        if (url && url !== "") {
+            // Semua berkas yang ada URL-nya akan disulap jadi tombol "Lihat File"
+            badge.innerHTML = `<a href="${url}" target="_blank" class="badge bg-success text-decoration-none shadow-sm px-2 py-1"><i class="bi bi-eye-fill me-1"></i>Lihat File</a>`;
         } else {
-            badge.innerHTML = '<span class="badge bg-danger">Belum</span>';
+            badge.innerHTML = '<span class="badge bg-danger px-2 py-1">Belum Ada</span>';
         }
     };
     
-    // PERBAIKAN: Penamaan field diselaraskan dengan index.html
+    // Pastikan semua dipanggil di sini:
     setBerkas(jm.urlKtp, 'badgeKtp');
-    setBerkas(jm.urlKk, 'badgeKk'); 
+    setBerkas(jm.urlKk || jm.urlKK, 'badgeKk'); // Antisipasi perbedaan huruf besar/kecil
     setBerkas(jm.urlNikah, 'badgeNikah');
     setBerkas(jm.urlPaspor, 'badgePaspor');
     setBerkas(jm.urlLahir, 'badgeLahir');
+    setBerkas(jm.urlVaksin, 'badgeVaksin');
 
     // --- KOLOM KANAN (INFORMASI PRIBADI) ---
     document.getElementById('detNikKtp').innerText = jm.nik || '-';
@@ -476,19 +480,23 @@ async function prosesUpdateBerkas(jenis) {
         // Update ke Firebase
         await db.collection("jemaah").doc(noReg).update(updateData);
         
-        // PERBAIKAN: Pemisahan logika untuk Foto dan Berkas Teks
+        // Pemisahan logika untuk Foto, Vaksin, dan Berkas lainnya
+        // Pemisahan logika untuk Foto dan Dokumen
         if (jenis === 'Foto') {
-            // Jika Foto, ganti gambar profil langsung
             const imgElement = document.getElementById('detFoto');
             if (imgElement) imgElement.src = urlFile;
         } else {
-            // Jika dokumen lain, ubah lencana (badge) menjadi hijau
+            // Semua dokumen (KTP, KK, Vaksin, dll) langsung berubah jadi tombol "Lihat File" setelah di-upload
             const badgeElement = document.getElementById(`badge${jenis}`);
-            if (badgeElement) badgeElement.innerHTML = '<span class="badge bg-success">Sudah Ada</span>';
+            if (badgeElement) {
+                badgeElement.innerHTML = `<a href="${urlFile}" target="_blank" class="badge bg-success text-decoration-none shadow-sm px-2 py-1"><i class="bi bi-eye-fill me-1"></i>Lihat File</a>`;
+            }
         }
         
-        showCustomAlert(`Berkas berhasil diperbarui!`, "success");
-        loadDataJemaah(); // Refresh data tabel di latar belakang
+        showCustomAlert(`Berkas ${jenis} berhasil diperbarui!`, "success");
+        loadDataJemaah(); // Refresh tabel di latar belakang
+        
+
     } catch (error) {
         showCustomAlert(`Gagal upload berkas: ${error.message}`, "error");
     } finally {
