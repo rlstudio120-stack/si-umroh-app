@@ -78,15 +78,21 @@ async function loadDataJemaah() {
         // Inisialisasi Ulang DataTables
         $('#tabel-jemaah').DataTable({
             language: { 
-                url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/id.json',
-                emptyTable: "Belum ada data jemaah untuk paket dan tahun tersebut."
+                url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/id.json', 
+                emptyTable: "Belum ada data jemaah." 
             },
-            lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "Semua"]], // Teks Opsi Dropdown
+            lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "Semua"]],
             pageLength: 10,
-            // Perhatikan tambahan huruf 'l' (lengthMenu) dan margin kanan me-3 di bawah ini
-            dom: '<"d-flex flex-wrap justify-content-between align-items-center mb-3"<"d-flex align-items-center"l><"d-flex gap-2"Bf>>rt<"d-flex flex-wrap justify-content-between align-items-center mt-3"ip>',
+            
+            // Menggunakan flex-wrap agar elemen tetap seukuran aslinya dan tidak memanjang
+            dom: '<"d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3"<"d-flex flex-wrap align-items-center gap-3"lB>f>rt<"d-flex flex-wrap justify-content-between align-items-center mt-3"ip>',
+            
             buttons: [
-                { extend: 'excelHtml5', text: '<i class="bi bi-file-earmark-excel me-1"></i> Excel', className: 'btn btn-success btn-sm shadow-sm fw-bold', title: `Data Jemaah - ${valPaket}`, exportOptions: { columns: [0, 1, 2, 3] } }
+                {
+                    extend: 'excelHtml5',
+                    text: '<i class="bi bi-file-earmark-excel me-1"></i> Excel',
+                    className: 'btn btn-success btn-sm fw-bold shadow-sm'
+                }
             ]
         });
     }).catch((error) => {

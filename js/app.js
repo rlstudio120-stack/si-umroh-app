@@ -49,6 +49,9 @@ function switchView(viewId) {
         loadDashboardData();
     } else if (viewId === 'dokumen') {
         loadAntreanVerifikasi();
+    } else if (viewId === 'users') {
+        // Panggil fungsi penarik data user (akan kita buat setelah ini)
+        if (typeof loadDataUsers === 'function') loadDataUsers();
     }
 }
 

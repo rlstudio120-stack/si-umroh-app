@@ -68,7 +68,6 @@ async function loadAntreanVerifikasi() {
             });
         }
 
-        if (html === '') html = '<tr><td colspan="4" class="text-center py-4 text-muted">Belum ada antrean data jemaah untuk filter tersebut.</td></tr>';
         tbody.innerHTML = html;
 
         $('#tabel-verifikasi').DataTable({

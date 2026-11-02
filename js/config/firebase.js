@@ -14,4 +14,4 @@ firebase.initializeApp(firebaseConfig);
 
 // Deklarasi variabel global untuk Firestore dan Auth
 const db = firebase.firestore();
-const auth = firebase.auth();
+//const auth = firebase.auth();

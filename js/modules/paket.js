@@ -68,19 +68,32 @@ function bukaModalPaket() {
 
 // Fungsi Edit
 function editPaket(encodedJSON) {
-    const p = JSON.parse(decodeURIComponent(encodedJSON));
-    document.getElementById('formPaket').reset();
-    
-    document.getElementById('pktId').value = p.id;
-    document.getElementById('modalPktTitle').innerText = "Edit Paket";
-    document.getElementById('pktNama').value = p.nama;
-    document.getElementById('pktDurasi').value = p.durasi;
-    document.getElementById('pktKuota').value = p.kuota;
-    document.getElementById('pktHarga').value = p.harga;
-    document.getElementById('pktStatus').value = p.status;
-    
-    const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('modalPaket'));
-    modal.show();
+    Swal.fire({
+        title: 'Peringatan Sistem!',
+        text: 'Mengubah Nama Paket berisiko menyebabkan ketidakcocokan data filter pada jemaah yang sudah terlanjur mendaftar dengan nama paket ini. Anda yakin ingin melanjutkan?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Ya, Lanjutkan Edit',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const p = JSON.parse(decodeURIComponent(encodedJSON));
+            document.getElementById('formPaket').reset();
+            
+            document.getElementById('pktId').value = p.id;
+            document.getElementById('modalPktTitle').innerText = "Edit Paket";
+            document.getElementById('pktNama').value = p.nama;
+            document.getElementById('pktDurasi').value = p.durasi;
+            document.getElementById('pktKuota').value = p.kuota;
+            document.getElementById('pktHarga').value = p.harga;
+            document.getElementById('pktStatus').value = p.status;
+            
+            const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('modalPaket'));
+            modal.show();
+        }
+    });
 }
 
 // Fungsi Simpan (Tambah / Update ke Firestore)
