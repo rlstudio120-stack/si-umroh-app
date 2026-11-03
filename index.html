@@ -161,6 +161,11 @@
                   <span class="small text-dark">Scan Akta Kelahiran</span>
                   <div><span class="badge badge-status me-2" id="badge-lahir">Memuat...</span><button class="btn btn-outline-primary btn-sm px-3 rounded-1" onclick="triggerUpload('lahir', 'Akta Kelahiran')">Upload</button></div>
                 </div>
+                <!-- Sertifikat Vaksin (Hanya Download) -->
+                <div class="d-flex justify-content-between align-items-center doc-item">
+                  <span class="small text-dark">Sertifikat Vaksin (Meningitis)</span>
+                  <div id="area-vaksin"><span class="badge badge-status bg-secondary text-white py-2 me-3" id="badge-vaksin">Menunggu RS</span></div>
+                </div>
                 
               </div>
 
@@ -241,7 +246,7 @@
                 }
 
                 // Kalkulasi Dokumen
-                let totalDokumen = 6; // KTP, KK, Paspor, Foto, Nikah, Lahir
+                let totalDokumen = 7; // KTP, KK, Paspor, Foto, Nikah, Lahir
                 let dokumenSelesai = 0;
 
                 dokumenSelesai += cekDokumen('ktp', data.urlKtp);
@@ -250,6 +255,7 @@
                 dokumenSelesai += cekDokumen('foto', data.urlFoto);
                 dokumenSelesai += cekDokumen('nikah', data.urlNikah);
                 dokumenSelesai += cekDokumen('lahir', data.urlLahir);
+                dokumenSelesai += cekDokumen('vaksin', data.urlVaksin);
                 
                 // Update Bar Progres
                 const persentase = Math.round((dokumenSelesai / totalDokumen) * 100);
@@ -276,17 +282,30 @@
     }
 
     // Fungsi Render Badge Dokumen
+    // Fungsi Render Badge Dokumen & Tombol Download Vaksin
     function cekDokumen(idElement, nilaiField) {
         const badge = document.getElementById('badge-' + idElement);
+        if (!badge) return 0;
+        
         if (nilaiField && nilaiField !== '') {
-            // Tambahkan me-3 di sini untuk jarak kanan
             badge.className = 'badge badge-status bg-success text-white py-2 me-3';
             badge.innerHTML = '<i class="bi bi-check-circle me-1"></i>Sudah';
+            
+            // Khusus Vaksin: Sulap areanya menjadi tombol Download
+            if (idElement === 'vaksin') {
+                const areaVaksin = document.getElementById('area-vaksin');
+                areaVaksin.innerHTML = `<a href="${nilaiField}" target="_blank" class="btn btn-success btn-sm px-3 fw-bold rounded-1 shadow-sm"><i class="bi bi-cloud-arrow-down me-1"></i>Download</a>`;
+            }
             return 1; 
         } else {
-            // Tambahkan me-3 di sini untuk jarak kanan
             badge.className = 'badge badge-status bg-danger text-white py-2 me-3';
             badge.innerHTML = '<i class="bi bi-x-circle me-1"></i>Belum';
+            
+            if (idElement === 'vaksin') {
+                badge.className = 'badge badge-status text-dark py-2 me-3';
+                badge.style.backgroundColor = '#e2e3e5';
+                badge.innerHTML = '<i class="bi bi-hourglass me-1"></i>Proses';
+            }
             return 0; 
         }
     }

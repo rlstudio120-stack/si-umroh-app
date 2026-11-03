@@ -124,25 +124,28 @@ function lihatDetailJemaah(encodedJSON) {
     document.getElementById('detStatusBadge').innerHTML = `<span class="badge ${badgeColor} w-100 py-2">${jm.status || '-'}</span>`;
 
     // --- KOLOM KIRI (STATUS FISIK BERKAS) ---
-    const setBerkas = (url, badgeId) => {
+    const setBerkas = (url, badgeId, btnId) => {
         const badge = document.getElementById(badgeId);
-        if (!badge) return;
+        const btn = document.getElementById(btnId);
+        if (!badge || !btn) return;
         
         if (url && url !== "") {
-            // Semua berkas yang ada URL-nya akan disulap jadi tombol "Lihat File"
             badge.innerHTML = `<a href="${url}" target="_blank" class="badge bg-success text-decoration-none shadow-sm px-2 py-1"><i class="bi bi-eye-fill me-1"></i>Lihat File</a>`;
+            btn.className = "btn btn-info btn-sm py-0 shadow-sm text-white fw-bold";
+            btn.innerHTML = "Update";
         } else {
             badge.innerHTML = '<span class="badge bg-danger px-2 py-1">Belum Ada</span>';
+            btn.className = "btn btn-primary btn-sm py-0 shadow-sm fw-bold";
+            btn.innerHTML = "Upload";
         }
     };
     
-    // Pastikan semua dipanggil di sini:
-    setBerkas(jm.urlKtp, 'badgeKtp');
-    setBerkas(jm.urlKk || jm.urlKK, 'badgeKk'); // Antisipasi perbedaan huruf besar/kecil
-    setBerkas(jm.urlNikah, 'badgeNikah');
-    setBerkas(jm.urlPaspor, 'badgePaspor');
-    setBerkas(jm.urlLahir, 'badgeLahir');
-    setBerkas(jm.urlVaksin, 'badgeVaksin');
+    setBerkas(jm.urlKtp, 'badgeKtp', 'btnUpdKtp');
+    setBerkas(jm.urlKk || jm.urlKK, 'badgeKk', 'btnUpdKk'); 
+    setBerkas(jm.urlNikah, 'badgeNikah', 'btnUpdNikah');
+    setBerkas(jm.urlPaspor, 'badgePaspor', 'btnUpdPaspor');
+    setBerkas(jm.urlLahir, 'badgeLahir', 'btnUpdLahir');
+    setBerkas(jm.urlVaksin, 'badgeVaksin', 'btnUpdVaksin');
 
     // --- KOLOM KANAN (INFORMASI PRIBADI) ---
     document.getElementById('detNikKtp').innerText = jm.nik || '-';
@@ -155,7 +158,23 @@ function lihatDetailJemaah(encodedJSON) {
     let alamatLengkap = (jm.alamat || '-') + ', ' + (jm.kota || '-') + ' - ' + (jm.provinsi || '-');
     document.getElementById('detAlamat').innerText = alamatLengkap;
     
-    document.getElementById('detNoHp').innerText = jm.wa || '-';
+    // Format WA Dinamis
+    if (jm.wa && jm.wa !== '-') {
+        let noWa = jm.wa.toString().replace(/\D/g, ''); // Bersihkan karakter non-angka
+        if (noWa.startsWith('0')) noWa = '62' + noWa.substring(1); // Ubah awalan 0 jadi 62
+        
+        document.getElementById('detNoHp').innerHTML = `
+            <div class="d-flex align-items-center">
+                <span class="me-2 fw-bold">${jm.wa}</span>
+                <a href="https://wa.me/${noWa}" target="_blank" class="btn btn-success btn-sm py-0 px-2 shadow-sm rounded-pill" style="font-size: 0.75rem;">
+                    <i class="bi bi-whatsapp me-1"></i>Chat
+                </a>
+            </div>
+        `;
+    } else {
+        document.getElementById('detNoHp').innerText = '-';
+    }
+
     document.getElementById('detEmail').innerText = jm.email || '-';
 
     // --- KOLOM KANAN (KEIMIGRASIAN & MAHRAM) ---
@@ -487,15 +506,19 @@ async function prosesUpdateBerkas(jenis) {
         await db.collection("jemaah").doc(noReg).update(updateData);
         
         // Pemisahan logika untuk Foto, Vaksin, dan Berkas lainnya
-        // Pemisahan logika untuk Foto dan Dokumen
         if (jenis === 'Foto') {
             const imgElement = document.getElementById('detFoto');
             if (imgElement) imgElement.src = urlFile;
         } else {
-            // Semua dokumen (KTP, KK, Vaksin, dll) langsung berubah jadi tombol "Lihat File" setelah di-upload
             const badgeElement = document.getElementById(`badge${jenis}`);
+            const btnElement = document.getElementById(`btnUpd${jenis}`);
+            
             if (badgeElement) {
                 badgeElement.innerHTML = `<a href="${urlFile}" target="_blank" class="badge bg-success text-decoration-none shadow-sm px-2 py-1"><i class="bi bi-eye-fill me-1"></i>Lihat File</a>`;
+            }
+            if (btnElement) {
+                btnElement.className = "btn btn-info btn-sm py-0 shadow-sm text-white fw-bold";
+                btnElement.innerHTML = "Update";
             }
         }
         
@@ -513,74 +536,105 @@ async function prosesUpdateBerkas(jenis) {
 // ==========================================
 // FUNGSI CETAK BUKTI PENDAFTARAN
 // ==========================================
-function cetakBuktiPendaftaran(jm) {
+async function cetakBuktiPendaftaran(jm) {
     const tglDaftar = jm.createdAt && jm.createdAt.seconds 
         ? new Date(jm.createdAt.seconds * 1000).toLocaleDateString('id-ID', {day: '2-digit', month: 'long', year: 'numeric'}) 
         : '-';
+    const tglCetak = new Date().toLocaleDateString('id-ID', {day: '2-digit', month: 'long', year: 'numeric'});
 
-    const printWindow = window.open('', '_blank');
-    
-    printWindow.document.write(`
-        <html>
-        <head>
-            <title>Bukti Pendaftaran - ${jm.id}</title>
-            <style>
-                body { font-family: 'Arial', sans-serif; padding: 40px; color: #333; line-height: 1.6; }
-                .kop-surat { text-align: center; border-bottom: 3px solid #1a237e; padding-bottom: 20px; margin-bottom: 30px; }
-                .kop-surat h1 { margin: 0; color: #1a237e; font-size: 24px; text-transform: uppercase; }
-                .kop-surat p { margin: 5px 0 0 0; font-size: 14px; color: #666; }
-                h3 { text-align: center; margin-bottom: 30px; text-decoration: underline; }
-                table { width: 100%; border-collapse: collapse; margin-bottom: 30px; font-size: 15px; }
-                td { padding: 10px 5px; vertical-align: top; }
-                .label-col { width: 30%; font-weight: bold; }
-                .footer { margin-top: 50px; text-align: right; font-size: 14px; }
-                .ttd-box { display: inline-block; text-align: center; width: 200px; margin-top: 20px; }
-                .ttd-box p { margin-top: 80px; font-weight: bold; text-decoration: underline; }
-                
-                @media print { 
-                    @page { margin: 0; } 
-                    body { -webkit-print-color-adjust: exact; } 
-                }
-            </style>
-        </head>
-        <body>
-            <div class="kop-surat">
-                <h1>ENKA IMRON MANDIRI</h1>
-                <p>Penyelenggara Perjalanan Ibadah Umroh & Haji Khusus</p>
-                <p>Jl. Dirgahayu, Pamekasan, Jawa Timur</p>
-            </div>
-            
-            <h3>TANDA BUKTI PENDAFTARAN JEMAAH UMROH</h3>
-            
-            <table>
-                <tr><td class="label-col">No. Registrasi</td><td>: <strong>${jm.id}</strong></td></tr>
-                <tr><td class="label-col">Tanggal Mendaftar</td><td>: ${tglDaftar}</td></tr>
-                <tr><td class="label-col">Nama Jemaah</td><td>: ${jm.nama || '-'}</td></tr>
-                <tr><td class="label-col">NIK KTP</td><td>: ${jm.nik || '-'}</td></tr>
-                <tr><td class="label-col">Tempat, Tgl Lahir</td><td>: ${(jm.tempatLahir || '-')} , ${(jm.tglLahir || '-')}</td></tr>
-                <tr><td class="label-col">No. Handphone / WA</td><td>: ${jm.wa || '-'}</td></tr>
-                <tr><td class="label-col">Paket Pilihan</td><td>: <strong>${jm.paket || '-'}</strong></td></tr>
-                <tr><td class="label-col">Status Pendaftaran</td><td>: ${jm.status || '-'}</td></tr>
-            </table>
+    let kopHtml = '';
+    let watermarkHtml = '';
+    let ttdHtml = '';
 
-            <div class="footer">
-                Pamekasan, ${new Date().toLocaleDateString('id-ID', {day: '2-digit', month: 'long', year: 'numeric'})}<br>
-                Petugas Pendaftaran,
-                <div class="ttd-box">
-                    <p>Admin SI Umroh</p>
+    // Fungsi pembantu untuk membaca format CSS dari database
+    const applyFormatCss = (obj) => {
+        if(!obj) return '';
+        return `color: ${obj.color || '#000'}; font-size: ${obj.size || 12}pt; font-family: ${obj.font || 'Arial'}; font-weight: ${obj.bold ? 'bold' : 'normal'}; font-style: ${obj.italic ? 'italic' : 'normal'}; text-decoration: ${obj.underline ? 'underline' : 'none'}; margin: 2px 0;`;
+    };
+
+    try {
+        const docSnap = await db.collection("settings").doc("kop_surat").get();
+        if (docSnap.exists) {
+            const d = docSnap.data();
+            
+            const imgKiri = (d.logoKiri) ? `<img src="${d.logoKiri}" style="width: 95px; height: auto; object-fit: contain;">` : '';
+            const imgKanan = (d.logoKanan) ? `<img src="${d.logoKanan}" style="width: 95px; height: auto; object-fit: contain;">` : '';
+            
+            if (d.watermark) {
+                watermarkHtml = `<img src="${d.watermark}" style="position: fixed; top: 45%; left: 50%; transform: translate(-50%, -50%); width: 55%; opacity: 0.15; z-index: -10; pointer-events: none;">`;
+            }
+
+            if (d.ttd) {
+                ttdHtml = `<img src="${d.ttd}" style="max-height: 80px; width: auto; object-fit: contain; margin-top: 10px; display: block; margin-left: auto; margin-right: auto;">`;
+            } else {
+                ttdHtml = `<div style="height: 60px;"></div>`;
+            }
+
+            kopHtml = `
+            <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 4px double black; padding-bottom: 10px; margin-bottom: 20px;">
+                <div style="width: 95px;">${imgKiri}</div>
+                <div style="text-align: center; flex-grow: 1; padding: 0 15px;">
+                    <div style="${applyFormatCss(d.nama)}">${d.nama ? d.nama.text : 'PT. ENKA IMRON MANDIRI'}</div>
+                    <div style="${applyFormatCss(d.sub)}">${d.sub ? d.sub.text : 'Penyelenggara Perjalanan Ibadah Umroh & Haji Khusus'}</div>
+                    <div style="${applyFormatCss(d.alamat)}">${d.alamat ? d.alamat.text : 'Jl. Dirgahayu, Pamekasan, Jawa Timur'}</div>
                 </div>
-            </div>
+                <div style="width: 95px; text-align: right;">${imgKanan}</div>
+            </div>`;
+        }
+    } catch(e) { console.error("Gagal memuat kop surat:", e); }
 
-            <script>
-                window.onload = function() {
-                    window.print();
-                };
-            </script>
-        </body>
-        </html>
-    `);
-    
-    printWindow.document.close();
+    if(!kopHtml) {
+        kopHtml = `
+        <div style="text-align: center; border-bottom: 4px double black; padding-bottom: 15px; margin-bottom: 20px;">
+            <h1 style="margin: 0; color: #004ba0; font-size: 24px;">PT. ENKA IMRON MANDIRI</h1>
+            <p style="margin: 5px 0 0 0; font-size: 14px;">Penyelenggara Perjalanan Ibadah Umroh & Haji Khusus</p>
+        </div>`;
+        ttdHtml = `<div style="height: 60px;"></div>`;
+    }
+
+    const printWin = window.open('', '_blank');
+    printWin.document.write(`
+    <html>
+    <head>
+        <title>Bukti Pendaftaran - ${jm.id}</title>
+        <style>
+            @page { size: A4 portrait; margin: 15mm 20mm 20mm 20mm; }
+            body { font-family: "Times New Roman", Times, serif; font-size: 12pt; line-height: 1.5; margin: 0; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            h3 { text-align: center; margin-bottom: 20px; text-decoration: underline; }
+            table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 12pt; }
+            td { padding: 8px 5px; vertical-align: top; }
+            .label-col { width: 30%; font-weight: bold; }
+            .ttd-box { float: right; width: 280px; text-align: center; margin-top: 40px; page-break-inside: avoid; }
+        </style>
+    </head>
+    <body>
+        ${watermarkHtml}
+        ${kopHtml}
+        
+        <h3>TANDA BUKTI PENDAFTARAN JEMAAH UMRAH</h3>
+        
+        <table>
+            <tr><td class="label-col">No. Registrasi</td><td>: <strong>${jm.id}</strong></td></tr>
+            <tr><td class="label-col">Tanggal Mendaftar</td><td>: ${tglDaftar}</td></tr>
+            <tr><td class="label-col">Nama Jemaah</td><td>: ${jm.nama || '-'}</td></tr>
+            <tr><td class="label-col">NIK KTP</td><td>: ${jm.nik || '-'}</td></tr>
+            <tr><td class="label-col">Tempat, Tgl Lahir</td><td>: ${(jm.tempatLahir || '-')} , ${(jm.tglLahir || '-')}</td></tr>
+            <tr><td class="label-col">No. Handphone / WA</td><td>: ${jm.wa || '-'}</td></tr>
+            <tr><td class="label-col">Paket Pilihan</td><td>: <strong>${jm.paket || '-'}</strong></td></tr>
+            <tr><td class="label-col">Status Pendaftaran</td><td>: ${jm.status || '-'}</td></tr>
+        </table>
+
+        <div class="ttd-box">
+            Pamekasan, ${tglCetak}<br>
+            Petugas Pendaftaran,<br>
+            ${ttdHtml}
+            <div style="font-weight: bold; text-decoration: underline; margin-top: ${ttdHtml.includes('img') ? '5px' : '60px'};">Admin SI Umroh</div>
+        </div>
+
+        <script>setTimeout(() => { window.print(); }, 800);</script>
+    </body>
+    </html>`);
+    printWin.document.close();
 }
 
 function aturLogikaKamarTambah() {

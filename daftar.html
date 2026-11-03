@@ -21,7 +21,7 @@
   <nav class="navbar navbar-dark shadow-sm" style="background-color: #004ba0;">
     <div class="container">
       <a class="navbar-brand fw-bold" href="index.html">🕋 Sistem Informasi Umroh</a>
-      <a href="lacak.html" class="btn btn-outline-light btn-sm fw-bold"><i class="bi bi-search me-1"></i>Lacak Pendaftaran</a>
+      <a href="index.html" class="btn btn-outline-light btn-sm fw-bold"><i class="bi bi-search me-1"></i>Lacak Pendaftaran</a>
     </div>
   </nav>
 
@@ -87,6 +87,10 @@
               <div class="col-md-6">
                 <label class="form-label small fw-bold">No. HP / WhatsApp</label>
                 <input type="number" class="form-control" id="inputHp" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label small fw-bold">Email (Opsional)</label>
+                <input type="email" class="form-control" id="inputEmail">
               </div>
             </div>
           </div>
@@ -210,47 +214,54 @@
     </div>
   </div>
 
-  <!-- MODAL SUKSES (TIDAK BERUBAH) -->
+  <!-- MODAL SUKSES PENDAFTARAN -->
   <div class="modal fade" id="modalSuksesDaftar" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content border-0 shadow-lg">
+      <div class="modal-content border-0" style="border-radius: 16px; overflow: hidden; box-shadow: 0 15px 35px rgba(0,0,0,0.2);">
         
-        <div id="area-bukti-daftar" class="bg-white p-4 text-center" style="border-radius: 10px 10px 0 0; position: relative; overflow: hidden;">
-          <div class="position-absolute top-0 start-0 w-100 h-100 bg-success opacity-10" style="z-index: 0;"></div>
-          <div style="position: relative; z-index: 1;">
-            <div class="mb-3">
-              <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
+        <!-- AREA BIRU HEADER (Target Screenshot) -->
+        <div id="area-bukti-daftar" class="bg-white text-center pb-2">
+          
+          <div style="background-color: #004ba0; padding: 35px 20px 25px 20px; color: white;">
+            <i class="bi bi-check-circle-fill" style="font-size: 3.5rem; margin-bottom: 10px;"></i>
+            <h3 class="fw-bold mb-1">Pendaftaran Berhasil!</h3>
+            <p class="small opacity-75 mb-0">Alhamdulillah, data Anda telah tersimpan di sistem.</p>
+          </div>
+          
+          <div class="px-4 pt-4 pb-2">
+            <!-- KOTAK NOMOR REGISTRASI -->
+            <div style="background-color: #f0f7ff; border: 2px dashed #004ba0; border-radius: 12px; padding: 15px; margin-bottom: 15px;">
+              <span style="font-size: 0.75rem; font-weight: 800; color: #6c757d; letter-spacing: 1px;">NOMOR REGISTRASI:</span>
+              <h2 id="sukses-noreg" style="font-weight: 900; color: #004ba0; margin: 5px 0 0 0; letter-spacing: 1.5px; font-size: 1.8rem;">-</h2>
             </div>
-            <h4 class="fw-bold text-dark mb-1">Pendaftaran Berhasil!</h4>
-            <p class="text-muted small mb-4">Alhamdulillah, data Anda telah tersimpan di sistem.</p>
             
-            <div class="bg-light border border-success border-opacity-25 rounded-3 p-3 mb-3 shadow-sm">
-              <span class="d-block text-muted small fw-bold mb-1">NOMOR REGISTRASI:</span>
-              <h2 class="fw-bold text-success mb-0" id="sukses-noreg" style="letter-spacing: 2px;">-</h2>
-            </div>
-            
-            <div class="text-start bg-white p-3 rounded border">
-              <p class="mb-1 small"><strong>Nama:</strong> <span id="sukses-nama">-</span></p>
-              <p class="mb-1 small"><strong>Paket:</strong> <span id="sukses-paket">-</span></p>
-              <p class="mb-0 small"><strong>Tanggal:</strong> <span id="sukses-tanggal">-</span></p>
+            <!-- DETAIL JEMAAH -->
+            <div class="text-start" style="background-color: #f8f9fa; border: 1px solid #e9ecef; border-radius: 12px; padding: 15px; font-size: 0.9rem; color: #333;">
+              <div class="mb-1"><strong style="color: #004ba0; width: 60px; display: inline-block;">Nama</strong>: <span id="sukses-nama">-</span></div>
+              <div class="mb-1"><strong style="color: #004ba0; width: 60px; display: inline-block;">Paket</strong>: <span id="sukses-paket">-</span></div>
+              <div><strong style="color: #004ba0; width: 60px; display: inline-block;">Tanggal</strong>: <span id="sukses-tanggal">-</span></div>
             </div>
           </div>
+          
         </div>
+        <!-- AKHIR AREA TARGET SCREENSHOT -->
 
-        <div class="modal-footer d-flex flex-column border-0 bg-light p-4" style="border-radius: 0 0 10px 10px;">
+        <!-- FOOTER AKSI -->
+        <div class="modal-footer d-flex flex-column border-0 bg-white px-4 pb-4 pt-0">
           <p class="text-danger fw-bold small text-center mb-3">
             <i class="bi bi-exclamation-triangle-fill me-1"></i> WAJIB: Simpan bukti ini & Konfirmasi ke WA Admin
           </p>
           <div class="d-grid gap-2 w-100">
-            <button class="btn btn-outline-dark fw-bold rounded-pill" onclick="downloadBukti()">
+            <button class="btn fw-bold text-white py-2 shadow-sm" style="background-color: #004ba0; border-radius: 8px;" onclick="downloadBukti()">
               <i class="bi bi-download me-2"></i>Simpan Bukti (Screenshot)
             </button>
-            <button class="btn btn-success fw-bold rounded-pill" onclick="kirimWaAdmin()">
+            <button class="btn btn-success fw-bold py-2 shadow-sm" style="border-radius: 8px;" onclick="kirimWaAdmin()">
               <i class="bi bi-whatsapp me-2"></i>Konfirmasi ke WA Admin
             </button>
           </div>
           <a href="index.html" class="text-decoration-none mt-3 text-muted small fw-bold">Tutup dan Kembali ke Beranda</a>
         </div>
+
       </div>
     </div>
   </div>
@@ -311,27 +322,30 @@
           nama: document.getElementById('inputNama').value,
           nik: document.getElementById('inputNik').value,
           tempatLahir: document.getElementById('inputTmpLahir').value,
-          tanggalLahir: document.getElementById('inputTglLahir').value,
-          jenisKelamin: document.getElementById('inputJk').value,
+          
+          // PENYELARASAN NAMA VARIABEL
+          tglLahir: document.getElementById('inputTglLahir').value,
+          jk: document.getElementById('inputJk').value,
           alamat: document.getElementById('inputAlamat').value,
           kota: document.getElementById('inputKota').value,
           provinsi: document.getElementById('inputProvinsi').value,
-          hp: document.getElementById('inputHp').value,
+          wa: document.getElementById('inputHp').value,
+          email: document.getElementById('inputEmail').value,
           
-          namaDarurat: document.getElementById('inputNamaDarurat').value,
-          hubunganDarurat: document.getElementById('inputHubDarurat').value,
-          hpDarurat: document.getElementById('inputHpDarurat').value,
+          daruratNama: document.getElementById('inputNamaDarurat').value,
+          daruratHub: document.getElementById('inputHubDarurat').value,
+          daruratHp: document.getElementById('inputHpDarurat').value,
 
-          namaMahram: document.getElementById('inputNamaMahram').value,
-          hubunganMahram: document.getElementById('inputHubMahram').value,
+          mahramNama: document.getElementById('inputNamaMahram').value,
+          mahramHub: document.getElementById('inputHubMahram').value,
           
-          noPaspor: document.getElementById('inputNoPaspor').value,
-          kantorImigrasi: document.getElementById('inputImigrasi').value,
-          tglTerbitPaspor: document.getElementById('inputPasporTgl').value,
-          tglExpiredPaspor: document.getElementById('inputPasporExp').value,
+          pasporNo: document.getElementById('inputNoPaspor').value,
+          pasporTempat: document.getElementById('inputImigrasi').value,
+          pasporTgl: document.getElementById('inputPasporTgl').value,
+          pasporExp: document.getElementById('inputPasporExp').value,
           
           status: 'Menunggu Verifikasi',
-          tanggalDaftar: firebase.firestore.FieldValue.serverTimestamp()
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
       };
 
       db.collection("jemaah").doc(noReg).set(dataSimpan)
@@ -368,8 +382,18 @@
     }
 
     // 5. KIRIM WA
+    // 1. Tarik nomor WA dari database secara diam-diam saat halaman dimuat
+    let noWaAdmin = "6281234567890"; // Angka bawaan jika internet lambat
+    document.addEventListener("DOMContentLoaded", () => {
+        db.collection("settings").doc("kontak").get().then((doc) => {
+            if(doc.exists && doc.data().waAdmin) {
+                noWaAdmin = "62" + doc.data().waAdmin;
+            }
+        });
+    });
+
+    // 2. Fungsi Kirim WA yang sudah dinamis
     function kirimWaAdmin() {
-        const noWaAdmin = "6281234567890"; // GANTI DENGAN NOMOR WA ADMIN
         const pesan = `Assalamu'alaikum Admin PT Al Imron, Saya baru saja melakukan pendaftaran Umrah via Website.\n\nNama: ${dataPendaftarBaru.nama}\n*No. Registrasi: ${dataPendaftarBaru.noReg}*\n\nMohon petunjuk selanjutnya. Terima kasih.`;
         window.open(`https://wa.me/${noWaAdmin}?text=${encodeURIComponent(pesan)}`, '_blank');
     }

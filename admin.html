@@ -42,7 +42,7 @@
       <div class="offcanvas offcanvas-start d-md-none" tabindex="-1" id="mobileMenu" style="width: 290px; background-color: #111827; border-right: 1px solid #374151;">
         <div class="sidebar-wrapper d-flex flex-column h-100">
           
-          <!-- Header dengan Flexbox yang dikunci -->
+          <!-- Header -->
           <div class="sidebar-header d-flex justify-content-between align-items-start p-3 border-bottom border-secondary">
             <div class="d-flex align-items-center">
               <div class="bg-primary rounded p-2 me-3 d-flex justify-content-center align-items-center" style="width: 42px; height: 42px;">
@@ -56,7 +56,7 @@
             <button type="button" class="btn-close btn-close-white mt-2" data-bs-dismiss="offcanvas"></button>
           </div>
           
-          <!-- Body dengan jarak ikon yang diperbaiki (me-3) -->
+          <!-- Body (Scrollable) -->
           <div class="sidebar-body p-2 overflow-auto" style="flex: 1;">
             <div class="section-title text-warning fw-bold mt-2 mb-2 px-3" style="font-size: 11px; letter-spacing: 1px;">DASHBOARD INFO</div>
             <a href="#" class="nav-link nav-link-custom active" onclick="switchView('dashboard'); setActiveMenu(this); bootstrap.Offcanvas.getInstance(document.getElementById('mobileMenu')).hide();">
@@ -84,14 +84,19 @@
             <a href="#" class="nav-link nav-link-custom" onclick="switchView('paket'); setActiveMenu(this); bootstrap.Offcanvas.getInstance(document.getElementById('mobileMenu')).hide();">
               <i class="bi bi-box-seam me-3"></i> Master Paket
             </a>
+            
+            <div class="section-title text-warning fw-bold mt-4 mb-2 px-3" style="font-size: 11px; letter-spacing: 1px;">MASTER DATA & AKSES</div>
+            <a href="#" class="nav-link nav-link-custom" onclick="switchView('users'); setActiveMenu(this); bootstrap.Offcanvas.getInstance(document.getElementById('mobileMenu')).hide();">
+              <i class="bi bi-person-lines-fill me-3"></i> Manajemen User
+            </a>
+            <a href="#" class="nav-link nav-link-custom" onclick="switchView('pengaturan'); setActiveMenu(this); bootstrap.Offcanvas.getInstance(document.getElementById('mobileMenu')).hide();">
+              <i class="bi bi-gear-fill me-3"></i> Pengaturan
+            </a>
           </div>
-          <div class="section-title text-warning fw-bold mt-4 mb-2 px-3" style="font-size: 11px; letter-spacing: 1px;">MASTER DATA & AKSES</div>
-          <a href="#" class="nav-link nav-link-custom" onclick="switchView('users'); setActiveMenu(this)">
-            <i class="bi bi-person-lines-fill me-3"></i> Manajemen User
-          </a>
 
+          <!-- Footer -->
           <div class="sidebar-footer p-3 border-top border-secondary mt-auto">
-            <button class="btn btn-outline-warning-custom w-100 mb-2 py-2 fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#modalGantiPassword")">
+            <button class="btn btn-outline-warning-custom w-100 mb-2 py-2 fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#modalGantiPassword">
               <i class="bi bi-key-fill me-2"></i> Ganti Password
             </button>
             <button class="btn btn-danger-custom w-100 py-2 fw-bold shadow-sm" onclick="logoutAdmin(event)">
@@ -107,6 +112,8 @@
         <!-- === SIDEBAR DESKTOP === -->
         <div class="sidebar d-none d-md-block" style="width: 290px; min-height: 100vh; background-color: #111827; border-right: 1px solid #374151;">
           <div class="sidebar-wrapper d-flex flex-column sticky-top" style="height: 100vh;">
+            
+            <!-- Header -->
             <div class="sidebar-header d-flex align-items-center p-3 border-bottom border-secondary">
               <div class="bg-primary rounded p-2 me-3 d-flex justify-content-center align-items-center" style="width: 42px; height: 42px;">
                 <i class="bi bi-grid-1x2-fill text-white fs-5"></i>
@@ -117,6 +124,7 @@
               </div>
             </div>
             
+            <!-- Body (Scrollable) -->
             <div class="sidebar-body p-2 overflow-auto" style="flex: 1;">
               <div class="section-title text-warning fw-bold mt-2 mb-2 px-3" style="font-size: 11px; letter-spacing: 1px;">DASHBOARD INFO</div>
               <a href="#" class="nav-link nav-link-custom active" onclick="switchView('dashboard'); setActiveMenu(this)">
@@ -144,12 +152,17 @@
               <a href="#" class="nav-link nav-link-custom" onclick="switchView('paket'); setActiveMenu(this)">
                 <i class="bi bi-box-seam me-3"></i> Master Paket
               </a>
-            </div>
-            <div class="section-title text-warning fw-bold mt-4 mb-2 px-3" style="font-size: 11px; letter-spacing: 1px;">MASTER DATA & AKSES</div>
+              
+              <div class="section-title text-warning fw-bold mt-4 mb-2 px-3" style="font-size: 11px; letter-spacing: 1px;">MASTER DATA & AKSES</div>
               <a href="#" class="nav-link nav-link-custom" onclick="switchView('users'); setActiveMenu(this)">
                 <i class="bi bi-person-lines-fill me-3"></i> Manajemen User
               </a>
+              <a href="#" class="nav-link nav-link-custom" onclick="switchView('pengaturan'); setActiveMenu(this)">
+                <i class="bi bi-gear-fill me-3"></i> Pengaturan
+              </a>
+            </div>
 
+            <!-- Footer -->
             <div class="sidebar-footer p-3 border-top border-secondary mt-auto">
               <button class="btn btn-outline-warning-custom w-100 mb-2 py-2 fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#modalGantiPassword">
                 <i class="bi bi-key-fill me-2"></i> Ganti Password
@@ -424,34 +437,32 @@
                             <tr>
                               <td class="fw-bold">KTP</td>
                               <td class="text-end" id="badgeKtp"></td>
-                              <td width="1%"><button class="btn btn-info btn-sm py-0" onclick="document.getElementById('updFileKtp').click()">Update</button></td>
+                              <td width="1%"><button id="btnUpdKtp" class="btn btn-primary btn-sm py-0 shadow-sm" onclick="document.getElementById('updFileKtp').click()">Upload</button></td>
                             </tr>
                             <tr>
                               <td class="fw-bold">Kartu Keluarga</td>
                               <td class="text-end" id="badgeKk"></td>
-                              <td width="1%"><button class="btn btn-info btn-sm py-0" onclick="document.getElementById('updFileKk').click()">Update</button></td>
+                              <td width="1%"><button id="btnUpdKk" class="btn btn-primary btn-sm py-0 shadow-sm" onclick="document.getElementById('updFileKk').click()">Upload</button></td>
                             </tr>
                             <tr>
                               <td class="fw-bold">Akte / Buku Nikah</td>
                               <td class="text-end" id="badgeNikah"></td>
-                              <td width="1%"><button class="btn btn-info btn-sm py-0" onclick="document.getElementById('updFileNikah').click()">Update</button></td>
+                              <td width="1%"><button id="btnUpdNikah" class="btn btn-primary btn-sm py-0 shadow-sm" onclick="document.getElementById('updFileNikah').click()">Upload</button></td>
                             </tr>
                             <tr>
                               <td class="fw-bold">Paspor</td>
                               <td class="text-end" id="badgePaspor"></td>
-                              <td width="1%"><button class="btn btn-info btn-sm py-0" onclick="document.getElementById('updFilePaspor').click()">Update</button></td>
+                              <td width="1%"><button id="btnUpdPaspor" class="btn btn-primary btn-sm py-0 shadow-sm" onclick="document.getElementById('updFilePaspor').click()">Upload</button></td>
                             </tr>
                             <tr>
                               <td class="fw-bold">Akta Kelahiran</td>
                               <td class="text-end" id="badgeLahir"></td>
-                              <td width="1%"><button class="btn btn-info btn-sm py-0" onclick="document.getElementById('updFileLahir').click()">Update</button></td>
+                              <td width="1%"><button id="btnUpdLahir" class="btn btn-primary btn-sm py-0 shadow-sm" onclick="document.getElementById('updFileLahir').click()">Upload</button></td>
                             </tr>
                             <tr>
                               <td class="fw-bold text-success"><i class="bi bi-shield-plus me-1"></i>Sertifikat Vaksin</td>
                               <td class="text-end" id="badgeVaksin"></td>
-                              <td width="1%">
-                                <button class="btn btn-success btn-sm py-0 fw-bold shadow-sm" onclick="document.getElementById('updFileVaksin').click()">Upload</button>
-                              </td>
+                              <td width="1%"><button id="btnUpdVaksin" class="btn btn-primary btn-sm py-0 shadow-sm fw-bold" onclick="document.getElementById('updFileVaksin').click()">Upload</button></td>
                             </tr>
                           </table>
                         </div>
@@ -1410,11 +1421,6 @@
                         <h3 class="fw-bold text-dark mb-0">Surat & Dokumen Jemaah</h3>
                         <p class="text-muted">Cetak surat rekomendasi, pengantar, dan dokumen pendukung lainnya otomatis</p>
                       </div>
-                      <div>
-                        <button class="btn btn-outline-dark fw-bold shadow-sm" onclick="bukaModalSettingSurat()">
-                          <i class="bi bi-gear-fill me-1"></i> Pengaturan Kop Surat
-                        </button>
-                      </div>
                     </div>
                     <!-- AREA FILTER SURAT -->
                       <div class="card border-0 shadow-sm mb-3 bg-white">
@@ -1696,6 +1702,70 @@
                         </div>
                       </div>
                     </div>
+                    <!-- === HALAMAN PENGATURAN === -->
+          <div id="view-pengaturan" class="view-section" style="display: none;">
+            <div class="mb-4">
+              <h3 class="fw-bold text-dark mb-0">Pengaturan Sistem</h3>
+              <p class="text-muted">Kelola preferensi aplikasi, dokumen, dan kontak admin</p>
+            </div>
+
+            <div class="row g-4">
+              <!-- Kotak Pengaturan Kop Surat -->
+              <div class="col-md-6">
+                <div class="card border-0 shadow-sm h-100">
+                  <div class="card-body p-4 text-center d-flex flex-column justify-content-center align-items-center">
+                    <i class="bi bi-envelope-paper-fill text-primary mb-3" style="font-size: 3.5rem;"></i>
+                    <h5 class="fw-bold">Kop Surat & Dokumen</h5>
+                    <p class="text-muted small mb-4">Atur teks kop, logo, watermark, dan tanda tangan digital untuk keperluan cetak.</p>
+                    <button class="btn btn-primary fw-bold px-4 rounded-pill shadow-sm" onclick="bukaModalSettingSurat()">
+                      <i class="bi bi-gear-fill me-1"></i> Atur Kop Surat
+                    </button>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Kotak Pengaturan Kontak Admin -->
+              <div class="col-md-6">
+                <div class="card border-0 shadow-sm h-100">
+                  <div class="card-body p-4 text-center d-flex flex-column justify-content-center align-items-center">
+                    <i class="bi bi-whatsapp text-success mb-3" style="font-size: 3.5rem;"></i>
+                    <h5 class="fw-bold">Kontak WhatsApp Admin</h5>
+                    <p class="text-muted small mb-4">Atur nomor HP admin untuk menerima konfirmasi pendaftaran dari jemaah.</p>
+                    <button class="btn btn-success fw-bold px-4 rounded-pill shadow-sm" onclick="bukaModalSettingKontak()">
+                      <i class="bi bi-telephone-fill me-1"></i> Atur Nomor WA
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- === AKHIR HALAMAN PENGATURAN === -->
+
+          <!-- MODAL SETTING KONTAK ADMIN -->
+          <div class="modal fade" id="modalSettingKontak" tabindex="-1" data-bs-backdrop="static">
+            <div class="modal-dialog modal-sm modal-dialog-centered">
+              <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-success text-white border-0">
+                  <h6 class="modal-title fw-bold"><i class="bi bi-whatsapp me-2"></i>Nomor WA Admin</h6>
+                  <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form onsubmit="simpanSettingKontak(event)">
+                  <div class="modal-body p-4 bg-light">
+                    <label class="form-label small fw-bold">Nomor Penerima Pesan Jemaah</label>
+                    <div class="input-group">
+                      <span class="input-group-text bg-white fw-bold">62</span>
+                      <input type="number" class="form-control" id="set-wa-admin" placeholder="81234567890" required>
+                    </div>
+                    <small class="text-muted d-block mt-2" style="font-size: 0.75rem;">*Gunakan angka tanpa awalan 0. Contoh: 81234567890</small>
+                  </div>
+                  <div class="modal-footer bg-white border-0 p-3">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-success btn-sm fw-bold"><i class="bi bi-save me-1"></i> Simpan</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
 
         </div>
 
