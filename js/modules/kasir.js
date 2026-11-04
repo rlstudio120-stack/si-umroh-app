@@ -341,6 +341,10 @@ function cetakKwitansi(encodedTrData) {
             logo = kop.logoKiri ? `<img src="${kop.logoKiri}" style="height: 55px; max-width: 100px; object-fit: contain;">` : '';
             logoKanan = kop.logoKanan ? `<img src="${kop.logoKanan}" style="height: 55px; max-width: 100px; object-fit: contain;">` : '';
         }
+        // Mengambil gambar watermark dari pengaturan yang sama dengan surat
+        const imgWatermark = (window.konfigurasiSurat && window.konfigurasiSurat.watermark) 
+            ? `<img src="${window.konfigurasiSurat.watermark}" class="watermark">` 
+            : '';
 
         const printWin = window.open('', '_blank');
         printWin.document.write(`
@@ -368,11 +372,22 @@ function cetakKwitansi(encodedTrData) {
                 
                 .table-info { width: 100%; font-size: 14px; margin-bottom: 5px; }
                 .table-info td { padding: 4px; vertical-align: middle; }
-                .terbilang-box { background: #f0f0f0; padding: 8px 12px; font-style: italic; font-weight: bold; border: 1px solid #ccc; border-radius: 5px; display: block; width: 95%; }
+                .terbilang-box { background: #b8c9ff; padding: 8px 12px; font-style: italic; font-weight: bold; border: 1px solid #fcf9f9; border-radius: 5px; display: block; width: 95%; }
                 
                 .footer { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 10px; }
-                .nominal-box { background: #ffe600; color: #020202; padding: 8px 20px; font-size: 20px; font-weight: bold; border-radius: 5px; border: 2px solid #000; letter-spacing: 1px; }
+                .nominal-box { background: #212e92; color: #fcfcfc; padding: 8px 20px; font-size: 20px; font-weight: bold; border-radius: 5px; border: 2px solid #cfcfcf; letter-spacing: 1px; }
                 .ttd-area { text-align: center; width: 220px; font-size: 14px; }
+
+                .watermark { 
+                position: fixed; 
+                top: 45%; 
+                left: 50%; 
+                transform: translate(-50%, -50%); 
+                width: 55%; 
+                opacity: 0.10; /* Angka 0.10 agar lebih tipis dari surat, sehingga teks angka kwitansi tetap jelas terbaca */
+                z-index: -10; 
+                pointer-events: none; 
+            }
             </style>
         </head><body>
             <div class="kwitansi-box">
@@ -409,6 +424,7 @@ function cetakKwitansi(encodedTrData) {
                 </div>
             </div>
             <script>setTimeout(() => { window.print(); }, 800);</script>
+            ${imgWatermark}
         </body></html>`);
         printWin.document.close();
     });
