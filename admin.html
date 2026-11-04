@@ -1375,8 +1375,8 @@
 
                         <div class="row g-4">
                           <!-- Area Jemaah Belum Dapat Kursi -->
-                          <div class="col-md-4">
-                            <div class="card border-dark h-100 shadow-sm">
+                          <div class="col-md-4 sticky-top" style="top: 20px; z-index: 10; align-self: start;">
+                            <div class="card border-dark shadow-sm">
                               <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center py-2">
                                 <span class="fw-bold"><i class="bi bi-person-x me-1"></i>BELUM DAPAT KURSI</span>
                                 <span class="badge bg-secondary" id="badge-KRS-BELUM">0 Org</span>
@@ -1505,6 +1505,13 @@
                                   <label class="form-label small fw-bold">Teks Tanggal Keberangkatan</label>
                                   <input type="text" class="form-control" id="surat-tgl-berangkat" placeholder="Contoh: 12 s.d. 23 Oktober 2026" required>
                                 </div>
+                              </div>
+
+                              <!-- KOLOM DINAMIS (Muncul khusus Surat Paspor) -->
+                              <div id="area-surat-paspor" class="mb-3 border-top pt-3 mt-3">
+                                <label class="form-label small fw-bold text-primary">Tambahan Nama Bin/Binti (Khusus Paspor)</label>
+                                <input type="text" class="form-control form-control-sm border-primary" id="surat-nama-bapak" placeholder="Contoh: bin Abdul Majid">
+                                <small class="text-muted" style="font-size: 0.75rem;">*Aturan Imigrasi: Nama minimal 3 kata. Kosongi jika sudah 3 kata.</small>
                               </div>
 
                               <!-- KOLOM DINAMIS (Muncul jika pilih Surat Keterangan) -->
@@ -2102,6 +2109,9 @@
       </div>
     </div>
   </div>
+
+  
+
   <!-- MODAL EDIT AKUN STAF / ADMIN -->
 <div class="modal fade" id="modalEditAdmin" tabindex="-1" data-bs-backdrop="static">
   <div class="modal-dialog">
@@ -2256,5 +2266,8 @@ function setActiveMenu(element) {
 }
 </script>
   <script src="js/app.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 </body>
 </html>

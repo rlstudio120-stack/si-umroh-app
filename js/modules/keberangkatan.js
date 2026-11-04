@@ -378,7 +378,20 @@ function renderKotakKamar(idKamar, judulKamar, listJemaah) {
             const isLaki = (jm.jk === 'Laki-laki');
             const lp = isLaki ? 'Laki-laki' : (jm.jk === 'Perempuan' ? 'Perempuan' : '-');
             const ikonJk = isLaki ? '<i class="bi bi-gender-male text-secondary"></i>' : '<i class="bi bi-gender-female text-secondary"></i>';
-            const umurText = jm.umur ? `${jm.umur} Thn` : '? Thn';
+            
+            // PERBAIKAN: Hitung Umur Otomatis dari Tanggal Lahir
+            let umurAngka = '?';
+            if (jm.tglLahir) {
+                const birthDate = new Date(jm.tglLahir);
+                const today = new Date();
+                let age = today.getFullYear() - birthDate.getFullYear();
+                const m = today.getMonth() - birthDate.getMonth();
+                if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+                    age--;
+                }
+                umurAngka = age;
+            }
+            const umurText = `${umurAngka} Thn`;
             
             const borderKiri = isLaki ? 'border-primary' : 'border-danger';
 
@@ -891,10 +904,24 @@ function buatKartuKecil(jm) {
     const isLaki = (jm.jk === 'Laki-laki');
     const bgWarna = isLaki ? 'bg-primary bg-opacity-10 border-primary' : 'bg-danger bg-opacity-10 border-danger';
     const fontWarna = isLaki ? 'text-primary' : 'text-danger';
+    
+    // PERBAIKAN: Hitung Umur Otomatis untuk Bus
+    let umurAngka = '?';
+    if (jm.tglLahir) {
+        const birthDate = new Date(jm.tglLahir);
+        const today = new Date();
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const m = today.getMonth() - birthDate.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+            age--;
+        }
+        umurAngka = age;
+    }
+
     return `
     <div class="w-100 p-1 border rounded shadow-sm ${bgWarna} kartu-bus" id="bus-jm-${jm.id}" data-id="${jm.id}" draggable="true" ondragstart="dragStartBus(event)" style="cursor: grab; user-select: none;">
         <div class="fw-bold ${fontWarna}" style="font-size: 0.7rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${jm.nama}</div>
-        <div class="text-muted" style="font-size: 0.6rem;">${isLaki ? 'L' : 'P'} | ${jm.umur || '?'} Thn</div>
+        <div class="text-muted" style="font-size: 0.6rem;">${isLaki ? 'L' : 'P'} | ${umurAngka} Thn</div>
     </div>`;
 }
 
@@ -980,8 +1007,14 @@ function cetakRooming() {
         const idKamar = kamar.id;
         if (idKamar === 'KMR-BELUM') return; // Jangan cetak yang belum diatur
 
+        // PERBAIKAN 1: Format teks ID Kamar agar lebih rapi dibaca
+        let judulKamar = idKamar
+            .replace('KMR-GRP-', 'Group-')
+            .replace('KMR-PVT-', 'Private-')
+            .replace('KMR-L-', 'Laki-Laki-')
+            .replace('KMR-P-', 'Perempuan-');
+
         const headerEl = kamar.previousElementSibling;
-        const judul = headerEl.querySelector('span:first-child').innerText;
         const badge = headerEl.querySelector('.badge').innerText;
 
         let isiJemaah = '';
@@ -995,7 +1028,7 @@ function cetakRooming() {
 
         htmlKamar += `
         <div class="box-kamar">
-            <div class="box-header"><span>${judul}</span> <span>${badge}</span></div>
+            <div class="box-header"><span>${judulKamar}</span> <span>${badge}</span></div>
             <table class="table-jemaah">${isiJemaah}</table>
         </div>`;
     });
@@ -1008,17 +1041,35 @@ function cetakRooming() {
             .kop { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
             .kop h2 { margin: 0; font-size: 22px; text-transform: uppercase; }
             .kop p { margin: 5px 0 0 0; font-size: 14px; }
-            .grid-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
-            .box-kamar { border: 1px solid #000; border-radius: 5px; overflow: hidden; page-break-inside: avoid; }
-            .box-header { background: #333; color: #fff; padding: 8px; font-weight: bold; font-size: 14px; display: flex; justify-content: space-between; }
-            .table-jemaah { width: 100%; border-collapse: collapse; font-size: 13px; }
+            
+            /* PERBAIKAN 2: Menggunakan CSS Columns (Masonry) agar kotak tidak menyangkut */
+            .grid-container { 
+                column-count: 3; 
+                column-gap: 15px; 
+            }
+            .box-kamar { 
+                border: 1px solid #000; 
+                border-radius: 5px; 
+                overflow: hidden; 
+                margin-bottom: 15px; 
+                break-inside: avoid; 
+                page-break-inside: avoid;
+                display: inline-block;
+                width: 100%;
+            }
+            .box-header { background: #333; color: #fff; padding: 8px; font-weight: bold; font-size: 13px; display: flex; justify-content: space-between; }
+            .table-jemaah { width: 100%; border-collapse: collapse; font-size: 12px; }
             .table-jemaah td { border-bottom: 1px solid #eee; padding: 6px; }
-            @media print { @page { size: A4; margin: 1cm; } .grid-container { display: block; } .box-kamar { float: left; width: 31%; margin: 1%; } }
+            
+            @media print { 
+                @page { size: A4; margin: 1cm; } 
+                body { padding: 0; }
+            }
         </style>
         </head><body>
             <div class="kop"><h2>Daftar Pembagian Kamar (Rooming List)</h2><p>Paket: <strong>${roomingPaket}</strong> | ID Jadwal: ${roomingIdJadwal}</p></div>
             <div class="grid-container">${htmlKamar}</div>
-            <script>window.onload = () => window.print();</script>
+            <script>window.onload = () => { setTimeout(() => window.print(), 500); }</script>
         </body></html>
     `);
     printWin.document.close();
@@ -1029,7 +1080,7 @@ function cetakBus() {
         const k = document.getElementById(idKrs);
         if (!k) return '-';
         const crd = k.querySelector('.kartu-bus');
-        return crd ? crd.querySelector('.fw-bold').innerText : '';
+        return crd ? `<span class="seat-name">${crd.querySelector('.fw-bold').innerText}</span>` : '-';
     };
 
     let htmlKursi = '';
@@ -1037,51 +1088,87 @@ function cetakBus() {
     for(let i=1; i<=10; i++) {
         htmlKursi += `
         <tr>
-            <td class="seat"><span>${i}A</span><br>${getNama(`KRS-${i}A`)}</td>
-            <td class="seat"><span>${i}B</span><br>${getNama(`KRS-${i}B`)}</td>
+            <td class="seat"><span class="seat-num">${i}A</span><br>${getNama(`KRS-${i}A`)}</td>
+            <td class="seat"><span class="seat-num">${i}B</span><br>${getNama(`KRS-${i}B`)}</td>
             <td class="lorong">LORONG</td>
-            <td class="seat"><span>${i}C</span><br>${getNama(`KRS-${i}C`)}</td>
-            <td class="seat"><span>${i}D</span><br>${getNama(`KRS-${i}D`)}</td>
+            <td class="seat"><span class="seat-num">${i}C</span><br>${getNama(`KRS-${i}C`)}</td>
+            <td class="seat"><span class="seat-num">${i}D</span><br>${getNama(`KRS-${i}D`)}</td>
         </tr>`;
     }
     // Baris 11 (Belakang)
     htmlKursi += `
         <tr>
-            <td class="seat belakang"><span>11A</span><br>${getNama('KRS-11A')}</td>
-            <td class="seat belakang"><span>11B</span><br>${getNama('KRS-11B')}</td>
-            <td class="seat belakang"><span>11C</span><br>${getNama('KRS-11C')}</td>
-            <td class="seat belakang"><span>11D</span><br>${getNama('KRS-11D')}</td>
-            <td class="seat belakang"><span>11E</span><br>${getNama('KRS-11E')}</td>
+            <td class="seat"><span class="seat-num">11A</span><br>${getNama('KRS-11A')}</td>
+            <td class="seat"><span class="seat-num">11B</span><br>${getNama('KRS-11B')}</td>
+            <td class="seat"><span class="seat-num">11C</span><br>${getNama('KRS-11C')}</td>
+            <td class="seat"><span class="seat-num">11D</span><br>${getNama('KRS-11D')}</td>
+            <td class="seat"><span class="seat-num">11E</span><br>${getNama('KRS-11E')}</td>
         </tr>`;
 
     const printWin = window.open('', '_blank');
     printWin.document.write(`
         <html><head><title>Denah Bus - ${busPaket}</title>
         <style>
-            body { font-family: Arial, sans-serif; padding: 20px; color: #333; text-align: center; }
-            .kop { border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
-            .kop h2 { margin: 0; font-size: 22px; text-transform: uppercase; }
-            .bus-container { border: 3px solid #333; border-radius: 20px; padding: 20px; max-width: 700px; margin: 0 auto; background: #f9f9f9; }
-            /* PERBAIKAN: Menggunakan flexbox untuk memisahkan Kiri dan Kanan */
-            .sopir-box { display: flex; justify-content: space-between; padding: 0 10px; margin-bottom: 20px; font-weight: bold; font-size: 14px; }
-            table { width: 100%; border-collapse: separate; border-spacing: 8px; }
-            .seat { border: 2px solid #1a237e; border-radius: 8px; padding: 10px 5px; width: 22%; background: #fff; font-size: 13px; font-weight: bold; height: 50px; overflow: hidden; }
-            .seat span { font-size: 10px; color: #fff; background: #1a237e; padding: 2px 6px; border-radius: 4px; display: inline-block; margin-bottom: 5px; }
-            .lorong { width: 12%; color: #aaa; font-size: 12px; letter-spacing: 2px; }
-            .belakang { width: 18%; }
-            @media print { @page { size: A4 portrait; } body { -webkit-print-color-adjust: exact; } }
+            body { font-family: Arial, sans-serif; padding: 10px; color: #333; text-align: center; margin: 0; }
+            .kop { border-bottom: 2px solid #000; padding-bottom: 5px; margin-bottom: 15px; }
+            .kop h2 { margin: 0; font-size: 18px; text-transform: uppercase; }
+            .kop p { margin: 5px 0 0; font-size: 12px; }
+            .bus-container { border: 2px solid #333; border-radius: 15px; padding: 10px 15px; max-width: 100%; margin: 0 auto; background: #f9f9f9; }
+            .sopir-box { display: flex; justify-content: space-between; padding: 0 10px; margin-bottom: 10px; font-weight: bold; font-size: 12px; }
+            
+            table { width: 100%; border-collapse: separate; border-spacing: 6px; table-layout: fixed; }
+            
+            .seat { 
+                border: 2px solid #1a237e; /* Garis tepi dikembalikan ke warna biru tebal */
+                border-radius: 6px; 
+                padding: 6px; 
+                background: #fff; 
+                height: 70px; 
+                overflow: hidden;
+                vertical-align: top;
+            }
+            
+            /* Class spesifik HANYA untuk nomor kursi */
+            .seat-num { 
+                font-size: 10px; 
+                color: #ffffff; 
+                background-color: #1a237e; 
+                padding: 3px 6px; 
+                border-radius: 4px; 
+                display: inline-block; 
+                margin-bottom: 4px; 
+                letter-spacing: 0.5px;
+                font-weight: bold;
+            }
+            
+            /* Class spesifik HANYA untuk nama (tanpa warna latar) */
+            .seat-name { 
+                display: block; 
+                font-size: 11px;
+                color: #333;
+                font-weight: bold;
+                white-space: normal; 
+                word-wrap: break-word;
+                line-height: 1.2; 
+            }
+            
+            .lorong { color: #aaa; font-size: 10px; letter-spacing: 2px; vertical-align: middle; text-align: center; }
+            
+            @media print { 
+                @page { size: A4 portrait; margin: 10mm; } 
+                body { -webkit-print-color-adjust: exact; } 
+            }
         </style>
         </head><body>
             <div class="kop"><h2>Denah Tempat Duduk Bus</h2><p>Paket: <strong>${busPaket}</strong> | ID Jadwal: ${busIdJadwal}</p></div>
             <div class="bus-container">
-                <!-- PERBAIKAN: Elemen dipisah kiri dan kanan -->
                 <div class="sopir-box">
                     <div>[ Pintu Depan ]</div>
                     <div>[ Supir & TL ]</div>
                 </div>
                 <table>${htmlKursi}</table>
             </div>
-            <script>window.onload = () => window.print();</script>
+            <script>window.onload = () => { setTimeout(() => window.print(), 500); }</script>
         </body></html>
     `);
     printWin.document.close();

@@ -70,14 +70,12 @@ function ubahFormSurat() {
     const romawi = ["I","II","III","IV","V","VI","VII","VIII","IX","X","XI","XII"][tgl.getMonth()];
     const thn = tgl.getFullYear();
     
-    // PENDETEKSI TAHUN BARU
     const tahunTerakhir = window.konfigurasiSurat.tahunSurat || thn;
     const isTahunBaru = thn > tahunTerakhir;
     
     let formatNo = '';
-    let tglCetak = new Date().toISOString().split('T')[0]; // Default hari ini jika surat baru
+    let tglCetak = new Date().toISOString().split('T')[0];
     
-    // CEK RIWAYAT NOMOR SURAT & TANGGAL JEMAAH
     if (jenis === 'paspor') {
         if (dataJemaahSurat.noSuratPaspor) {
             formatNo = dataJemaahSurat.noSuratPaspor;
@@ -97,19 +95,33 @@ function ubahFormSurat() {
     }
     
     document.getElementById('surat-no').value = formatNo;
-    document.getElementById('surat-tgl-cetak').value = tglCetak; // MENGUNCI TANGGAL LAMA JIKA ADA
+    document.getElementById('surat-tgl-cetak').value = tglCetak; 
+    
+    // Tampilkan kolom tambahan sesuai jenis surat
+    const areaPaspor = document.getElementById('area-surat-paspor');
+    if (areaPaspor) areaPaspor.className = (jenis === 'paspor') ? 'mb-3 border-top pt-3 mt-3' : 'd-none';
     
     document.getElementById('area-surat-keterangan').className = (jenis === 'berangkat' || jenis === 'batal') ? 'border-top pt-3 mt-3' : 'd-none';
     document.getElementById('area-surat-batal').className = (jenis === 'batal') ? 'border-top pt-3 mt-2' : 'd-none';
 }
 
 function bukaModalSurat(encodedData) {
+    document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+    document.body.classList.remove('modal-open');
+    document.body.style.overflow = '';
+    document.body.style.paddingRight = '';
+
     dataJemaahSurat = JSON.parse(decodeURIComponent(encodedData));
     document.getElementById('surat-nama-jemaah').innerText = dataJemaahSurat.nama;
     document.getElementById('surat-jenis').value = 'paspor';
     document.getElementById('surat-tgl-berangkat').value = ''; 
     
     document.getElementById('surat-paspor').value = dataJemaahSurat.pasporNo || '';
+    
+    // Kosongkan input nama tambahan setiap kali buka data jemaah baru
+    const inputNamaBapak = document.getElementById('surat-nama-bapak');
+    if (inputNamaBapak) inputNamaBapak.value = '';
+
     const toggleTtd = document.getElementById('surat-pakai-ttd');
     if (toggleTtd) toggleTtd.checked = false;
     
@@ -192,9 +204,16 @@ function cetakDokumenSurat(event) {
     const imgWatermark = window.konfigurasiSurat.watermark ? `<img src="${window.konfigurasiSurat.watermark}" class="watermark">` : '';
     const imgTtd = (pakaiTtd && window.konfigurasiSurat.ttd) ? `<img src="${window.konfigurasiSurat.ttd}" class="ttd-img">` : '';
 
+    // Tangkap input nama Bin/Binti jika diketik oleh admin
+    const inputNamaBapak = document.getElementById('surat-nama-bapak');
+    const tambahanNama = (inputNamaBapak && inputNamaBapak.value.trim() !== '') ? ` ${inputNamaBapak.value.trim()}` : '';
+
     let htmlKonten = '';
 
     if (jenisSurat === 'paspor') {
+        // Gabungkan nama asli dari database dengan tambahan Bin/Binti khusus cetak paspor
+        const namaLengkapCetak = `${jm.nama}${tambahanNama}`;
+        
         htmlKonten = `
         <table class="tabel-header">
             <tr><td style="width: 12%;">Nomor</td><td style="width: 48%;">: ${noSurat}</td><td style="width: 40%; text-align: right;">Pamekasan, ${formatTgl(document.getElementById('surat-tgl-cetak').value)}</td></tr>
@@ -209,7 +228,7 @@ function cetakDokumenSurat(event) {
         </table>
         <p>Menerangkan:</p>
         <table class="tabel-data">
-            <tr><td style="width: 150px;">Nama Lengkap</td><td>: <strong>${jm.nama}</strong></td></tr>
+            <tr><td style="width: 150px;">Nama Lengkap</td><td>: <strong>${namaLengkapCetak}</strong></td></tr>
             <tr><td>NIK</td><td>: ${jm.nik || '-'}</td></tr>
             <tr><td>Tetala</td><td>: ${jm.tempatLahir || '-'}, ${formatTgl(jm.tglLahir)}</td></tr>
             <tr><td>Alamat</td><td>: ${jm.alamat || '-'}</td></tr>
@@ -288,50 +307,54 @@ function cetakDokumenSurat(event) {
     }
 
 
-    // 1. TUTUP MODAL LEBIH DULU
+    // 1. TUTUP MODAL TERLEBIH DAHULU
     const modalEl = document.getElementById('modalSurat');
     const modalInstance = bootstrap.Modal.getInstance(modalEl);
     if (modalInstance) {
         modalInstance.hide();
     }
 
-    // 2. BERI JEDA SETENGAH DETIK AGAR KUNCI FOKUS BOOTSTRAP TERLEPAS, LALU BUKA PDF
-    setTimeout(() => {
-        const printWin = window.open('', '_blank');
-        printWin.document.write(`
-        <html><head><title>Cetak Dokumen - ${jm.nama}</title>
-            <style>
-                @page { size: A4 portrait; margin: 15mm 20mm 20mm 20mm; }
-                body { font-family: "Times New Roman", Times, serif; font-size: 12pt; line-height: 1.5; margin: 0; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-                .watermark { position: fixed; top: 45%; left: 50%; transform: translate(-50%, -50%); width: 55%; opacity: 0.15; z-index: -10; pointer-events: none; }
-                .kop-surat { display: flex; align-items: center; justify-content: space-between; border-bottom: 4px double black; padding-bottom: 10px; margin-bottom: 20px; }
-                .kop-logo-kiri, .kop-logo-kanan { width: 95px; height: auto; object-fit: contain; }
-                .kop-text { text-align: center; flex-grow: 1; padding: 0 15px; }
-                .content { text-align: justify; }
-                .tabel-header { width: 100%; margin-bottom: 15px; font-size: 12pt; }
-                .tabel-data { margin-left: 20px; border-collapse: collapse; margin-bottom: 10px; font-size: 12pt; }
-                .tabel-data td { padding: 2px 5px; vertical-align: top; }
-                .ttd-box { float: right; width: 280px; text-align: center; margin-top: 30px; page-break-inside: avoid; }
-                .ttd-img { max-height: 80px; width: auto; object-fit: contain; margin-top: 10px; display: block; margin-left: auto; margin-right: auto; }
-                .ttd-nama { font-weight: bold; text-decoration: underline; }
-            </style>
-        </head><body>
-            ${imgWatermark}
-            <div class="kop-surat">
-                <div style="width: 95px;">${imgKiri}</div>
-                <div class="kop-text">
-                    <div style="${applyFormatCss(window.konfigurasiSurat.nama)}">${window.konfigurasiSurat.nama.text}</div>
-                    <div style="${applyFormatCss(window.konfigurasiSurat.sub)}">${window.konfigurasiSurat.sub.text}</div>
-                    <div style="${applyFormatCss(window.konfigurasiSurat.alamat)}">${window.konfigurasiSurat.alamat.text}</div>
-                </div>
-                <div style="width: 95px; text-align: right;">${imgKanan}</div>
+    // 2. PEMBERSIHAN PAKSA DOM (Brute Force Cleanup)
+    document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+    document.body.classList.remove('modal-open');
+    document.body.style.overflow = '';
+    document.body.style.paddingRight = '';
+
+    // 3. BUKA TAB PDF SECARA LANGSUNG
+    const printWin = window.open('', '_blank');
+    printWin.document.write(`
+    <html><head><title>Cetak Dokumen - ${jm.nama}</title>
+        <style>
+            @page { size: A4 portrait; margin: 15mm 20mm 20mm 20mm; }
+            body { font-family: "Times New Roman", Times, serif; font-size: 12pt; line-height: 1.5; margin: 0; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            .watermark { position: fixed; top: 45%; left: 50%; transform: translate(-50%, -50%); width: 55%; opacity: 0.15; z-index: -10; pointer-events: none; }
+            .kop-surat { display: flex; align-items: center; justify-content: space-between; border-bottom: 4px double black; padding-bottom: 10px; margin-bottom: 20px; }
+            .kop-logo-kiri, .kop-logo-kanan { width: 95px; height: auto; object-fit: contain; }
+            .kop-text { text-align: center; flex-grow: 1; padding: 0 15px; }
+            .content { text-align: justify; }
+            .tabel-header { width: 100%; margin-bottom: 15px; font-size: 12pt; }
+            .tabel-data { margin-left: 20px; border-collapse: collapse; margin-bottom: 10px; font-size: 12pt; }
+            .tabel-data td { padding: 2px 5px; vertical-align: top; }
+            .ttd-box { float: right; width: 280px; text-align: center; margin-top: 30px; page-break-inside: avoid; }
+            .ttd-img { max-height: 80px; width: auto; object-fit: contain; margin-top: 10px; display: block; margin-left: auto; margin-right: auto; }
+            .ttd-nama { font-weight: bold; text-decoration: underline; }
+        </style>
+    </head><body>
+        ${imgWatermark}
+        <div class="kop-surat">
+            <div style="width: 95px;">${imgKiri}</div>
+            <div class="kop-text">
+                <div style="${applyFormatCss(window.konfigurasiSurat.nama)}">${window.konfigurasiSurat.nama.text}</div>
+                <div style="${applyFormatCss(window.konfigurasiSurat.sub)}">${window.konfigurasiSurat.sub.text}</div>
+                <div style="${applyFormatCss(window.konfigurasiSurat.alamat)}">${window.konfigurasiSurat.alamat.text}</div>
             </div>
-            <div class="content">${htmlKonten}</div>
-            <script>setTimeout(() => { window.print(); }, 800);</script>
-        </body></html>`);
-        printWin.document.close();
-        
-        // Segarkan tabel setelah semuanya aman
-        loadDataSurat();
-    }, 500); // <-- Angka 500ms adalah jeda penunggu animasi modal tertutup
+            <div style="width: 95px; text-align: right;">${imgKanan}</div>
+        </div>
+        <div class="content">${htmlKonten}</div>
+        <script>setTimeout(() => { window.print(); }, 800);</script>
+    </body></html>`);
+    printWin.document.close();
+    
+    // Refresh tabel dengan jeda singkat untuk sinkronisasi data
+    setTimeout(() => { loadDataSurat(); }, 300);
 }
