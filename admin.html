@@ -2110,7 +2110,29 @@
     </div>
   </div>
 
-  
+  <!-- Modal Export Excel -->
+<div class="modal fade" id="modalExportExcel" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title"><i class="bi bi-file-earmark-excel me-2"></i>Export Data Jemaah</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <label class="form-label fw-bold">Pilih Kategori Data:</label>
+        <select class="form-select border-success" id="export-paket">
+          <option value="Semua">Semua Paket (Seluruh Data)</option>
+          <!-- Opsi paket akan dimuat otomatis via JS -->
+        </select>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-success w-100 fw-bold" id="btnProsesExport" onclick="prosesExportExcel()">
+          <i class="bi bi-download me-1"></i> Download Excel
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 
   <!-- MODAL EDIT AKUN STAF / ADMIN -->
 <div class="modal fade" id="modalEditAdmin" tabindex="-1" data-bs-backdrop="static">

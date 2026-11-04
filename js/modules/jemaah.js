@@ -89,9 +89,12 @@ async function loadDataJemaah() {
             
             buttons: [
                 {
-                    extend: 'excelHtml5',
-                    text: '<i class="bi bi-file-earmark-excel me-1"></i> Excel',
-                    className: 'btn btn-success btn-sm fw-bold shadow-sm'
+                    // PERBAIKAN: Menghapus extend excelHtml5 dan menggantinya dengan action kustom
+                    text: '<i class="bi bi-file-earmark-excel me-1"></i> Export Data Lengkap',
+                    className: 'btn btn-success btn-sm fw-bold shadow-sm',
+                    action: function (e, dt, node, config) {
+                        bukaModalExport(); // Memanggil pop-up opsi paket
+                    }
                 }
             ]
         });
@@ -656,4 +659,97 @@ function aturLogikaKamarEdit() {
     } else {
         inputGrup.disabled = true; inputGrup.value = ''; inputGrup.classList.remove('border-primary');
     }
+}
+
+async function bukaModalExport() {
+    const selectPaket = document.getElementById('export-paket');
+    selectPaket.innerHTML = '<option value="Semua">Semua Paket (Seluruh Data)</option>';
+
+    try {
+        const snap = await db.collection("paket").where("status", "==", "Aktif").get();
+        snap.forEach(doc => {
+            selectPaket.innerHTML += `<option value="${doc.data().nama}">${doc.data().nama}</option>`;
+        });
+    } catch (e) { console.error(e); }
+
+    new bootstrap.Modal(document.getElementById('modalExportExcel')).show();
+}
+
+async function prosesExportExcel() {
+    const btn = document.getElementById('btnProsesExport');
+    const paketPilihan = document.getElementById('export-paket').value;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Menyusun Data...';
+    btn.disabled = true;
+
+    try {
+        let query = db.collection("jemaah").orderBy("createdAt", "desc");
+        if (paketPilihan !== "Semua") query = db.collection("jemaah").where("paket", "==", paketPilihan);
+        
+        const snapshot = await query.get();
+        if (snapshot.empty) {
+            Swal.fire('Kosong', 'Tidak ada data jemaah.', 'warning');
+            btn.innerHTML = '<i class="bi bi-download me-1"></i> Download Excel'; btn.disabled = false;
+            return;
+        }
+
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('Data Jemaah');
+
+        worksheet.columns = [
+            { header: 'NO', key: 'no', width: 5 },
+            { header: 'NAMA LENGKAP', key: 'nama', width: 30 },
+            { header: 'NIK', key: 'nik', width: 22 },
+            { header: 'TEMPAT LAHIR', key: 'tempatLahir', width: 18 },
+            { header: 'TGL LAHIR', key: 'tglLahir', width: 15 },
+            { header: 'USIA', key: 'usia', width: 8 },
+            { header: 'JENIS KELAMIN', key: 'jk', width: 15 },
+            { header: 'ALAMAT LENGKAP', key: 'alamat', width: 45 },
+            { header: 'NO. WA', key: 'wa', width: 18 },
+            { header: 'PAKET UMROH', key: 'paket', width: 30 },
+            { header: 'STATUS', key: 'status', width: 15 },
+            { header: 'MAHRAM/GRUP', key: 'mahram', width: 25 },
+            { header: 'REQ KAMAR', key: 'kamar', width: 20 }
+        ];
+
+        const headerRow = worksheet.getRow(1);
+        headerRow.eachCell((cell) => {
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0D6EFD' } }; // Warna Biru Primary
+            cell.font = { color: { argb: 'FFFFFFFF' }, bold: true };
+            cell.alignment = { vertical: 'middle', horizontal: 'center' };
+            cell.border = { top: {style:'thin'}, left: {style:'thin'}, bottom: {style:'thin'}, right: {style:'thin'} };
+        });
+        headerRow.height = 25;
+
+        let no = 1;
+        snapshot.forEach(doc => {
+            const jm = doc.data();
+            let usia = '?';
+            if (jm.tglLahir) {
+                const bd = new Date(jm.tglLahir); const td = new Date();
+                let age = td.getFullYear() - bd.getFullYear();
+                if (td.getMonth() < bd.getMonth() || (td.getMonth() === bd.getMonth() && td.getDate() < bd.getDate())) age--;
+                usia = age;
+            }
+
+            const row = worksheet.addRow({
+                no: no++, nama: jm.nama || '-', nik: jm.nik || '-', tempatLahir: jm.tempatLahir || '-',
+                tglLahir: jm.tglLahir || '-', usia: usia, jk: jm.jk || '-', alamat: jm.alamat || '-',
+                wa: jm.wa || '-', paket: jm.paket || '-', status: jm.status || '-', 
+                mahram: jm.mahramNama || jm.grupKeluarga || '-', kamar: jm.requestKamar || jm.reqKhusus || '-'
+            });
+
+            row.eachCell((cell) => {
+                cell.border = { top: {style:'thin'}, left: {style:'thin'}, bottom: {style:'thin'}, right: {style:'thin'} };
+                cell.alignment = { vertical: 'middle', wrapText: true };
+            });
+        });
+
+        const buffer = await workbook.xlsx.writeBuffer();
+        saveAs(new Blob([buffer]), paketPilihan === "Semua" ? "Data_Semua_Jemaah.xlsx" : `Data_Jemaah_${paketPilihan}.xlsx`);
+        
+        bootstrap.Modal.getInstance(document.getElementById('modalExportExcel')).hide();
+        Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Berhasil Diunduh!', timer: 2000, showConfirmButton: false });
+
+    } catch (error) { Swal.fire('Error', error.message, 'error'); }
+    finally { btn.innerHTML = '<i class="bi bi-download me-1"></i> Download Excel'; btn.disabled = false; }
 }
