@@ -187,7 +187,7 @@ function refreshDataKeuangan() {
                     </td>
                     <td>${tr.metode}</td>
                     <td class="text-end fw-bold text-success">${formatRupiahText(tr.nominal)}</td>
-                    <td><button class="btn btn-outline-dark btn-sm py-0" onclick="cetakKwitansi('${trData}')" title="Cetak Kwitansi"><i class="bi bi-printer"></i></button></td>
+                    <td><button class="btn btn-warning btn-m py-2" onclick="cetakKwitansi('${trData}')" title="Cetak Kwitansi"><i class="bi bi-printer"></i></button></td>
                 </tr>`;
             });
         }

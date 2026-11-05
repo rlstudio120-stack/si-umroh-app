@@ -397,15 +397,22 @@
                       <div class="card border-0 shadow-sm mb-3">
                         <div class="card-body text-center">
                           <!-- Gambar Foto -->
-                          <img id="detFoto" src="https://via.placeholder.com/150" class="img-fluid rounded mb-2 shadow-sm" style="max-height: 200px; object-fit: cover;">
+                          <div class="text-center mb-2">
+                            <img src="" id="detFoto" class="img-fluid rounded shadow-sm" style="max-height: 180px; object-fit: cover;">
+                          </div>
                           
-                          <!-- Input File Tersembunyi -->
-                          <input type="file" id="updFileFoto" class="d-none" accept="image/*" onchange="prosesUpdateBerkas('Foto')">
-                          
-                          <!-- Tombol Pemicu -->
-                          <button type="button" class="btn btn-primary btn-sm w-100" onclick="document.getElementById('updFileFoto').click()">
+                          <!-- PERBAIKAN: Tombol berdampingan -->
+                          <div class="d-flex gap-1 mb-2">
+                            <!-- Tombol Ganti Foto (Gunakan ID asli yang Bapak miliki, misal btnUpdFoto) -->
+                            <button type="button" class="btn btn-primary btn-sm w-100 shadow-sm fw-bold" id="btnUpdFoto">
                               <i class="bi bi-camera me-1"></i> Ganti / Upload Foto
-                          </button>
+                            </button>
+                            
+                            <!-- Tombol Download Foto (Disembunyikan secara default menggunakan d-none) -->
+                            <button type="button" class="btn btn-success btn-sm shadow-sm px-3 d-none" id="btnDownloadFoto" title="Download Pas Foto">
+                              <i class="bi bi-download"></i>
+                            </button>
+                          </div>
                           
                           <h5 class="fw-bold text-primary mb-1" id="detNamaSingkat">-</h5>
                           <div class="bg-dark text-white rounded px-2 py-1 mb-3 d-inline-block fw-bold small" id="detNoReg">-</div>
@@ -547,12 +554,15 @@
 
                 </div>
                 <div class="modal-footer bg-white border-top">
-                  <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Tutup</button>
+                  <button type="button" class="btn btn-danger px-4 fw-bold" data-bs-dismiss="modal">Tutup</button>
+                  <button type="button" class="btn btn-info text-dark fw-bold shadow-sm" id="btnBackupJemaah">
+                      Backup Data
+                  </button>
                   <button type="button" class="btn btn-primary fw-bold text-white px-3 shadow-sm me-2" id="btnCetakBukti">
-                    <i class="bi bi-printer"></i> Cetak Bukti
+                    Cetak Bukti
                   </button>
                   <button type="button" class="btn btn-warning fw-bold text-dark px-4 shadow-sm" id="btnEditDariDetail">
-                    <i class="bi bi-pencil-square"></i> Edit Data Jemaah
+                    Edit
                   </button>
                 </div>
               </div>
@@ -1055,7 +1065,7 @@
                             <div class="card-body p-2 text-center">
                               <label class="small text-muted fw-bold">Total Tagihan (Rp)</label>
                               <input type="text" class="form-control form-control-sm text-center fw-bold text-primary mt-1" id="kasir-tagihan" onkeyup="formatRupiahInput(this)" placeholder="Ketik tagihan...">
-                              <button class="btn btn-outline-primary btn-sm w-100 mt-2 py-0" onclick="simpanTagihan()">Simpan Tagihan</button>
+                              <button class="btn btn-primary btn-sm w-100 mt-2 py-2" onclick="simpanTagihan()">Simpan Tagihan</button>
                             </div>
                           </div>
                         </div>
@@ -2291,5 +2301,6 @@ function setActiveMenu(element) {
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 </body>
 </html>
