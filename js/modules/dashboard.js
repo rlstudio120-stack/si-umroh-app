@@ -57,22 +57,22 @@ function loadDashboardData() {
 function renderGrafikPaket(dataPaket) {
     const ctx = document.getElementById('grafikPaket').getContext('2d');
     
-    // Hancurkan grafik lama jika halaman direfresh agar tidak tumpang tindih
-    if (chartPaket) {
+    if (typeof chartPaket !== 'undefined' && chartPaket !== null) {
         chartPaket.destroy();
     }
 
     const labelPaket = Object.keys(dataPaket);
     const jumlahPaket = Object.values(dataPaket);
 
-    // Jika tidak ada data, beri grafik kosong
     if (labelPaket.length === 0) {
         labelPaket.push("Belum ada data");
-        jumlahPaket.push(1);
+        jumlahPaket.push(1); 
     }
 
     chartPaket = new Chart(ctx, {
         type: 'doughnut',
+        // MENDAFTARKAN PLUGIN ANGKA
+        plugins: [ChartDataLabels], 
         data: {
             labels: labelPaket,
             datasets: [{
@@ -85,10 +85,42 @@ function renderGrafikPaket(dataPaket) {
         },
         options: {
             responsive: true,
+            maintainAspectRatio: false, 
+            cutout: '60%', // Lubang diperkecil sedikit agar angka muat
             plugins: {
-                legend: { position: 'bottom' }
-            },
-            cutout: '70%' // Membuat lubang di tengah agar berbentuk donat
+                legend: { 
+                    position: 'bottom',
+                    labels: { 
+                        usePointStyle: true, 
+                        boxWidth: 8,
+                        font: { size: 11 }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            if (context.label === "Belum ada data") return " 0 Jemaah";
+                            return ` ${context.label}: ${context.raw} Jemaah`;
+                        }
+                    }
+                },
+                // KONFIGURASI ANGKA YANG MUNCUL DI ATAS WARNA
+                datalabels: {
+                    color: '#000000', // Teks warna putih agar kontras
+                    font: {
+                        weight: 'bold',
+                        size: 14 // Ukuran font angka
+                    },
+                    formatter: function(value, context) {
+                        // Sembunyikan angka jika tabel dasbor sedang kosong
+                        if (context.chart.data.labels[context.dataIndex] === "Belum ada data") {
+                            return null;
+                        }
+                        // Jika ingin menampilkan teks "15 Org", ubah menjadi: return value + " Org";
+                        return value; 
+                    }
+                }
+            }
         }
     });
 }
