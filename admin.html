@@ -961,8 +961,18 @@
               <div id="view-kasir" class="view-section" style="display: none;">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                   <div>
-                    <h3 class="fw-bold text-dark mb-0">Kasir & Pembayaran</h3>
-                    <p class="text-muted">Kelola transaksi, cicilan, dan cetak bukti pembayaran jemaah</p>
+                   
+                      <!-- PERBAIKAN: Ubah menjadi d-flex agar tombol bisa rata kanan -->
+                      <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                          <h3 class="fw-bold text-dark mb-0">Kasir & Pembayaran</h3>
+                          <p class="text-muted">Kelola transaksi, cicilan, dan cetak bukti pembayaran jemaah</p>
+                        </div>
+                      </div>
+                       <!-- TAMBAHAN: Tombol Cetak Daftar Pembayaran -->
+                        <button class="btn btn-success fw-bold shadow-sm" onclick="bukaModalCetakKasir()">
+                          <i class="bi bi-printer me-1"></i> Cetak Daftar Pembayaran
+                        </button>
                   </div>
                 </div>
 
@@ -1429,8 +1439,17 @@
                   <div id="view-surat" class="view-section" style="display: none;">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                       <div>
-                        <h3 class="fw-bold text-dark mb-0">Surat & Dokumen Jemaah</h3>
-                        <p class="text-muted">Cetak surat rekomendasi, pengantar, dan dokumen pendukung lainnya otomatis</p>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                          <div>
+                            <h3 class="fw-bold text-dark mb-0">Surat & Dokumen Jemaah</h3>
+                            <p class="text-muted">Cetak surat rekomendasi, pengantar, dan dokumen pendukung lainnya otomatis</p> 
+                          </div>
+                          
+                         </div>
+                         <!-- TAMBAHAN: Tombol Cetak Form Massal -->
+                          <button class="btn btn-success fw-bold shadow-sm" onclick="bukaModalCetakForm()">
+                            <i class="bi bi-table me-1"></i> Cetak Form Massal
+                          </button>
                       </div>
                     </div>
                     <!-- AREA FILTER SURAT -->
@@ -2190,6 +2209,86 @@
           </div>
         </form>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CETAK FORM MASSAL -->
+<div class="modal fade" id="modalCetakForm" tabindex="-1" data-bs-backdrop="static">
+  <div class="modal-dialog">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header bg-success text-white border-0">
+        <h5 class="modal-title fw-bold"><i class="bi bi-printer-fill me-2"></i>Cetak Form Checklist Massal</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <form onsubmit="prosesCetakFormMassal(event)">
+        <div class="modal-body p-4 bg-light">
+          
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Pilih Paket / Periode Keberangkatan <span class="text-danger">*</span></label>
+            <select class="form-select border-success fw-bold" id="cetak-form-paket" required>
+              <option value="">-- Memuat Paket... --</option>
+            </select>
+            <small class="text-muted" style="font-size:11px;">Jemaah yang dicetak hanya yang tergabung dalam paket ini.</small>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label small fw-bold">Jenis Dokumen Form <span class="text-danger">*</span></label>
+            <select class="form-select border-success" id="cetak-form-jenis" required>
+              <option value="kesehatan">Daftar Cek Kesehatan Jemaah</option>
+              <option value="kopiah">Daftar Cek Ukuran Kopiah (Khusus Laki-laki)</option>
+              <option value="foto">Daftar Foto Jemaah</option>
+            </select>
+          </div>
+          
+          <div class="alert alert-warning py-2 mb-0" style="font-size:12px;">
+            <i class="bi bi-info-circle-fill me-1"></i>
+            Dokumen akan dicetak menggunakan Kop Surat otomatis. Usia akan dihitung secara langsung berdasarkan tanggal lahir.
+          </div>
+
+        </div>
+        <div class="modal-footer bg-white border-0">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="submit" class="btn btn-success fw-bold shadow-sm" id="btn-proses-cetak-form">
+            <i class="bi bi-printer me-1"></i> Cetak Tabel PDF
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CETAK DAFTAR PEMBAYARAN KASIR -->
+<div class="modal fade" id="modalCetakKasir" tabindex="-1" data-bs-backdrop="static">
+  <div class="modal-dialog">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header bg-success text-white border-0">
+        <h5 class="modal-title fw-bold"><i class="bi bi-printer-fill me-2"></i>Cetak Daftar Pembayaran</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <form onsubmit="prosesCetakKasirMassal(event)">
+        <div class="modal-body p-4 bg-light">
+          
+          <div class="mb-4">
+            <label class="form-label small fw-bold">Pilih Paket Umroh <span class="text-danger">*</span></label>
+            <select class="form-select border-success fw-bold" id="cetak-kasir-paket" required>
+              <option value="">-- Memuat Paket... --</option>
+            </select>
+          </div>
+          
+          <div class="alert alert-info py-2 mb-0" style="font-size:12px;">
+            <i class="bi bi-info-circle-fill me-1"></i>
+            Tabel akan otomatis berisi Nominal Uang Masuk dan Sisa Tagihan tiap jemaah. Kolom Metode Pelunasan sengaja dikosongkan untuk diisi centang manual.
+          </div>
+
+        </div>
+        <div class="modal-footer bg-white border-0">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="submit" class="btn btn-success fw-bold shadow-sm" id="btn-proses-cetak-kasir">
+            <i class="bi bi-printer me-1"></i> Cetak Dokumen A4
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 </div>

@@ -429,3 +429,211 @@ function cetakKwitansi(encodedTrData) {
         printWin.document.close();
     });
 }
+
+// ==========================================
+// FITUR CETAK DAFTAR PEMBAYARAN JEMAAH MASSAL
+// ==========================================
+
+async function bukaModalCetakKasir() {
+    const selectPaket = document.getElementById('cetak-kasir-paket');
+    selectPaket.innerHTML = '<option value="">Memuat Paket...</option>';
+    
+    try {
+        const snapshot = await db.collection("paket").where("status", "==", "Aktif").get();
+        let opsiPaket = '<option value="">-- Pilih Paket --</option>';
+        snapshot.forEach(doc => {
+            const p = doc.data();
+            opsiPaket += `<option value="${p.nama}">${p.nama}</option>`;
+        });
+        selectPaket.innerHTML = opsiPaket;
+        
+        new bootstrap.Modal(document.getElementById('modalCetakKasir')).show();
+    } catch (e) {
+        console.error("Gagal muat paket:", e);
+        Swal.fire('Error', 'Gagal memuat daftar paket.', 'error');
+    }
+}
+
+// Menghitung umur dari String/Timestamp
+function hitungUmurKasir(tglLahirData) {
+    if (!tglLahirData) return '-';
+    let tglLahir = tglLahirData.seconds ? new Date(tglLahirData.seconds * 1000) : new Date(tglLahirData);
+    if (isNaN(tglLahir.getTime())) return '-';
+    const hariIni = new Date();
+    let umur = hariIni.getFullYear() - tglLahir.getFullYear();
+    const m = hariIni.getMonth() - tglLahir.getMonth();
+    if (m < 0 || (m === 0 && hariIni.getDate() < tglLahir.getDate())) umur--;
+    return umur;
+}
+
+// Konversi fungsi applyFormatCss agar bisa dipakai di kasir.js
+function formatCssKasir(objFormat) {
+    if(!objFormat) return '';
+    return `color: ${objFormat.color}; font-size: ${objFormat.size}pt; font-family: ${objFormat.font}; font-weight: ${objFormat.bold ? 'bold' : 'normal'}; font-style: ${objFormat.italic ? 'italic' : 'normal'}; text-decoration: ${objFormat.underline ? 'underline' : 'none'}; margin: 2px 0;`;
+}
+
+async function prosesCetakKasirMassal(event) {
+    event.preventDefault();
+    const btn = document.getElementById('btn-proses-cetak-kasir');
+    const namaPaket = document.getElementById('cetak-kasir-paket').value;
+    
+    const oriText = btn.innerHTML;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Menyiapkan...';
+    btn.disabled = true;
+
+    try {
+        // 1. Ambil Harga Dasar Paket (Untuk Info Header)
+        let hargaPaketDisplay = "0";
+        const paketQuery = await db.collection("paket").where("nama", "==", namaPaket).limit(1).get();
+        if (!paketQuery.empty) {
+            hargaPaketDisplay = formatRupiahText(paketQuery.docs[0].data().harga || 0);
+        }
+
+        // 2. Ambil Data Jemaah berdasarkan Paket
+        const snapshot = await db.collection("jemaah").where("paket", "==", namaPaket).get();
+        
+        if (snapshot.empty) {
+            Swal.fire('Kosong', 'Tidak ada jemaah yang terdaftar di paket ini.', 'warning');
+            btn.innerHTML = oriText; btn.disabled = false;
+            return;
+        }
+
+        let dataJemaah = [];
+        snapshot.forEach(doc => dataJemaah.push(doc.data()));
+        dataJemaah.sort((a, b) => (a.nama || '').localeCompare(b.nama || ''));
+
+        // 3. Merakit Tabel Isi (Tanpa baris kosong)
+        let tabelIsi = "";
+        dataJemaah.forEach((jm, i) => {
+            let initialJk = (jm.jk && jm.jk.toLowerCase() === 'laki-laki') ? 'L' : 'P';
+            let umur = hitungUmurKasir(jm.tglLahir);
+            
+            // Kalkulasi Kasir
+            let tagihan = jm.tagihan || 0;
+            let terbayar = jm.terbayar || 0;
+            let sisa = tagihan - terbayar;
+            
+            // Format Rupiah (Tanpa Rp. agar rapi di tabel)
+            let txtTerbayar = (terbayar > 0) ? formatRupiahText(terbayar) : "0";
+            let txtSisa = (sisa > 0) ? formatRupiahText(sisa) : "0";
+            
+            // Jika sisa 0 atau minus, cetak "Lunas", jika masih ada sisa, kosongkan
+            let txtKeterangan = (tagihan > 0 && sisa <= 0) ? "Lunas" : "";
+
+            tabelIsi += `
+            <tr>
+                <td class="t-center">${i+1}</td>
+                <td>${jm.nama || '-'}</td>
+                <td style="font-size:9pt;">${jm.alamat || '-'}</td>
+                <td class="t-center">${initialJk}</td>
+                <td class="t-center">${umur}</td>
+                <td class="t-right">${txtTerbayar}</td>
+                <td class="t-right">${txtSisa}</td>
+                <td class="t-center fw-bold text-success">${txtKeterangan}</td>
+                <td></td>
+                <td></td>
+            </tr>`;
+        });
+
+        // 4. Siapkan Elemen Kop Surat (Meminjam data di window.konfigurasiSurat)
+        let imgKiri='', imgKanan='', imgWatermark='', htmlKopTeks='';
+        
+        // Memastikan konfigurasi surat sudah termuat
+        if (window.konfigurasiSurat) {
+            imgKiri = window.konfigurasiSurat.logoKiri ? `<img src="${window.konfigurasiSurat.logoKiri}" class="kop-logo-kiri">` : '';
+            imgKanan = window.konfigurasiSurat.logoKanan ? `<img src="${window.konfigurasiSurat.logoKanan}" class="kop-logo-kanan">` : '';
+            imgWatermark = window.konfigurasiSurat.watermark ? `<img src="${window.konfigurasiSurat.watermark}" class="watermark">` : '';
+            
+            htmlKopTeks = `
+                <div style="${formatCssKasir(window.konfigurasiSurat.nama)}">${window.konfigurasiSurat.nama.text}</div>
+                <div style="${formatCssKasir(window.konfigurasiSurat.sub)}">${window.konfigurasiSurat.sub.text}</div>
+                <div style="${formatCssKasir(window.konfigurasiSurat.alamat)}">${window.konfigurasiSurat.alamat.text}</div>
+            `;
+        }
+
+        // 5. Buka Jendela Cetak 
+        bootstrap.Modal.getInstance(document.getElementById('modalCetakKasir')).hide();
+        const printWin = window.open('', '_blank');
+        
+        printWin.document.write(`
+        <html><head><title>Daftar Pembayaran - ${namaPaket}</title>
+            <style>
+                @page { size: A4 landscape; margin: 15mm; }
+                body { font-family: "Arial", sans-serif; font-size: 10pt; line-height: 1.5; margin: 0; -webkit-print-color-adjust: exact !important; }
+                .watermark { position: fixed; top: 45%; left: 50%; transform: translate(-50%, -50%); width: 40%; opacity: 0.10; z-index: -10; pointer-events: none; }
+                
+                table.tabel-utama { width: 100%; border-collapse: collapse; }
+                thead { display: table-header-group; } 
+                
+                .kop-surat { display: flex; align-items: center; justify-content: space-between; border-bottom: 4px double black; padding-bottom: 10px; margin-bottom: 15px; }
+                .kop-logo-kiri, .kop-logo-kanan { width: 75px; height: auto; object-fit: contain; }
+                .kop-text { text-align: center; flex-grow: 1; padding: 0 15px; }
+                
+                .judul-form { text-align: center; font-size: 14pt; font-weight: bold; text-decoration: underline; margin: 10px 0 5px 0; }
+                
+                /* Layout Info Paket */
+                .info-paket { margin-bottom: 15px; font-weight: bold; font-size: 11pt; }
+                .info-paket td { padding: 2px 5px; }
+
+                /* PERBAIKAN: Kurangi lebar jadi 99.5% dan kunci garis luar tabel */
+                table.tabel-data { width: 99.5%; border-collapse: collapse; margin-top: 10px; border: 1px solid black; margin-right: 2px; }
+                table.tabel-data thead { display: table-header-group; } 
+                table.tabel-data th, table.tabel-data td { border: 1px solid black; padding: 6px 4px; vertical-align: middle; }
+                table.tabel-data th { background-color: #f2f2f2; text-align: center; font-weight: bold; }
+                
+                .t-center { text-align: center; }
+                .t-right { text-align: right; }
+                .text-success { color: #198754 !important; }
+            </style>
+        </head><body>
+            ${imgWatermark}
+            
+            <!-- KOP SURAT & INFO (Hanya muncul di halaman 1) -->
+            <div class="kop-surat">
+                <div style="width: 75px;">${imgKiri}</div>
+                <div class="kop-text">${htmlKopTeks}</div>
+                <div style="width: 75px; text-align: right;">${imgKanan}</div>
+            </div>
+            
+            <div class="judul-form">DAFTAR PEMBAYARAN JEMAAH</div>
+            <table class="info-paket">
+                <tr><td>Paket</td><td>: ${namaPaket}</td></tr>
+                <tr><td>Harga Paket</td><td>: Rp. ${hargaPaketDisplay},-</td></tr>
+            </table>
+            
+            <!-- TABEL DATA JEMAAH -->
+            <table class="tabel-data">
+                <thead>
+                    <tr>
+                        <th rowspan="2" style="width: 3%;">No</th>
+                        <th rowspan="2" style="width: 18%;">Nama Jemaah</th>
+                        <th rowspan="2" style="width: 20%;">Alamat</th>
+                        <th rowspan="2" style="width: 4%;">JK</th>
+                        <th rowspan="2" style="width: 4%;">Umur</th>
+                        <th rowspan="2" style="width: 12%;">Uang Masuk</th>
+                        <th rowspan="2" style="width: 12%;">Sisa</th>
+                        <th rowspan="2" style="width: 9%;">Keterangan</th>
+                        <th colspan="2" style="width: 18%;">Metode Pelunasan</th>
+                    </tr>
+                    <tr>
+                        <th style="width: 9%;">Tunai</th>
+                        <th style="width: 9%;">Transfer</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${tabelIsi}
+                </tbody>
+            </table>
+            
+            <script>setTimeout(() => { window.print(); }, 800);</script>
+        </body></html>`);
+        printWin.document.close();
+
+    } catch (error) {
+        console.error("Error Cetak Form Kasir:", error);
+        Swal.fire('Error', 'Terjadi kesalahan saat menyusun tabel kasir.', 'error');
+    } finally {
+        btn.innerHTML = oriText;
+        btn.disabled = false;
+    }
+}

@@ -132,7 +132,6 @@ function bukaModalSurat(encodedData) {
     modalInstance.show();
 }
 
-
 function applyFormatCss(objFormat) {
     if(!objFormat) return '';
     return `color: ${objFormat.color}; font-size: ${objFormat.size}pt; font-family: ${objFormat.font}; font-weight: ${objFormat.bold ? 'bold' : 'normal'}; font-style: ${objFormat.italic ? 'italic' : 'normal'}; text-decoration: ${objFormat.underline ? 'underline' : 'none'}; margin: 2px 0;`;
@@ -144,15 +143,13 @@ function cetakDokumenSurat(event) {
     const jm = dataJemaahSurat;
     const noSurat = document.getElementById('surat-no').value;
     const tglBerangkat = document.getElementById('surat-tgl-berangkat').value;
-    const tglCetakInput = document.getElementById('surat-tgl-cetak').value; // Ambil nilai tanggal dari form
+    const tglCetakInput = document.getElementById('surat-tgl-cetak').value; 
     const formatTgl = (t) => t ? new Date(t).toLocaleDateString('id-ID', {day:'2-digit', month:'long', year:'numeric'}) : '-';
     
-    // Kunci pengecekan: Apakah ini surat yang benar-benar baru?
     const isSuratBaru = (jenisSurat === 'paspor' && !jm.noSuratPaspor) || (jenisSurat !== 'paspor' && !jm.noSuratKeterangan);
     const fieldJemaah = (jenisSurat === 'paspor') ? 'noSuratPaspor' : 'noSuratKeterangan';
     const fieldTgl = (jenisSurat === 'paspor') ? 'tglSuratPaspor' : 'tglSuratKeterangan';
 
-    // 1. JIKA SURAT BARU: Kunci Nomor & Tanggal
     if (isSuratBaru) {
         const matchNo = noSurat.match(/\d+/); 
         if (matchNo) {
@@ -185,33 +182,28 @@ function cetakDokumenSurat(event) {
             jm[fieldJemaah] = noSurat;
             jm[fieldTgl] = tglCetakInput;
         }
-    } 
-    // 2. JIKA SURAT LAMA: Cek apakah ada perubahan / input tanggal dari Admin
-    else {
+    } else {
         if (jm[fieldTgl] !== tglCetakInput) {
             db.collection("jemaah").doc(jm.id).update({
                 [fieldTgl]: tglCetakInput
             });
-            jm[fieldTgl] = tglCetakInput; // Sinkronisasi ke memori lokal
+            jm[fieldTgl] = tglCetakInput; 
         }
     }
 
     const pakaiTtd = document.getElementById('surat-pakai-ttd').checked;
-    
     
     const imgKiri = window.konfigurasiSurat.logoKiri ? `<img src="${window.konfigurasiSurat.logoKiri}" class="kop-logo-kiri">` : '';
     const imgKanan = window.konfigurasiSurat.logoKanan ? `<img src="${window.konfigurasiSurat.logoKanan}" class="kop-logo-kanan">` : '';
     const imgWatermark = window.konfigurasiSurat.watermark ? `<img src="${window.konfigurasiSurat.watermark}" class="watermark">` : '';
     const imgTtd = (pakaiTtd && window.konfigurasiSurat.ttd) ? `<img src="${window.konfigurasiSurat.ttd}" class="ttd-img">` : '';
 
-    // Tangkap input nama Bin/Binti jika diketik oleh admin
     const inputNamaBapak = document.getElementById('surat-nama-bapak');
     const tambahanNama = (inputNamaBapak && inputNamaBapak.value.trim() !== '') ? ` ${inputNamaBapak.value.trim()}` : '';
 
     let htmlKonten = '';
 
     if (jenisSurat === 'paspor') {
-        // Gabungkan nama asli dari database dengan tambahan Bin/Binti khusus cetak paspor
         const namaLengkapCetak = `${jm.nama}${tambahanNama}`;
         
         htmlKonten = `
@@ -306,21 +298,17 @@ function cetakDokumenSurat(event) {
         </div>`;
     }
 
-
-    // 1. TUTUP MODAL TERLEBIH DAHULU
     const modalEl = document.getElementById('modalSurat');
     const modalInstance = bootstrap.Modal.getInstance(modalEl);
     if (modalInstance) {
         modalInstance.hide();
     }
 
-    // 2. PEMBERSIHAN PAKSA DOM (Brute Force Cleanup)
     document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
     document.body.classList.remove('modal-open');
     document.body.style.overflow = '';
     document.body.style.paddingRight = '';
 
-    // 3. BUKA TAB PDF SECARA LANGSUNG
     const printWin = window.open('', '_blank');
     printWin.document.write(`
     <html><head><title>Cetak Dokumen - ${jm.nama}</title>
@@ -355,6 +343,186 @@ function cetakDokumenSurat(event) {
     </body></html>`);
     printWin.document.close();
     
-    // Refresh tabel dengan jeda singkat untuk sinkronisasi data
     setTimeout(() => { loadDataSurat(); }, 300);
+}
+
+
+// ==========================================
+// FITUR CETAK FORM CHECKLIST MASSAL
+// ==========================================
+
+async function bukaModalCetakForm() {
+    const selectPaket = document.getElementById('cetak-form-paket');
+    selectPaket.innerHTML = '<option value="">Memuat Paket...</option>';
+    
+    try {
+        const snapshot = await db.collection("paket").where("status", "==", "Aktif").get();
+        let opsiPaket = '<option value="">-- Pilih Paket --</option>';
+        snapshot.forEach(doc => {
+            const p = doc.data();
+            opsiPaket += `<option value="${p.nama}">${p.nama}</option>`;
+        });
+        selectPaket.innerHTML = opsiPaket;
+        
+        new bootstrap.Modal(document.getElementById('modalCetakForm')).show();
+    } catch (e) {
+        console.error("Gagal muat paket:", e);
+        Swal.fire('Error', 'Gagal memuat daftar paket.', 'error');
+    }
+}
+
+function hitungUmur(tglLahirData) {
+    if (!tglLahirData) return '-';
+    let tglLahir;
+    
+    if (tglLahirData.seconds) {
+        tglLahir = new Date(tglLahirData.seconds * 1000);
+    } else {
+        tglLahir = new Date(tglLahirData);
+    }
+
+    if (isNaN(tglLahir.getTime())) return '-';
+
+    const hariIni = new Date();
+    let umur = hariIni.getFullYear() - tglLahir.getFullYear();
+    const m = hariIni.getMonth() - tglLahir.getMonth();
+    if (m < 0 || (m === 0 && hariIni.getDate() < tglLahir.getDate())) {
+        umur--;
+    }
+    return umur;
+}
+
+async function prosesCetakFormMassal(event) {
+    event.preventDefault();
+    const btn = document.getElementById('btn-proses-cetak-form');
+    const namaPaket = document.getElementById('cetak-form-paket').value;
+    const jenisForm = document.getElementById('cetak-form-jenis').value;
+    
+    const oriText = btn.innerHTML;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Menyiapkan...';
+    btn.disabled = true;
+
+    try {
+        const snapshot = await db.collection("jemaah").where("paket", "==", namaPaket).get();
+        
+        if (snapshot.empty) {
+            Swal.fire('Kosong', 'Tidak ada jemaah yang terdaftar di paket ini.', 'warning');
+            btn.innerHTML = oriText; btn.disabled = false;
+            return;
+        }
+
+        let dataJemaah = [];
+        snapshot.forEach(doc => {
+            dataJemaah.push(doc.data());
+        });
+
+        if (jenisForm === 'kopiah') {
+            dataJemaah = dataJemaah.filter(j => j.jk && j.jk.toLowerCase() === 'laki-laki');
+        }
+
+        if (dataJemaah.length === 0) {
+            Swal.fire('Data Kosong', 'Tidak ada jemaah Laki-laki untuk form Kopiah ini.', 'info');
+            btn.innerHTML = oriText; btn.disabled = false;
+            return;
+        }
+
+        dataJemaah.sort((a, b) => (a.nama || '').localeCompare(b.nama || ''));
+
+        let judulSurat = "";
+        let tabelHeader = "";
+        let tabelIsi = "";
+        
+        if (jenisForm === 'kesehatan') {
+            judulSurat = "DAFTAR CEK KESEHATAN JEMAAH";
+            tabelHeader = `<tr><th style="width: 5%;">No</th><th style="width: 35%;">Nama Jemaah</th><th style="width: 8%;">JK</th><th style="width: 8%;">Umur</th><th style="width: 15%;">Tensi</th><th style="width: 29%;">Riwayat Penyakit</th></tr>`;
+            
+            dataJemaah.forEach((jm, i) => {
+                let initialJk = (jm.jk && jm.jk.toLowerCase() === 'laki-laki') ? 'L' : 'P';
+                let umur = hitungUmur(jm.tglLahir);
+                tabelIsi += `<tr><td class="t-center">${i+1}</td><td>${jm.nama || '-'}</td><td class="t-center">${initialJk}</td><td class="t-center">${umur}</td><td></td><td></td></tr>`;
+            });
+        } 
+        else if (jenisForm === 'kopiah') {
+            judulSurat = "DAFTAR CEK UKURAN KOPIAH JEMAAH LAKI-LAKI";
+            tabelHeader = `<tr><th style="width: 5%;">No</th><th style="width: 35%;">Nama Jemaah</th><th style="width: 8%;">JK</th><th style="width: 8%;">Umur</th><th style="width: 15%;">Ukuran</th><th style="width: 29%;">Keterangan</th></tr>`;
+            
+            dataJemaah.forEach((jm, i) => {
+                let umur = hitungUmur(jm.tglLahir);
+                tabelIsi += `<tr><td class="t-center">${i+1}</td><td>${jm.nama || '-'}</td><td class="t-center">L</td><td class="t-center">${umur}</td><td></td><td></td></tr>`;
+            });
+        }
+        else if (jenisForm === 'foto') {
+            judulSurat = "DAFTAR FOTO JEMAAH";
+            tabelHeader = `<tr><th style="width: 5%;">No</th><th style="width: 35%;">Nama Jemaah</th><th style="width: 8%;">JK</th><th style="width: 8%;">Umur</th><th style="width: 15%;">No Urut Foto</th><th style="width: 29%;">Keterangan</th></tr>`;
+            
+            dataJemaah.forEach((jm, i) => {
+                let initialJk = (jm.jk && jm.jk.toLowerCase() === 'laki-laki') ? 'L' : 'P';
+                let umur = hitungUmur(jm.tglLahir);
+                tabelIsi += `<tr><td class="t-center">${i+1}</td><td>${jm.nama || '-'}</td><td class="t-center">${initialJk}</td><td class="t-center">${umur}</td><td></td><td></td></tr>`;
+            });
+        }
+
+        const imgKiri = window.konfigurasiSurat.logoKiri ? `<img src="${window.konfigurasiSurat.logoKiri}" class="kop-logo-kiri">` : '';
+        const imgKanan = window.konfigurasiSurat.logoKanan ? `<img src="${window.konfigurasiSurat.logoKanan}" class="kop-logo-kanan">` : '';
+        const imgWatermark = window.konfigurasiSurat.watermark ? `<img src="${window.konfigurasiSurat.watermark}" class="watermark">` : '';
+
+        bootstrap.Modal.getInstance(document.getElementById('modalCetakForm')).hide();
+        
+        const printWin = window.open('', '_blank');
+        printWin.document.write(`
+        <html><head><title>${judulSurat} - ${namaPaket}</title>
+            <style>
+                @page { size: A4 portrait; margin: 15mm 20mm 20mm 20mm; }
+                body { font-family: "Times New Roman", Times, serif; font-size: 11pt; line-height: 1.5; margin: 0; -webkit-print-color-adjust: exact !important; }
+                .watermark { position: fixed; top: 45%; left: 50%; transform: translate(-50%, -50%); width: 55%; opacity: 0.10; z-index: -10; pointer-events: none; }
+                
+                .kop-surat { display: flex; align-items: center; justify-content: space-between; border-bottom: 4px double black; padding-bottom: 10px; margin-bottom: 15px; }
+                .kop-logo-kiri, .kop-logo-kanan { width: 85px; height: auto; object-fit: contain; }
+                .kop-text { text-align: center; flex-grow: 1; padding: 0 15px; }
+                
+                .judul-form { text-align: center; font-size: 14pt; font-weight: bold; text-decoration: underline; margin: 10px 0 5px 0; }
+                .sub-judul { text-align: center; font-size: 11pt; margin-bottom: 20px; font-weight: bold; }
+                
+                table.tabel-data { width: 100%; border-collapse: collapse; margin-top: 10px; }
+                table.tabel-data thead { display: table-header-group; } 
+                table.tabel-data th, table.tabel-data td { border: 1px solid black; padding: 8px 6px; }
+                table.tabel-data th { background-color: #f2f2f2; text-align: center; font-weight: bold; }
+                .t-center { text-align: center; }
+            </style>
+        </head><body>
+            ${imgWatermark}
+            
+            <div class="kop-surat">
+                <div style="width: 85px;">${imgKiri}</div>
+                <div class="kop-text">
+                    <div style="${applyFormatCss(window.konfigurasiSurat.nama)}">${window.konfigurasiSurat.nama.text}</div>
+                    <div style="${applyFormatCss(window.konfigurasiSurat.sub)}">${window.konfigurasiSurat.sub.text}</div>
+                    <div style="${applyFormatCss(window.konfigurasiSurat.alamat)}">${window.konfigurasiSurat.alamat.text}</div>
+                </div>
+                <div style="width: 85px; text-align: right;">${imgKanan}</div>
+            </div>
+            
+            <div class="judul-form">${judulSurat}</div>
+            <div class="sub-judul">Periode: ${namaPaket}</div>
+            
+            <table class="tabel-data">
+                <thead>
+                    ${tabelHeader}
+                </thead>
+                <tbody>
+                    ${tabelIsi}
+                </tbody>
+            </table>
+            
+            <script>setTimeout(() => { window.print(); }, 800);</script>
+        </body></html>`);
+        printWin.document.close();
+
+    } catch (error) {
+        console.error("Error Cetak Form:", error);
+        Swal.fire('Error', 'Terjadi kesalahan sistem saat menyusun tabel.', 'error');
+    } finally {
+        btn.innerHTML = oriText;
+        btn.disabled = false;
+    }
 }
