@@ -98,9 +98,6 @@ window.logoutAdmin = function(event) {
 // ==========================================
 // 3. MESIN PEMBAGI HAK AKSES (ROLE)
 // ==========================================
-// ==========================================
-// 3. MESIN PEMBAGI HAK AKSES (ROLE)
-// ==========================================
 function terapkanHakAkses() {
     const sesi = sessionStorage.getItem('siUmrohUser');
     if (!sesi) return;
@@ -120,6 +117,7 @@ function terapkanHakAkses() {
         sembunyikanMenu('keberangkatan');
         sembunyikanMenu('paket');
         sembunyikanMenu('users');
+        sembunyikanMenu('pengaturan'); // <-- Menyembunyikan Pengaturan dari Kasir
         sembunyikanTombolBerbahaya();
         
         // Sembunyikan teks kategori yang sudah kosong
@@ -131,6 +129,7 @@ function terapkanHakAkses() {
         sembunyikanMenu('kasir');
         sembunyikanMenu('paket');
         sembunyikanMenu('users');
+        sembunyikanMenu('pengaturan'); // <-- Menyembunyikan Pengaturan dari Staf Admin
         sembunyikanTombolBerbahaya();
         
         // Sembunyikan teks kategori yang sudah kosong

@@ -1,50 +1,60 @@
-// js/modules/keberangkatan.js
-
 function loadDataJadwal() {
     const tbody = document.getElementById('tbody-jadwal');
     tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4"><div class="spinner-border text-primary spinner-border-sm me-2"></div>Memuat data...</td></tr>';
     
-    db.collection("keberangkatan").orderBy("tglBerangkat", "desc").get().then((snapshot) => {
-        let html = '';
-        if (snapshot.empty) {
-            html = '<tr><td colspan="6" class="text-center text-muted py-4">Belum ada jadwal keberangkatan.</td></tr>';
-        } else {
-            snapshot.forEach((doc) => {
-                const jdw = doc.data();
-                jdw.docId = doc.id;
-                
-                // Format Tanggal
-                const tglBerangkat = new Date(jdw.tglBerangkat).toLocaleDateString('id-ID', {day: '2-digit', month: 'short', year: 'numeric'});
-                const encodedData = encodeURIComponent(JSON.stringify(jdw));
-                
-                // TOMBOL AKSI BERUPA IKON SOLID + TOOLTIP BANTUAN
-                html += `
-                <tr>
-                    <td class="fw-bold text-primary align-middle">${jdw.idJadwal}</td>
-                    <td class="align-middle"><span class="badge bg-dark">${jdw.paket}</span></td>
-                    <td class="align-middle fw-bold">${tglBerangkat}</td>
-                    <td class="align-middle">${jdw.pesawat || '-'}</td>
-                    <td class="align-middle">${jdw.tourLeader || '-'}</td>
-                    <td class="text-center align-middle whitespace-nowrap">
-                        <button class="btn btn-success btn-sm me-1 shadow-sm" onclick="bukaManifest('${jdw.idJadwal}', '${jdw.paket}', '${tglBerangkat}')" title="Manifest Jemaah">
-                            <i class="bi bi-people"></i>
-                        </button>
-                        <button class="btn btn-primary btn-sm me-1 shadow-sm" onclick="bukaRooming('${jdw.idJadwal}', '${jdw.paket}')" title="Manajemen Rooming">
-                            <i class="bi bi-door-open"></i>
-                        </button>
-                        <button class="btn btn-info btn-sm text-white me-1 shadow-sm" onclick="bukaBus('${jdw.idJadwal}', '${jdw.paket}')" title="Denah Kursi Bus">
-                            <i class="bi bi-bus-front"></i>
-                        </button>
-                        <button class="btn btn-warning btn-sm text-dark me-1 shadow-sm" onclick="bukaModalEditJadwal('${encodedData}')" title="Edit Jadwal">
-                            <i class="bi bi-pencil"></i>
-                        </button>
-                        <button class="btn btn-danger btn-sm shadow-sm" onclick="hapusJadwal('${jdw.docId}', '${jdw.idJadwal}')" title="Hapus Jadwal">
-                            <i class="bi bi-trash"></i>
-                        </button>
-                    </td>
-                </tr>`;
-            });
+    // KUNCI PERBAIKAN: Hapus .orderBy() dari Firebase agar data tidak ada yang di-filter diam-diam
+    db.collection("keberangkatan").get().then((snapshot) => {
+        let jadwalData = [];
+        
+        snapshot.forEach((doc) => {
+            let jdw = doc.data();
+            jdw.docId = doc.id;
+            jadwalData.push(jdw);
+        });
+
+        if (jadwalData.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">Belum ada jadwal keberangkatan.</td></tr>';
+            return;
         }
+
+        // Urutkan data secara manual menggunakan JavaScript (Jadwal terbaru di atas)
+        jadwalData.sort((a, b) => {
+            let tglA = a.tglBerangkat ? new Date(a.tglBerangkat).getTime() : 0;
+            let tglB = b.tglBerangkat ? new Date(b.tglBerangkat).getTime() : 0;
+            return tglB - tglA;
+        });
+
+        let html = '';
+        jadwalData.forEach((jdw) => {
+            const tglBerangkat = jdw.tglBerangkat ? new Date(jdw.tglBerangkat).toLocaleDateString('id-ID', {day: '2-digit', month: 'short', year: 'numeric'}) : '-';
+            const encodedData = encodeURIComponent(JSON.stringify(jdw));
+            
+            html += `
+            <tr>
+                <td class="fw-bold text-primary align-middle">${jdw.idJadwal || '-'}</td>
+                <td class="align-middle"><span class="badge bg-dark">${jdw.paket || '-'}</span></td>
+                <td class="align-middle fw-bold">${tglBerangkat}</td>
+                <td class="align-middle">${jdw.pesawat || '-'}</td>
+                <td class="align-middle">${jdw.tourLeader || '-'}</td>
+                <td class="text-center align-middle text-nowrap">
+                    <button class="btn btn-success btn-sm me-1 shadow-sm" onclick="bukaManifest('${jdw.idJadwal}', '${jdw.paket}', '${tglBerangkat}')" title="Manifest Jemaah">
+                        <i class="bi bi-people"></i>
+                    </button>
+                    <button class="btn btn-primary btn-sm me-1 shadow-sm" onclick="bukaRooming('${jdw.idJadwal}', '${jdw.paket}')" title="Manajemen Rooming">
+                        <i class="bi bi-door-open"></i>
+                    </button>
+                    <button class="btn btn-info btn-sm text-white me-1 shadow-sm" onclick="bukaBus('${jdw.idJadwal}', '${jdw.paket}')" title="Denah Kursi Bus">
+                        <i class="bi bi-bus-front"></i>
+                    </button>
+                    <button class="btn btn-warning btn-sm text-dark me-1 shadow-sm" onclick="bukaModalEditJadwal('${encodedData}')" title="Edit Jadwal">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-danger btn-sm shadow-sm" onclick="hapusJadwal('${jdw.docId}', '${jdw.idJadwal}')" title="Hapus Jadwal">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </td>
+            </tr>`;
+        });
         tbody.innerHTML = html;
     }).catch(err => {
         tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4">Gagal memuat: ${err.message}</td></tr>`;
